@@ -1,0 +1,37 @@
+Script.Load("lua/ExtraEntitiesMod/LogicMixin.lua")
+
+
+class 'LogicLua' (Entity)
+
+LogicLua.kMapName = "logic_lua"
+
+
+local networkVars =
+{
+    luaFile = "string (128)",
+}
+
+AddMixinNetworkVars(LogicMixin, networkVars)
+
+function LogicLua:OnCreate()
+end
+
+
+function LogicLua:OnInitialized()
+    
+    if Server then
+        InitMixin(self, LogicMixin)
+    end
+    
+    if self.luaFile then
+        Script.Load(self.luaFile)
+    end
+    
+end
+
+
+function LogicLua:Reset()
+end
+
+
+Shared.LinkClassToMap("LogicLua", LogicLua.kMapName, networkVars)
