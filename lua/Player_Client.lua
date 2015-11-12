@@ -4070,8 +4070,8 @@ function Player:OnUpdateRender()
     
     if self:GetIsLocalPlayer() then
     
-        local stunned = HasMixin(self, "Stun") and self:GetIsStunned()
-        local blurEnabled = self.buyMenu ~= nil or stunned
+
+        local blurEnabled = self.buyMenu ~= nil
         self:SetBlurEnabled(blurEnabled)
         
         self.lastOnUpdateRenderTime = self.lastOnUpdateRenderTime or Shared.GetTime()

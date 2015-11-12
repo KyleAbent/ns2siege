@@ -524,17 +524,17 @@ local hives = 0
    return hives
 end
 function GetFairHealthValues()
-local level = 1
+local level = 0
  local gameRules = GetGamerules()
- if not gameRules:GetGameStarted() then return .25 end 
+ if not gameRules:GetGameStarted() then return .08 end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
         //Print("Length = %s", roundlength)
-        
-                    if roundlength > kWeapons3SecondUnlock then
+      //  if ArmsLab.Weapons1ResearchTime == 0 then return level end
+                    if roundlength > 300 then
                       level = .25
-                    elseif  roundlength > kWeapons2SecondUnlock then
+                    elseif  roundlength > 600 then
                       level = .15
-                    elseif roundlength > kWeapons1SecondUnlock then
+                    elseif roundlength > 900 then
                       level = .08
                     end
                     

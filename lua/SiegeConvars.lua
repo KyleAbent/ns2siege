@@ -105,7 +105,7 @@ kShellHealth = 400
 kFuncDoorHealth = 100
 kFuncDoorWeldRate = 1
 kAddAmountofFuncDoorBroken = .1
-kShouldArcsFireAtCysts = true
+kShouldArcsFireAtCysts = false
 //kAlienTeamPresBonusMult = 1
 kCreditMultiplier = 1 // for double credit weekend change 1 to 2 :P
 kSideDoorTime = 300 
@@ -255,6 +255,7 @@ kRebirthCost = 2
 kGorgeTunnelCost = 5
 kGorgeTunnelBuildTime = 11
 
+kDistressBeaconCooldown = 10
 kAdvancedDistressBeaconCost = 15
 kAdvancedBeaconTechResearchCost = 10
 kAdvancedBeaconTechResearchTime = 1
@@ -306,10 +307,10 @@ kTunnelEntranceHealth = 1250    kTunnelEntranceArmor = 130
 kMatureTunnelEntranceHealth = 1412    kMatureTunnelEntranceArmor = 269
 
 
-kPowerPointHealth = 2300 
-kPowerPointArmor = 1100
-kWelderPowerRepairRate = 264
-kBuilderPowerRepairRate = 132
+//kPowerPointHealth = 2300 
+//kPowerPointArmor = 1100
+//kWelderPowerRepairRate = 264
+//kBuilderPowerRepairRate = 132
 kSkulkHealth = 75
 kMucousShieldCooldown = 10
 kMucousShieldDuration = 10

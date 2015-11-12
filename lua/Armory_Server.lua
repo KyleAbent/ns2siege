@@ -65,7 +65,11 @@ function Armory:OnStun()
     
                 local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
                 bonewall.modelsize = 0.5
-                bonewall:AdjustMaxHealth(bonewall:GetMaxHealth() / 2)
+                bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
+                bonewall.targetid = self:GetId()
+                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
+                self.stunned = true
+                self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
 end
 function Armory:GetShouldResupplyPlayer(player)
 
@@ -73,20 +77,12 @@ function Armory:GetShouldResupplyPlayer(player)
         return false
     end
     
-    if self:GetIsStunned() then
-    return false
-    end
     
     local isVortexed = self:GetIsVortexed() or ( HasMixin(player, "VortexAble") and player:GetIsVortexed() )
     if isVortexed then
         return false
     end    
-    
-    local stunned = HasMixin(player, "Stun") and player:GetIsStunned()
-    
-    if stunned then
-        return false
-    end
+   
     
     local inNeed = false
     
@@ -310,7 +306,7 @@ function Armory:OnResearchCancel(researchId)
 
 end
 function Armory:UpdateResearch(deltaTime)
- if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
+ //if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
     local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
     if researchNode then
@@ -367,8 +363,8 @@ function Armory:UpdateResearch(deltaTime)
         end
         
     end 
-self.timeLastUpdateCheck = Shared.GetTime()
-end
+//self.timeLastUpdateCheck = Shared.GetTime()
+//end
 end
 
 function Armory:UpdateLoggedIn()

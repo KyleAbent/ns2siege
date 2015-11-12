@@ -206,7 +206,7 @@ function Shockwave:Detonate()
 
                 if HasMixin(enemy, "Stun") then
                   //  if not enemy:isa("Exo") or (enemy:isa("Exo") and GetHasTech(self, kTechId.StompUpgrade) ) then
-                    enemy:SetStun(kDisruptMarineTime)
+                    enemy:SetStun()
                   //  end
                 end  
             end

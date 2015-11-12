@@ -158,7 +158,6 @@ AddMixinNetworkVars(MarineVariantMixin, networkVars)
 AddMixinNetworkVars(ExoVariantMixin, networkVars)
 AddMixinNetworkVars(PhaseGateUserMixin, networkVars)
 AddMixinNetworkVars(LadderMoveMixin, networkVars)
-AddMixinNetworkVars(StunMixin, networkVars)
 
 
 local function SmashNearbyEggs(self)
@@ -312,7 +311,7 @@ function Exo:GetCanDoorInteract(inEntity)
 return false
 end
 function Exo:GetIsStunAllowed()
-    return not self.timeLastStun or self.timeLastStun + 6 < Shared.GetTime() and GetAreFrontDoorsOpen()
+    return self:GetLastStunTime() + 1.5 < Shared.GetTime() and GetAreFrontDoorsOpen() and not self:GetIsVortexed()
 end
 function Exo:OnInitialized()
 

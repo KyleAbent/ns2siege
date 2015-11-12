@@ -309,7 +309,7 @@ local function GetAutomaticOrder(self)
         else
 
             // If there's a friendly entity nearby that needs constructing, constuct it.
-            local constructables = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), MAC.kOrderScanRadius)
+            local constructables = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), ConditionalValue(not self:GetFrontDoorsOpen(), 9999, MAC.kOrderScanRadius))
             for c = 1, #constructables do
             
                 local constructable = constructables[c]
@@ -783,7 +783,17 @@ function MAC:PlayChatSound(soundName)
     end
     
 end
-
+function MAC:GetFrontDoorsOpen()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
 // Look for other MACs and Drifters to greet as we fly by 
 function MAC:UpdateGreetings()
 

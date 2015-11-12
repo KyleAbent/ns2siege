@@ -465,8 +465,15 @@ if Server then
         self:AddTimedCallback(OnDeploy, kDeployTime)      
     end
     
-    function Sentry:OnStun(duration)
-        self:Confuse(duration)
+    function Sentry:OnStun()
+        self:Confuse(2)
+        
+                 if Server then
+                local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
+                bonewall.modelsize = 0.15
+                bonewall:AdjustMaxHealth(60)
+                StartSoundEffectForPlayer(AlienCommander.kBoneWallSpawnSound, self)
+                 end
     end
     
     function Sentry:GetDamagedAlertId()

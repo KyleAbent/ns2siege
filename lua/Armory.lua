@@ -94,6 +94,7 @@ local networkVars =
     loggedInWest     = "boolean",
     deployed         = "boolean",
    level = "float (0 to " .. Armory.kMaxLevel .. " by .1)",
+   stunned = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -108,7 +109,6 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
-AddMixinNetworkVars(StunMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
@@ -169,6 +169,7 @@ function Armory:OnCreate()
     
     self.deployed = false
     self.level = 0
+    self.stunned = false
 end
 
 // Check if friendly players are nearby and facing armory and heal/resupply them
@@ -288,6 +289,9 @@ function Armory:AddXP(amount)
       
     return xpReward
     
+end
+function Armory:GetIsStunAllowed()
+    return not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
 function Armory:LoseXP(amount)
 

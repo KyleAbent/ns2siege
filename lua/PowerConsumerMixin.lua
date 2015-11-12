@@ -29,13 +29,15 @@ PowerConsumerMixin.optionalCallbacks =
 PowerConsumerMixin.networkVars =
 {
     powered = "boolean",
-    powerSurge = "boolean"
+    powerSurge = "boolean",
+    mainbattle = "boolean",
 }
 
 function PowerConsumerMixin:__initmixin()
     self.powered = false
     self.powerSurge = false
     self.timePowerSurgeEnds = 0
+    self.mainbattle = false
 end
 
 if Server then
@@ -101,7 +103,28 @@ if Server then
     local function Deploy(self)
         self:TriggerEffects("deploy")
     end
+    function PowerConsumerMixin:GetIsSiege()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+        end
+    function PowerConsumerMixin:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
     
+       if not self.powered then
+       
+        if not self.mainbattle or ( self:GetIsSiege() and not string.find(self:GetLocationName(), "Siege") and not string.find(self:GetLocationName(), "siege") ) then 
+         damageTable.damage = damageTable.damage * 2 
+        end
+        
+        end
+        
+    end
     function PowerConsumerMixin:OnInitialized()
         CheckForPowerSource(self)
     end

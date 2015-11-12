@@ -2318,7 +2318,7 @@ function Player:RetrieveMove()
 end
 
 function Player:GetCanControl()
-    return not self.isMoveBlocked and self:GetIsAlive() and ( not HasMixin(self, "Stun") or not self:GetIsStunned() ) and not self.countingDown
+    return not self.isMoveBlocked and self:GetIsAlive() and not self.countingDown
 end
 
 function Player:GetCanAttack()

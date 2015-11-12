@@ -115,6 +115,12 @@ end
 function GetHasFocusUpgrade(callingEntity)
     return HasUpgrade(callingEntity, kTechId.Focus) //or callingEntity.RTDRedemption
 end
+function GetHasThickenedSkinUpgrade(callingEntity)
+    return HasUpgrade(callingEntity, kTechId.ThickenedSkin) //or callingEntity.RTDRedemption
+end
+function GetHasHungerUpgrade(callingEntity)
+    return HasUpgrade(callingEntity, kTechId.Hunger) //or callingEntity.RTDRedemption
+end
 function GetHasAdrenalineUpgrade(callingEntity)
     return HasUpgrade(callingEntity, kTechId.Adrenaline) //or callingEntity.RTDAdrenaline
 end

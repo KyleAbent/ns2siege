@@ -173,7 +173,37 @@ function ArmsLab:GetDamagedAlertId()
 end
   function ArmsLab:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("ArmsLab (%s)"), math.round(self.researchProgress or 0, 2))
+    
+    if self:GetIsResearching() then
+    
+    local w1time = string.TimeToString(ArmsLab.Weapons1ResearchTime)
+    local w2time = string.TimeToString(ArmsLab.Weapons2ResearchTime)
+    local w3time = string.TimeToString(ArmsLab.Weapons3ResearchTime)
+    local a1time = string.TimeToString(ArmsLab.Armor1ResearchTime)
+    local a2time = string.TimeToString(ArmsLab.Armor2ResearchTime)
+    local a3time = string.TimeToString(ArmsLab.Armor3ResearchTime)
+    local cliptime = string.TimeToString(ArmsLab.RifleClipResearchTime)
+
+
+    local currentresearchtimetounlock = 0
+      if self.researchingId == kTechId.Weapons1 then
+        currentresearchtimetounlock = w1time
+      elseif self.researchingId == kTechId.Weapons2 then
+        currentresearchtimetounlock = w2time
+      elseif self.researchingId == kTechId.Weapons3 then
+        currentresearchtimetounlock = w3time
+      elseif self.researchingId == kTechId.Armor1 then
+        currentresearchtimetounlock = a1time
+      elseif self.researchingId == kTechId.Armor2 then
+        currentresearchtimetounlock = a2time
+      elseif self.researchingId == kTechId.Armor3 then
+        currentresearchtimetounlock = a3time
+      elseif self.researchingId == kTechId.RifleClip then
+        currentresearchtimetounlock = cliptime
+      end
+      
+    unitName = string.format(Locale.ResolveString("%s"), currentresearchtimetounlock)
+  end
 return unitName
 end 
 function ArmsLab:OnUpdate(deltaTime)

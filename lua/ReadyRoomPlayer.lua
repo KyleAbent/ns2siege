@@ -23,7 +23,7 @@ Script.Load("lua/Marine.lua")
  */
 class 'ReadyRoomPlayer' (Player)
 
-ReadyRoomPlayer.kModelName = PrecacheAsset("models/props/biodome/biodome_flower_02_high.model")
+ReadyRoomPlayer.kModelName = PrecacheAsset("seasonal/holiday2012/models/snowman01.model")
 ReadyRoomPlayer.kMapName = "ready_room_player"
 
 local networkVars = 

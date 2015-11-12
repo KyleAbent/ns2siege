@@ -285,6 +285,7 @@ kTechIdToMaterialOffset[kTechId.Umbra] = 75
 kTechIdToMaterialOffset[kTechId.CragUmbra] = 75
 kTechIdToMaterialOffset[kTechId.ShadeCloak] = 76
 kTechIdToMaterialOffset[kTechId.Armor1] = 77
+kTechIdToMaterialOffset[kTechId.ThickenedSkin] = 77
 kTechIdToMaterialOffset[kTechId.ArmoryArmor] = 77
 kTechIdToMaterialOffset[kTechId.Armor2] = 78
 kTechIdToMaterialOffset[kTechId.Armor3] = 79
@@ -334,6 +335,7 @@ kTechIdToMaterialOffset[kTechId.CatPack] = 164
 kTechIdToMaterialOffset[kTechId.PowerPoint] = 93
 kTechIdToMaterialOffset[kTechId.SocketPowerNode] = 94
 kTechIdToMaterialOffset[kTechId.Xenocide] = 95
+kTechIdToMaterialOffset[kTechId.Hunger] = 95
 kTechIdToMaterialOffset[kTechId.FireBullets] = 95
 kTechIdToMaterialOffset[kTechId.HallucinationExplosion] = 95
 

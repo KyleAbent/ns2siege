@@ -20,6 +20,9 @@ class 'BoneWall' (CommanderAbility)
 
 BoneWall.kMapName = "bonewall"
 
+PrecacheAsset("cinematics/vfx_materials/hallucination.surface_shader")
+local kHallucinationMaterial = PrecacheAsset( "cinematics/vfx_materials/hallucination.material")
+
 BoneWall.kModelName = PrecacheAsset("models/alien/infestationspike/infestationspike.model")
 local kAnimationGraph = PrecacheAsset("models/alien/infestationspike/infestationspike.animation_graph")
 
@@ -33,6 +36,7 @@ local networkVars =
 {
     spawnPoint = "vector",
     modelsize = "float (0 to 10 by .1)",
+    targetid = "entityid", 
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -41,7 +45,20 @@ AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
-
+local function TimeUp(self)
+    self:OnKill()
+    return false
+end
+local function Experiment(self)
+                self:UpdateModelCoords()
+                self:UpdatePhysicsModel()
+               if (self._modelCoords and self.boneCoords and self.physicsModel) then
+              self.physicsModel:SetBoneCoords(self._modelCoords, self.boneCoords)
+               end  
+               self:MarkPhysicsDirty()   
+               
+               return false
+end
 function AlignBoneWalls(coords)
 
     local nearbyMarines = GetEntitiesWithinRange("Marine", coords.origin, 20)
@@ -64,13 +81,50 @@ function AlignBoneWalls(coords)
     return coords
 
 end
+if Client then
 
+    function BoneWall:OnUpdateRender()
+          local showMaterial = not GetAreEnemies(self, Client.GetLocalPlayer())
+    
+        local model = self:GetRenderModel()
+        if model then
+
+            model:SetMaterialParameter("glowIntensity", 0)
+
+            if showMaterial then
+                
+                if not self.hallucinationMaterial then
+                    self.hallucinationMaterial = AddMaterial(model, kHallucinationMaterial)
+                end
+                
+                self:SetOpacity(0, "hallucination")
+            
+            else
+            
+                if self.hallucinationMaterial then
+                    RemoveMaterial(model, self.hallucinationMaterial)
+                    self.hallucinationMaterial = nil
+                end//
+                
+                self:SetOpacity(1, "hallucination")
+            
+            end //showma
+            
+        end//omodel
+   end //up render
+    
+end//client
 function BoneWall:OnKill(attacker, doer, point, direction)
-
+   local entity = Shared.GetEntity( self.targetid ) 
+   if entity  then
+  if entity:isa("Armory") or entity:isa("RoboticsFactory") then self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) entity.stunned = false end 
+  end
     self:TriggerEffects("death")
+    if Server then
+    if not self:GetIsDestroyed() then
     DestroyEntity(self)
-    
-    
+    end
+    end
 end
 function BoneWall:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
@@ -123,10 +177,16 @@ function BoneWall:OnInitialized()
     
     // Make the structure kinematic so that the player will collide with it.
     self:SetPhysicsType(PhysicsType.Kinematic)
+    self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
     
+    if self.modelsize ~= 1 then 
+     self:AddTimedCallback(Experiment, 0.5)
+    end
 
-    
+   self:AddTimedCallback(TimeUp, self:GetLifeSpan())  
+   self.targetid = Entity.invalidI
 end
+
 
 function BoneWall:OverrideCheckVision()
     return false
@@ -146,29 +206,6 @@ end
 
 function BoneWall:GetLifeSpan()
     return kLifeSpan
-end
-
-function BoneWall:OnUpdate(deltaTime)
-
-    CommanderAbility.OnUpdate(self, deltaTime)
-    
-    local lifeTime = math.max(0, Shared.GetTime() - self:GetTimeCreated())
-    local remainingTime = self:GetLifeSpan() - lifeTime
-    
-    if remainingTime < self:GetLifeSpan() then
-        
-        local moveFraction = 0
-
-        if remainingTime <= 1 then
-            moveFraction = 1 - Clamp(remainingTime / kMoveDuration, 0, 1)
-        end
-        
-        local piFraction = moveFraction * (math.pi / 2)
-
-        self:SetOrigin(self.spawnPoint - Vector(0, math.sin(piFraction) * kMoveOffset, 0))
-    
-    end
-
 end
 
 function BoneWall:GetCanBeUsed(player, useSuccessTable)

@@ -66,6 +66,7 @@ PhysicsGroup = enum
     'WebsGroup',
     'FuncMoveable',
     'LogicBreakable',
+    'AlienWalkThrough',
 }
 
 // Pre-defined physics group masks.
@@ -83,8 +84,10 @@ PhysicsMask = enum
     Movement = CreateMaskExcludingGroups(PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.DroppedWeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
     
     // Filters anything that should not collide with onos movement.
-    OnosMovement = CreateMaskExcludingGroups(PhysicsGroup.WhipGroup, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.MediumStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.PlayerControllersGroup, 
+    OnosMovement = CreateMaskExcludingGroups(PhysicsGroup.AlienWalkThrough, PhysicsGroup.WhipGroup, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.MediumStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.PlayerControllersGroup, 
                                              PhysicsGroup.BabblerGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.DroppedWeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
+             // 11.11 ns2siege - bonewall to not prevent aliens from walking through it - with purple material to visually say this aspect               
+    AlienNonOnos = CreateMaskExcludingGroups(PhysicsGroup.AlienWalkThrough, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
     
     // For Drifters, MACs
     AIMovement = CreateMaskExcludingGroups(PhysicsGroup.MediumStructuresGroup, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
@@ -105,8 +108,8 @@ PhysicsMask = enum
     Bullets = CreateMaskExcludingGroups(PhysicsGroup.PlayerControllersGroup, PhysicsGroup.BigPlayerControllersGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.CollisionGeometryGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
     Flame = CreateMaskExcludingGroups(PhysicsGroup.PlayerControllersGroup, PhysicsGroup.BigPlayerControllersGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.CollisionGeometryGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.PathingGroup),
 
-    // Melee attacks
-    Melee = CreateMaskExcludingGroups(PhysicsGroup.PlayerControllersGroup, PhysicsGroup.BigPlayerControllersGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.CollisionGeometryGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
+    // Melee attacks                  11.11 ns2siege - bonewall to not prevent players from attacking through it
+    Melee = CreateMaskExcludingGroups(PhysicsGroup.AlienWalkThrough, PhysicsGroup.PlayerControllersGroup, PhysicsGroup.BigPlayerControllersGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.CollisionGeometryGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
 
     PredictedProjectileGroup = CreateMaskExcludingGroups(PhysicsGroup.CollisionGeometryGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.DroppedWeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
     

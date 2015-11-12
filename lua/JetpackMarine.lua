@@ -483,7 +483,7 @@ function JetpackMarine:ModifyJump(input, velocity, jumpVelocity)
 end
 
 function JetpackMarine:GetIsJetpacking()
-    return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsStunned()
+    return self.jetpacking and (self:GetFuel()> 0) 
 end
 
 /**

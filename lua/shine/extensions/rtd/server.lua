@@ -493,17 +493,17 @@ function Plugin:RollMarineJetpackMarineRandomWeapon(Player)
           end
 end
 function Plugin:MarineJetpackMarineStun(Player)
-     local kStunDuration = math.random(1,10)
+     local kStunDuration = 3
      if Player:isa("Marine") then
            if not Player:GetIsOnGround() then self:RollMarineCombat(Player) return end
-           self:NotifyMarineCombat( Player, "stunned for %s seconds", true, kStunDuration)
+           self:NotifyMarineCombat( Player, "stunned", true, kStunDuration)
      elseif Player:isa("JetpackMarine") then
            if not Player:GetIsOnGround() then self:RollJetpackCombat(Player) return end
-           self:NotifyJetpackMarineCombat( Player, "stunned for %s seconds", true, kStunDuration)
+           self:NotifyJetpackMarineCombat( Player, "stunned", true, kStunDuration)
      end
-     Player:SetStun(kStunDuration)
+      Player:SetStun()
      self.Users[ Player:GetClient() ] = Shared.GetTime() + 30
-     Shine.ScreenText.Add( 50, {X = 0.20, Y = 0.80,Text = "Stunned for %s",Duration = kStunDuration,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 1,FadeIn = 0,}, Player ) 
+     Shine.ScreenText.Add( 50, {X = 0.20, Y = 0.80,Text = "Stunned",Duration = kStunDuration,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 1,FadeIn = 0,}, Player ) 
 end
 function Plugin:MarineJetpackMarineExoCombatCatpack(Player)
             local kCatPackDuration = math.random(8,60)

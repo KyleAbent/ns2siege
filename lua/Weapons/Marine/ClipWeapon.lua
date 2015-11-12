@@ -605,22 +605,18 @@ end
 function ClipWeapon:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ClipWeapon:OnUpdateAnimationInput")
-    
-    local stunned = false
-    local taunting = false
+
+   // local taunting = false
     local interrupted = false
     local player = self:GetParent()
     if player then
     
-        if HasMixin(player, "Stun") and player:GetIsStunned() then
-            stunned = true
-        end
-        
+
         if player.GetIsInterrupted and player:GetIsInterrupted() then
             interrupted = true
         end
         
-        if player.GetIsAunting and player:GetIsTaunting() then
+        if player.GetIsTaunting and player:GetIsTaunting() then
            taunting = true
         end
         
@@ -649,13 +645,13 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
             activity = "reload"     
         elseif self.primaryAttacking then
             activity = "primary"
-        elseif self.secondaryAttacking or stunned then
+        elseif self.secondaryAttacking then
             activity = "secondary"
         end
      end  
     
     modelMixin:SetAnimationInput("activity", activity)
-    modelMixin:SetAnimationInput("flinch_gore", interrupted and not stunned and not self:GetIsReloading())
+    modelMixin:SetAnimationInput("flinch_gore", interrupted and not self:GetIsReloading())
     modelMixin:SetAnimationInput("empty", (self.ammo + self.clip) == 0)
 
 end

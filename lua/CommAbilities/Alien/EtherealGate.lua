@@ -10,7 +10,7 @@ EtherealGate.kVortexLoopingSound = PrecacheAsset("sound/NS2.fev/alien/fade/vorte
 EtherealGate.kVortexEndCinematic = PrecacheAsset("cinematics/alien/fade/vortex_destroy.cinematic")
 
 EtherealGate.kType = CommanderAbility.kType.Repeat
-EtherealGate.kSearchRange = 4
+EtherealGate.kSearchRange = 5
 local netWorkVars =
 {
 }
@@ -60,7 +60,7 @@ function EtherealGate:GetUpdateTime()
 end
 
 function EtherealGate:GetLifeSpan()
-    return 6
+    return 12 ///  6 is too short - It Basically dissapears a few seconds after finding a target!
 end
 
 Shared.LinkClassToMap("EtherealGate", EtherealGate.kMapName, netWorkVars)

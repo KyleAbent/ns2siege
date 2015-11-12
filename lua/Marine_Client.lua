@@ -160,7 +160,7 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
         
         if self.buyMenu then
         
-            if not self:GetIsAlive() or not GetIsCloseToMenuStructure(self) or self:GetIsStunned() then
+            if not self:GetIsAlive() or not GetIsCloseToMenuStructure(self) then
                 self:CloseMenu()
             end
             
@@ -170,8 +170,8 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
             Player.screenEffects.disorient:SetParameter("time", Client.GetTime())
         end
         
-        local stunned = HasMixin(self, "Stun") and self:GetIsStunned()
-        local blurEnabled = self.buyMenu ~= nil or stunned
+
+        local blurEnabled = self.buyMenu ~= nil
         self:SetBlurEnabled(blurEnabled)
         
         // update spit hit effect

@@ -192,7 +192,6 @@ function PowerPoint:OnCreate()
     if Client then 
         self:AddTimedCallback(PowerPoint.OnTimedUpdate, kUpdateIntervalLow)
     end
-    
 end
 
 local function SetupWithInitialSettings(self)
@@ -453,7 +452,11 @@ end
 function PowerPoint:GetTechAllowed(techId, techNode, player)
     return true, true
 end
-
+function PowerPoint:SetMainRoom()
+if not self:GetIsBuilt() then return end
+self:SetLightMode(kLightMode.NoPower)
+self:AddTimedCallback(function() if self:GetIsBuilt() then self:SetLightMode(kLightMode.Normal) end end, 25)
+end
 function PowerPoint:OnUse(player, elapsedTime, useSuccessTable)
 
     local success = false
@@ -799,6 +802,7 @@ if Server then
     function PowerPoint:OnUpdate(deltaTime)
 
         self:AddAttackTime(-0.1)
+
         
         if self:GetLightMode() == kLightMode.Damaged and self:GetAttackTime() == 0 then
             self:SetLightMode(kLightMode.Normal)

@@ -272,18 +272,16 @@ function Alien:OnInitialized()
 end
 
 function Alien:SetRepresentingHealthValues()
-local level = 1
+local level = 0
 
   if Server then
   level = GetFairHealthValues()
   end
   
   //Print("level = %s", level)
-  
-       if not level or level == 1 then return end
-       
-         local lifeformstrengthmult = 1
-         
+      local lifeformstrengthmult = 0
+           
+       if level and level ~= 0 then 
       if self:isa("Skulk") then
        lifeformstrengthmult = .9
       elseif self:isa("Gorge") then
@@ -296,7 +294,13 @@ local level = 1
        lifeformstrengthmult = .7
       end
       
+      end
+      
    local newMaxHealth = self:GetBaseHealth() * (level * lifeformstrengthmult) + self:GetBaseHealth()
+   
+   if GetHasThickenedSkinUpgrade(self) then
+      newMaxHealth = newMaxHealth * 1.10
+      end
 
     if newMaxHealth ~= self.maxHealth  then
 

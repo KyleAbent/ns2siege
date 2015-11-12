@@ -263,7 +263,7 @@ function BuildTechData()
         { [kTechDataId] = kTechId.AmmoPack,       [kTechDataBuildRequiresMethod] = GetAmmoPackLimit,     [kTechDataBuildMethodFailedMessage] = "9 live ammopacks max",    [kTechDataAllowStacking] = true, [kTechDataIgnorePathingMesh] = true, [kTechDataMapName] = AmmoPack.kMapName,  [kTechDataDisplayName] = "AMMO_PACK",      [kTechDataCostKey] = kAmmoPackCost,            [kTechDataModel] = AmmoPack.kModelName, [kTechDataTooltipInfo] = "AMMO_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight },
         { [kTechDataId] = kTechId.MedPack,   [kTechDataBuildRequiresMethod] = GetMedPackLimit,  [kTechDataBuildMethodFailedMessage] = "9 live medpacks max",  [kTechDataCooldown] = kMedPackCooldown,         [kTechDataAllowStacking] = true, [kTechDataIgnorePathingMesh] = true, [kTechDataMapName] = MedPack.kMapName,   [kTechDataDisplayName] = "MED_PACK",     [kTechDataCostKey] = kMedPackCost,             [kTechDataModel] = MedPack.kModelName,  [kTechDataTooltipInfo] = "MED_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight},
         { [kTechDataId] = kTechId.CatPack,          [kTechDataBuildRequiresMethod] = GetCatPackLimit,   [kTechDataBuildMethodFailedMessage] = "9 live catpacks  max",    [kTechDataAllowStacking] = true, [kTechDataIgnorePathingMesh] = true, [kTechDataMapName] = CatPack.kMapName,   [kTechDataDisplayName] = "CAT_PACK",      [kTechDataCostKey] = kCatPackCost,             [kTechDataModel] = CatPack.kModelName,  [kTechDataTooltipInfo] = "CAT_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight},
-        { [kTechDataId] = kTechId.Scan,    [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataIgnorePathingMesh] = true, [kTechDataMapName] = Scan.kMapName,     [kTechDataDisplayName] = "SCAN",      [kTechDataHotkey] = Move.S,   [kTechDataCostKey] = kObservatoryScanCost, [kTechDataTooltipInfo] = "SCAN_TOOLTIP"},
+        { [kTechDataId] = kTechId.Scan,  [kTechDataCooldown] = 8,  [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataIgnorePathingMesh] = true, [kTechDataMapName] = Scan.kMapName,     [kTechDataDisplayName] = "SCAN",      [kTechDataHotkey] = Move.S,   [kTechDataCostKey] = kObservatoryScanCost, [kTechDataTooltipInfo] = "SCAN_TOOLTIP"},
         { [kTechDataId] = kTechId.SelectObservatory, [kTechIDShowEnables] = false, [kTechDataDisplayName] = "SELECT_OBSERVATORY", [kTechDataTooltipInfo] = "SELECT_NEAREST_OBSERVATORY" },   
         // Command station and its buildables
         { [kTechDataId] = kTechId.CommandStation, 
@@ -432,6 +432,7 @@ function BuildTechData()
         { [kTechDataId] = kTechId.DistressBeacon,  
           [kTechDataBuildTime] = 0.1,   
         [kTechDataDisplayName] = "DISTRESS_BEACON", 
+         [kTechDataCooldown] = kDistressBeaconCooldown,
          [kTechDataHotkey] = Move.B, [kTechDataCostKey] = kObservatoryDistressBeaconCost,
         [kTechDataTooltipInfo] =  "DISTRESS_BEACON_TOOLTIP"},
         
@@ -710,8 +711,8 @@ function BuildTechData()
        [kTechDataCollideWithWorldOnly] = true,
        [kTechDataRequiresInfestation] = true, 
       [kTechDataDisplayName] = "Etheral Gate", 
-        [kTechDataCostKey] = 5, 
-     [kTechDataCooldown] = 8, 
+        [kTechDataCostKey] = 8, 
+     [kTechDataCooldown] = 16, 
       [kTechDataTooltipInfo] =  "Kind of puts marines and structures in another dimension - making them useless - but also unable be damaged"},
       
             { [kTechDataId] = kTechId.ControlledHallucination,  
@@ -1246,6 +1247,20 @@ function BuildTechData()
       [kTechDataSponitorCode] = "A",  
       [kTechDataCostKey] = kRebirthCost, 
      [kTechDataTooltipInfo] = "You've tried Redemption, now try its alternative. Upon death, turns you back into a gestating egg (Back into the class you just died as) with a protective bonewall during the gestation.", },
+   
+                { [kTechDataId] = kTechId.ThickenedSkin, 
+       [kTechDataCategory] = kTechId.CragHiveTwo,  
+        [kTechDataDisplayName] = "Thickened Skin", 
+      [kTechDataSponitorCode] = "A",  
+      [kTechDataCostKey] = 2, 
+     [kTechDataTooltipInfo] = "Put all of your energy into gaining +10% hp", },
+     
+                     { [kTechDataId] = kTechId.Hunger, 
+       [kTechDataCategory] = kTechId.CragHiveTwo,  
+        [kTechDataDisplayName] = "Hunger", 
+      [kTechDataSponitorCode] = "B",  
+      [kTechDataCostKey] = 2, 
+     [kTechDataTooltipInfo] = "+10% HP + 10 energy on enemy kill (player only)", },
    
 
              { [kTechDataId] = kTechId.Focus, 

@@ -790,6 +790,7 @@ function AlienTeam:InitTechTree()
     self.techTree:AddBuildNode(kTechId.Hive,                    kTechId.None,           kTechId.None)
     self.techTree:AddPassive(kTechId.HiveHeal)
     self.techTree:AddBuildNode(kTechId.CragHive,                kTechId.Hive,                kTechId.None)
+    self.techTree:AddPassive(kTechId.CragHiveTwo, kTechId.CragHive)
     self.techTree:AddBuildNode(kTechId.ShadeHive,               kTechId.Hive,                kTechId.None)
     self.techTree:AddBuildNode(kTechId.ShiftHive,               kTechId.Hive,                kTechId.None)
     
@@ -880,9 +881,9 @@ function AlienTeam:InitTechTree()
     self.techTree:AddBuyNode(kTechId.Regeneration, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
     self.techTree:AddBuyNode(kTechId.Rebirth, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
     self.techTree:AddBuyNode(kTechId.Focus, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.ThickenedSkin, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
   //  self.techTree:AddBuyNode(kTechId.Illusionist, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
-  //  self.techTree:AddBuyNode(kTechId.Hunger, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
-  //  self.techTree:AddBuyNode(kTechId.ThickenedSkin, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Hunger, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
     self.techTree:AddBuyNode(kTechId.Redemption, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
     self.techTree:AddBuyNode(kTechId.Aura, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
     self.techTree:AddBuyNode(kTechId.Phantom, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
@@ -1071,12 +1072,12 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
     end
     
     // These is a list of all tech to check when a upgrade chamber is destroyed.
-    local checkForLostResearch = { [kTechId.RegenerationShell] = { "CragHive", kTechId.Regeneration },
-                                   [kTechId.CarapaceShell] = { "CragHive", kTechId.Carapace },
-                                   [kTechId.CeleritySpur] = { "ShiftHive", kTechId.Celerity },
-                                   [kTechId.AdrenalineSpur] = { "ShiftHive", kTechId.Adrenaline },
-                                   [kTechId.SilenceVeil] = { "ShadeHive", kTechId.Silence },
-                                   [kTechId.CamouflageVeil] = { "ShadeHive", kTechId.Camouflage } }
+    local checkForLostResearch = { [kTechId.CragHive] = { "CragHive", kTechId.Regeneration },
+                                   [kTechId.CragHive] = { "CragHive", kTechId.Carapace },
+                                   [kTechId.ShiftHive] = { "ShiftHive", kTechId.Celerity },
+                                   [kTechId.ShiftHive] = { "ShiftHive", kTechId.Adrenaline },
+                                   [kTechId.ShadeHive] = { "ShadeHive", kTechId.Silence },
+                                   [kTechId.ShadeHive] = { "ShadeHive", kTechId.Camouflage } }
     
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
@@ -1106,7 +1107,9 @@ function AlienTeam:OnResearchComplete(structure, researchId)
 
     PlayingTeam.OnResearchComplete(self, structure, researchId)
     
-    local checkForGainedResearch = { [kTechId.CragHive] = kTechId.Regeneration,
+    local checkForGainedResearch = { [kTechId.CragHiveTwo] = kTechId.ThickenedSkin,
+                                     [kTechId.CragHiveTwo] = kTechId.Hunger,
+                                     [kTechId.CragHive] = kTechId.Regeneration,
                                      [kTechId.CragHive] = kTechId.Carapace,
                                      [kTechId.ShiftHive] = kTechId.Celerity,
                                      [kTechId.ShiftHive] = kTechId.Adrenaline,

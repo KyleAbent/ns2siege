@@ -264,7 +264,9 @@ end
 function Fade:GetViewModelName()
     return self:GetVariantViewModel(self:GetVariant())
 end
-
+function Fade:GetMovePhysicsMask()
+    return PhysicsMask.AlienNonOnos
+end
 function Fade:GetCanStep()
     return not self:GetIsBlinking()
 end

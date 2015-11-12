@@ -229,7 +229,9 @@ end
 function Gorge:GetExtentsCrouchShrinkAmount()
     return 0
 end
-
+function Gorge:GetMovePhysicsMask()
+    return PhysicsMask.AlienNonOnos
+end
 function Gorge:GetViewModelName()
     return self:GetVariantViewModel(self:GetVariant())
 end

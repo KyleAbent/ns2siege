@@ -171,7 +171,6 @@ AddMixinNetworkVars(CrouchMoveMixin, networkVars)
 AddMixinNetworkVars(LadderMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
-AddMixinNetworkVars(StunMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(GlowMixin, networkVars)
 AddMixinNetworkVars(SprintMixin, networkVars)
@@ -267,8 +266,9 @@ function Marine:GetCanJump()
 end
 function Marine:ToggleTaunt(duration)
 self.istaunting = true
+self.isMoveBlocked = true
 self:SetCameraDistance(3)
-self:AddTimedCallback(function()  self.istaunting = false self:SetCameraDistance(0) end, duration)
+self:AddTimedCallback(function()  self.istaunting = false self.isMoveBlocked = false self:SetCameraDistance(0) end, duration)
 
 end
 function Marine:OnInitialized()
@@ -845,7 +845,7 @@ function Marine:OnStun()
              if Server then
                 local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
                 bonewall.modelsize = 0.25 * self.modelsize
-                bonewall:AdjustMaxHealth(60)
+                bonewall:AdjustMaxHealth(160)
                 StartSoundEffectForPlayer(AlienCommander.kBoneWallSpawnSound, self)
         end
 end
@@ -927,7 +927,7 @@ function Marine:OnUpdateAnimationInput(modelMixin)
     end
     
     if self:GetIsTaunting() then
-       modelMixin:SetAnimationInput("taunting", true)
+    //   modelMixin:SetAnimationInput("taunting", true)
     end
     
     local activeWeapon = self:GetActiveWeapon()
@@ -1101,16 +1101,6 @@ function Marine:GetIsInterrupted()
     return self.interruptAim
 end
 
-/*
-function Marine:OnPostUpdateCamera(deltaTime)
-
-    if self:GetIsStunned() then
-        self:SetDesiredCameraYOffset(-1.3)
-    end
-    
-end
-*/
-
 function Marine:GetHasCatpackBoost()
     return self.catpackboost
 end
@@ -1120,7 +1110,7 @@ end
 // dont allow marines to me chain stomped. this gives them breathing time and the onos needs to time the stomps instead of spamming
 // and being able to permanently disable the marine
 function Marine:GetIsStunAllowed()
-    return not self.timeLastStun or self.timeLastStun + kDisruptMarineTimeout < Shared.GetTime() and not self:GetIsVortexed() and not self.spawnprotection and GetAreFrontDoorsOpen()
+    return self:GetLastStunTime() + 1.5 < Shared.GetTime() and not self:GetIsVortexed() and not self.spawnprotection and (GetAreFrontDoorsOpen() or Shared.GetCheatsEnabled())
 end
 
 

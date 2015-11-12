@@ -263,7 +263,9 @@ function Lerk:OverrideGetMoveYaw()
     end
     
 end
-
+function Lerk:GetMovePhysicsMask()
+    return PhysicsMask.AlienNonOnos
+end
 function Lerk:GetAngleSmoothingMode()
 
     if self:GetIsWallGripping() then
@@ -677,6 +679,7 @@ function Lerk:OnUse(player, elapsedTime, useSuccessTable)
      player:SetOrigin(self:GetOrigin())
      end
 end
+/*
 function Lerk:OnKill()
 
    if self.occupied then
@@ -689,4 +692,5 @@ function Lerk:OnKill()
    end
 
 end
+*/
 Shared.LinkClassToMap("Lerk", Lerk.kMapName, networkVars, true)

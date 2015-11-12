@@ -496,7 +496,15 @@ function LiveMixin:Kill(attacker, doer, point, direction)
         if Server then
             GetGamerules():OnEntityKilled(self, attacker, doer, point, direction)
         end
-        
+      if self:GetTeamNumber() == 1 and self:isa("Player") then 
+        if attacker:isa("Alien") and GetHasHungerUpgrade(attacker) then
+        //  attacker.primaled = true
+       //   attacker:TriggerEnzyme(4)
+          attacker:AddEnergy(10)
+       //   attacker.timeUmbraExpires = Shared.GetTime() + 4
+          attacker:AddHealth(attacker:GetHealth() * (10/100))
+        end
+     end 
         if self.OnKill then
             self:OnKill(attacker, doer, point, direction)
         end

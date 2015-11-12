@@ -20,7 +20,7 @@ Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-
+Script.Load("lua/StunMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/NanoShieldMixin.lua")
@@ -57,12 +57,15 @@ RoboticsFactory.kRolloutLength = 3
 
 local kOpenSound = PrecacheAsset("sound/NS2.fev/marine/structures/roboticsfactory_open")
 local kCloseSound = PrecacheAsset("sound/NS2.fev/marine/structures/roboticsfactory_close")
+PrecacheAsset("cinematics/vfx_materials/hallucination.surface_shader")
+local kHallucinationMaterial = PrecacheAsset( "cinematics/vfx_materials/hallucination.material")
 
 local networkVars =
 {
     open = "boolean",
     automaticspawningmac = "boolean",
-    automaticspawningarc = "boolean"
+    automaticspawningarc = "boolean",
+    stunned = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -115,6 +118,7 @@ function RoboticsFactory:OnCreate()
     InitMixin(self, VortexAbleMixin)
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
+    InitMixin(self, StunMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)
@@ -127,6 +131,7 @@ function RoboticsFactory:OnCreate()
     self.open = false
    self.automaticspawningmac = false
    self.automaticspawningarc = false
+   self.stunned = false
 end
 
 function RoboticsFactory:OnInitialized()
@@ -173,7 +178,50 @@ end
 function RoboticsFactory:GetNanoShieldOffset()
     return Vector(0, -0.8, 0)
 end
+if Server then
+function RoboticsFactory:OnStun()   
+                local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
+               // bonewall.modelsize = 0.5
+                bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
+                bonewall.targetid = self:GetId()
+                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
+                self.stunned = true
+                self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
+end
+end//server
+if Client then
 
+    function RoboticsFactory:OnUpdateRender()
+          local showMaterial = GetAreEnemies(self, Client.GetLocalPlayer()) and self.stunned
+    
+        local model = self:GetRenderModel()
+        if model then
+
+            model:SetMaterialParameter("glowIntensity", 0)
+
+            if showMaterial then
+                
+                if not self.hallucinationMaterial then
+                    self.hallucinationMaterial = AddMaterial(model, kHallucinationMaterial)
+                end
+                
+                self:SetOpacity(0, "hallucination")
+            
+            else
+            
+                if self.hallucinationMaterial then
+                    RemoveMaterial(model, self.hallucinationMaterial)
+                    self.hallucinationMaterial = nil
+                end//
+                
+                self:SetOpacity(1, "hallucination")
+            
+            end //showma
+            
+        end//omodel
+   end //up render
+    
+end//client
 function RoboticsFactory:GetTechAllowed(techId, techNode, player)
 
     local allowed, canAfford = ScriptActor.GetTechAllowed(self, techId, techNode, player)
@@ -196,7 +244,9 @@ function RoboticsFactory:GetTechAllowed(techId, techNode, player)
     return allowed, canAfford
     
 end
-
+function RoboticsFactory:GetIsStunAllowed()
+    return not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
+end
 function RoboticsFactory:GetTechButtons(techId)
 
     local techButtons = {  kTechId.None, kTechId.MAC, kTechId.MacWeldMacs, kTechId.None, 
@@ -373,7 +423,7 @@ if Server then
   function RoboticsFactory:OnUpdate()
    if self.timeOfLastHealCheck == nil or Shared.GetTime() > self.timeOfLastHealCheck + 10 then
    if self.automaticspawningmac then
-        if self:GetTeam():GetTeamResources() >= kMACCost and ( kMaxSupply - GetSupplyUsedByTeam(1) >= LookupTechData(kTechId.MAC, kTechDataSupply, 0)) and self.deployed and GetIsUnitActive(self) and self:GetResearchProgress() == 0 and not self.open and self:GetMacsAmount() <= 12 then
+        if self:GetTeam():GetTeamResources() >= kMACCost and ( kMaxSupply - GetSupplyUsedByTeam(1) >= LookupTechData(kTechId.MAC, kTechDataSupply, 0)) and self.deployed and GetIsUnitActive(self) and self:GetResearchProgress() == 0 and not self.open and self:GetMacsAmount() <= 8 then
         
             self:OverrideCreateManufactureEntity(kTechId.MAC)
             //self.spawnedFreeMAC = true

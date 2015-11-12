@@ -134,7 +134,7 @@ kTechId = createTechIdEnum({
 
     // Alien structures 
       
-    'Hive', 'HiveHeal', 'CragHive', 'ShadeHive', 'ControlledHallucination', 'ShiftHive','Harvester', 'PresBonus', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel', 'EvolutionChamber',
+    'Hive', 'HiveHeal', 'CragHive', 'CragHiveTwo', 'ShadeHive', 'ControlledHallucination', 'ShiftHive','Harvester', 'PresBonus', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel', 'EvolutionChamber',
     'GorgeEgg', 'LerkEgg', 'FadeEgg', 'OnosEgg',
     
     // Infestation upgrades
@@ -186,7 +186,7 @@ kTechId = createTechIdEnum({
     'WhipRoot', 'WhipUnroot',
     
     // Alien abilities and upgrades
-    'Carapace', 'Regeneration', 'Redemption', 'Rebirth', 'Focus', 'Aura', 'Silence', 'Feint', 'Camouflage', 'Phantom', 'Celerity', 'Adrenaline', 'HyperMutation',  
+    'Carapace', 'Regeneration', 'ThickenedSkin', 'Hunger', 'Redemption', 'Rebirth', 'Focus', 'Aura', 'Silence', 'Feint', 'Camouflage', 'Phantom', 'Celerity', 'Adrenaline', 'HyperMutation',  
     
     // Alien alerts
     'AlienAlertNeedHarvester', 'AlienAlertNeedMist', 'AlienAlertNeedDrifter', 'AlienAlertNeedHealing', 'AlienAlertStructureUnderAttack', 'AlienAlertHiveUnderAttack', 'AlienAlertHiveDying', 'AlienAlertHarvesterUnderAttack',

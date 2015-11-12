@@ -20,7 +20,7 @@ Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-
+Script.Load("lua/StunMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/NanoShieldMixin.lua")
@@ -173,7 +173,7 @@ function PhaseGate:OnCreate()
     InitMixin(self, VortexAbleMixin)
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
-    
+    InitMixin(self, StunMixin) 
     if Client then
         InitMixin(self, CommanderGlowMixin)
     end
@@ -228,7 +228,15 @@ end
 function PhaseGate:GetIsWallWalkingAllowed()
     return false
 end 
-
+function PhaseGate:GetIsStunAllowed()
+    return GetAreFrontDoorsOpen()
+end
+function PhaseGate:OnStun()
+    
+                local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
+                bonewall.modelsize = 0.5
+                bonewall:AdjustMaxHealth(bonewall:GetMaxHealth() / 2)
+end
 function PhaseGate:GetTechButtons(techId)
 
     return { kTechId.PGchannelOne, kTechId.PGchannelTwo, kTechId.PGchannelThree, kTechId.None, 
@@ -330,7 +338,9 @@ local function ComputeDestinationLocationId(self, destGate)
     return destLocationId
     
 end
-
+function PhaseGate:OnTouch(recipient)
+   self:Phsae(recipient)
+end
 function PhaseGate:Phase(user)
 
     if HasMixin(user, "PhaseGateUser") and self.linked then
