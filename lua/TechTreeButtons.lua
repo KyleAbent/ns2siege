@@ -330,6 +330,7 @@ kTechIdToMaterialOffset[kTechId.DropJetpack] = 89
 kTechIdToMaterialOffset[kTechId.PhaseTech] = 90
 kTechIdToMaterialOffset[kTechId.AmmoPack] = 91
 kTechIdToMaterialOffset[kTechId.MedPack] = 92
+kTechIdToMaterialOffset[kTechId.Resupply] = 92
 kTechIdToMaterialOffset[kTechId.CatPackTech] = 164
 kTechIdToMaterialOffset[kTechId.CatPack] = 164
 kTechIdToMaterialOffset[kTechId.PowerPoint] = 93

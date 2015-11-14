@@ -36,7 +36,7 @@ local networkVars =
 {
     spawnPoint = "vector",
     modelsize = "float (0 to 10 by .1)",
-    targetid = "entityid", 
+   // targetid = "entityid", 
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -115,10 +115,10 @@ if Client then
     
 end//client
 function BoneWall:OnKill(attacker, doer, point, direction)
-   local entity = Shared.GetEntity( self.targetid ) 
-   if entity  then
-  if entity:isa("Armory") or entity:isa("RoboticsFactory") then self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) entity.stunned = false end 
-  end
+//   local entity = Shared.GetEntity( self.targetid ) 
+//   if entity  then
+//  if entity:isa("Armory") or entity:isa("RoboticsFactory") then self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) entity.stunned = false end 
+//  end
     self:TriggerEffects("death")
     if Server then
     if not self:GetIsDestroyed() then
@@ -184,7 +184,7 @@ function BoneWall:OnInitialized()
     end
 
    self:AddTimedCallback(TimeUp, self:GetLifeSpan())  
-   self.targetid = Entity.invalidI
+ //  self.targetid = Entity.invalidI
 end
 
 

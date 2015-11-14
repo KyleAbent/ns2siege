@@ -180,10 +180,10 @@ function RoboticsFactory:GetNanoShieldOffset()
 end
 if Server then
 function RoboticsFactory:OnStun()   
-                local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
+              //  local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
                // bonewall.modelsize = 0.5
-                bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
-                bonewall.targetid = self:GetId()
+            //    bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
+            //    bonewall.targetid = self:GetId()
                 self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
                 self.stunned = true
                 self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
@@ -245,7 +245,7 @@ function RoboticsFactory:GetTechAllowed(techId, techNode, player)
     
 end
 function RoboticsFactory:GetIsStunAllowed()
-    return not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
+    return  self:GetLastStunTime() + 4 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
 function RoboticsFactory:GetTechButtons(techId)
 

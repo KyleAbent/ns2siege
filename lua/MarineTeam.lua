@@ -498,6 +498,7 @@ function MarineTeam:InitTechTree()
         self.techTree:AddTargetedBuyNode(kTechId.ExoNanoArmor,            kTechId.Armor1,         kTechId.None)
             self.techTree:AddTargetedBuyNode(kTechId.JumpPack,            kTechId.JetpackTech,         kTechId.None)
                 self.techTree:AddTargetedBuyNode(kTechId.FireBullets,            kTechId.None,         kTechId.None)
+           self.techTree:AddTargetedBuyNode(kTechId.Resupply,            kTechId.None,         kTechId.None)
                 
     self.techTree:AddResearchNode(kTechId.AdvancedWeaponry,      kTechId.None,      kTechId.None)    
     

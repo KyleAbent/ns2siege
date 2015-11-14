@@ -21,6 +21,8 @@ Location.kMapName = "location"
 local networkVars =
 {
     showOnMinimap = "boolean",
+    lasttime = "time",
+    notapplied = "boolean",
 }
 
 Shared.PrecacheString("")
@@ -40,8 +42,9 @@ function Location:OnInitialized()
     self:SetTriggerCollisionEnabled(true)
     
     self:SetPropagate(Entity.Propagate_Always)
-    self.mainbattlecheck = 0
     self:AddTimedCallback(Location.OnUpdate, 30)
+    self.lasttime = 0
+    self.notapplied = true
 end
 
 function Location:Reset()
@@ -130,24 +133,29 @@ end
        
 
     
-
-  if table.count(entities) >= (  table.count(eligable) * .51 ) then   //To be eligable - contain 51% or more of the current 
+         self.notapplied = Shared.GetTime() > self.lasttime  + 25 //to make sure only one room is applied?
+  if table.count(entities) >= (  table.count(eligable) * .51 ) and self.notapplied then   //To be eligable - contain 51% or more of the current 
     //Print("check 3 complete")
   
            //look for those who are in battle
-    
+
        for _, entity in pairs(entities) do
          if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
+           Shared.ConsoleCommand("sh_zedtime")
+           if entity:GetLocationName() then
            Print("room is %s", entity:GetLocationName())
+           end
            entity:InsideMainRoom()
-          // if entity:isa("PowerPoint") then entity:SetMainRoom() end
+           if entity:isa("PowerPoint") then entity:SetMainRoom() end
            //CreateEntity(EtherealGate.kMapName, entity:GetOrigin(), 2)
        end
        
     //   Print("check 4 complete")
   end//
        
+
        
+        self.lasttime = Shared.GetTime()
         return true // to continue loop check
     
     end

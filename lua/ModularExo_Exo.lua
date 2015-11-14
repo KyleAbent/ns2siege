@@ -97,7 +97,7 @@ function Exo:GetArmorAmount(armorLevels)
     
     end
 
-	return ( 340 + armorLevels * 40 + self.armorBonus ) * self.modelsize
+	return ( 340 + armorLevels * 40 + self.armorBonus )
 
 end
 

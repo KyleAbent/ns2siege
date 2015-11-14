@@ -1,3 +1,4 @@
+kEtherealGateCoolDown = 20
 kOnosEggCost = 150
 
 kMACEMpCoolDown = 10
@@ -7,7 +8,7 @@ kPercentofAssistKillPointsForPrimalLerk = .5
 
 kShellBuildTime = 4
 
-kExosuitDropCost = 30
+kExosuitDropCost = 50
 
 kSiegeObsAutoScanCooldown = 8 //Obs turns into siege mode while in siege room during siege and scans every this many seconds
 
@@ -96,6 +97,7 @@ kMoveUpVector = 10
 kMoveZVector = 0
 kMoveXVector = 0
 ///
+kResupplyCost = 10
 kFuncMoveableSpeed = 0.25
 kSiegeDoorSpeed = 0.25
 kFireBulletsCost = 5
@@ -107,7 +109,7 @@ kFuncDoorWeldRate = 1
 kAddAmountofFuncDoorBroken = .1
 kShouldArcsFireAtCysts = false
 //kAlienTeamPresBonusMult = 1
-kCreditMultiplier = 1 // for double credit weekend change 1 to 2 :P
+kCreditMultiplier = 2 // for double credit weekend change 1 to 2 :P
 kSideDoorTime = 300 
 kMarineRespawnProtection = 5.06
 kFrontDoorTime = 360 //6 min
@@ -280,9 +282,9 @@ kOnifleDamageBonusMax = 1.20
 kWhipFlameThrowerCost = 15
 kWhipFlameThrowerTime = 45
 
-kLerkHealth = 163
-kLerkArmor = 60
-kLerkArmorFullyUpgradedAmount = 78
+//kLerkHealth = 163
+//kLerkArmor = 60
+//kLerkArmorFullyUpgradedAmount = 78
 
 kWhipCost = 10
 kShiftCost = 10

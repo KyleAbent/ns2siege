@@ -453,10 +453,20 @@ function PowerPoint:GetTechAllowed(techId, techNode, player)
     return true, true
 end
 function PowerPoint:SetMainRoom()
-if not self:GetIsBuilt() then return end
-self:SetLightMode(kLightMode.NoPower)
-self:AddTimedCallback(function() if self:GetIsBuilt() then self:SetLightMode(kLightMode.Normal) end end, 25)
+self:AddTimedCallback(function() self:Flicker() end, 5)
+self:AddTimedCallback(function() self:Flicker() end, 10)
+self:AddTimedCallback(function() self:Flicker() end, 15)
+self:AddTimedCallback(function() self:Flicker() end, 20)
+self:AddTimedCallback(function() self:Flicker() end, 25)
 end
+function PowerPoint:Flicker()
+          if self:GetLightMode() ~= kLightMode.Normal then 
+         self:SetLightMode(kLightMode.Normal)
+         elseif self:GetLightMode() ~= kLightMode.NoPower then
+          self:SetLightMode(kLightMode.NoPower)
+         end
+         return false
+ end
 function PowerPoint:OnUse(player, elapsedTime, useSuccessTable)
 
     local success = false

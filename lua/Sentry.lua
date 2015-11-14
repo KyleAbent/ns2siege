@@ -310,7 +310,9 @@ function Sentry:GetLaserAttachCoords()
 
     return coords   
 end
-
+function Sentry:GetIsStunAllowed()
+    return self:GetLastStunTime() + 4 < Shared.GetTime() and not self:GetIsVortexed() and (GetAreFrontDoorsOpen() or Shared.GetCheatsEnabled())
+end
 function Sentry:OverrideLaserLength()
     return Sentry.kRange
 end
@@ -468,12 +470,12 @@ if Server then
     function Sentry:OnStun()
         self:Confuse(2)
         
-                 if Server then
-                local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
-                bonewall.modelsize = 0.15
-                bonewall:AdjustMaxHealth(60)
-                StartSoundEffectForPlayer(AlienCommander.kBoneWallSpawnSound, self)
-                 end
+               //  if Server then
+              // local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
+              //  bonewall.modelsize = 0.15
+              //  bonewall:AdjustMaxHealth(60)
+              //  StartSoundEffectForPlayer(AlienCommander.kBoneWallSpawnSound, self)
+              //   end
     end
     
     function Sentry:GetDamagedAlertId()

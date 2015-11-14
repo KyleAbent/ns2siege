@@ -159,7 +159,10 @@ local networkVars =
    hasjumppack = "boolean",
        lastjump  = "time",
    hasfirebullets = "boolean",
-   istaunting = "boolean",
+   hasreupply = "boolean",
+   lastsupply = "time",
+   suppliesleft = "float (0 to 5 by 1)",
+   
     
 }
 
@@ -251,7 +254,9 @@ function Marine:OnCreate()
    self.hasjumppack = false
    self.lastjump = 0
    self.hasfirebullets = false
-   self.istaunting = false
+   self.hasreupply = false
+   self.lastsupply = 0
+   self.suppliesleft = 5
 end
 
 local function UpdateNanoArmor(self)
@@ -264,13 +269,14 @@ end
 function Marine:GetCanJump()
     return not self:GetIsWebbed() and ( self:GetIsOnGround() or self:GetIsOnLadder() )
 end
+/*
 function Marine:ToggleTaunt(duration)
 self.istaunting = true
 self.isMoveBlocked = true
 self:SetCameraDistance(3)
 self:AddTimedCallback(function()  self.istaunting = false self.isMoveBlocked = false self:SetCameraDistance(0) end, duration)
-
 end
+*/
 function Marine:OnInitialized()
 
     // work around to prevent the spin effect at the infantry portal spawned from
@@ -1013,8 +1019,27 @@ function Marine:OnProcessMove(input)
         end
      end
      
+     
     if Server then
     
+         if self.hasreupply then
+      if Shared.GetTime() >  self.lastsupply + 10 then
+           if self.suppliesleft >= 1 then
+            if self:GetHealth() <= 90 then 
+             self:TriggerDropPack(self:GetOrigin(), kTechId.MedPack)
+             end
+             
+             if self:GetWeaponInHUDSlot(1) and self:GetWeaponInHUDSlot(1):GetAmmoFraction() < 1
+             or self:GetWeaponInHUDSlot(2) and self:GetWeaponInHUDSlot(2):isa("Pistol") and self:GetWeaponInHUDSlot(2):GetAmmoFraction() < 1                                 then
+             self:TriggerDropPack(self:GetOrigin(), kTechId.AmmoPack) 
+             end
+             
+       self.suppliesleft = self.suppliesleft - 1
+       self.lastsupply = Shared.GetTime()
+         end
+     end
+     end
+     
         self.ruptured = Shared.GetTime() - self.timeRuptured < Rupture.kDuration
         self.interruptAim  = Shared.GetTime() - self.interruptStartTime < Gore.kAimInterruptDuration
         

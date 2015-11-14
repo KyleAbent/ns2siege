@@ -26,6 +26,7 @@ function Plugin:Initialise()
 self.Enabled = true
 self.countofstructuresdestroyedwithinXtimespan = 0
 self.minimumtimebetweenzeds = 0
+self.lasttime = 0
 self:CreateCommands()
 
 return true
@@ -33,7 +34,11 @@ end
  function Plugin:NotifyGeneric( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[ZedTime]",  255, 0, 0, String, Format, ... )
 end
+/*
  function Plugin:OnEntityKilled( Gamerules, Victim, Attacker, Inflictor, Point, Dir ) 
+ 
+ /*
+ 
      if Shared.GetTime() > self.minimumtimebetweenzeds + self.Config.minimumtimeinsecondsbetweenzeds and Victim:GetTeamNumber() ~= self.Config.ignorethisteamnumberwhencheckingzedtime and not Victim:isa("Mine") then
           local gameRules = GetGamerules()
          if ( gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() ) or gameRules:GetIsSuddenDeath() and not Shared.GetCheatsEnabled() then return end
@@ -50,9 +55,32 @@ end
                    self.minimumtimebetweenzeds = Shared.GetTime()
                    end
      end
+     
+     
+     if Victim and Victim:isa("Player") then
+      self:NotifyKillStats(Victim, "Attacker: %s, Health:%s, Armor:%s", SafeClassName(Victim), self:SafeHealth(Victim), self:SafeArmor(Victim), true)
+     end
+end
+*/
+function Plugin:SafeHealth(entity)
+    if entity ~= nil and entity.GetHealth then
+        return entity:GetHealth()
+    end
+    return "nil"
+end
+function Plugin:SafeArmor(entity)
+    if entity ~= nil and entity.GetArmor then
+        return entity:GetArmor()
+    end
+    return "nil"
+end
+function Plugin:NotifyKillStats( Player, String, Format, ... )
+Shine:NotifyDualColour( Player, 255, 165, 0,  "[KillStats]",  255, 0, 0, String, Format, ... )
 end
 function Plugin:TriggerZedTime(min, max)
    // if Shine.GetHumanPlayerCount() < self.Config.minimumplayerstoactivatezedtime then return end
+     if Shared.GetTime() > self.Config.minimumtimeinsecondsbetweenzeds + self.lasttime  then
+     self.lasttime = Shared.GetTime()
      local duration = math.random(min,max)
      GetGamerules():SendZedTimeActivationMessage()
      Shared.ConsoleCommand(string.format("speed %s", self.Config.zedtimeslowdownspeed)) 
@@ -62,6 +90,7 @@ function Plugin:TriggerZedTime(min, max)
      Shared.ConsoleCommand("speed 1" ) 
      GetGamerules():SendZedTimeDeActivationMessage()
       end )
+    end
 end
 
 

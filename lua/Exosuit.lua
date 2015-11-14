@@ -82,8 +82,8 @@ function Exosuit:OnCreate ()
     end
 
     
-    self.leftArmModuleType  = kExoModuleTypes.Welder
-    self.rightArmModuleType = kExoModuleTypes.Welder
+    self.leftArmModuleType  = kExoModuleTypes.Minigun
+    self.rightArmModuleType = kExoModuleTypes.Minigun
     self.utilityModuleType = kExoModuleTypes.Nano
     self.powerModuleType = kExoModuleTypes.None
     

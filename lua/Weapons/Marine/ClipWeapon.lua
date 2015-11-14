@@ -616,9 +616,9 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
             interrupted = true
         end
         
-        if player.GetIsTaunting and player:GetIsTaunting() then
-           taunting = true
-        end
+       // if player.GetIsTaunting and player:GetIsTaunting() then
+       //    taunting = true
+      //  end
         
         if player:GetIsIdle() then
             local totalTime = math.round(Shared.GetTime() - idleTime)
@@ -640,7 +640,7 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
     end                   
     
     local activity = "none"
-    if not taunting then
+ //   if not taunting then
         if self:GetIsReloading() then
             activity = "reload"     
         elseif self.primaryAttacking then
@@ -648,7 +648,7 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
         elseif self.secondaryAttacking then
             activity = "secondary"
         end
-     end  
+   //  end  
     
     modelMixin:SetAnimationInput("activity", activity)
     modelMixin:SetAnimationInput("flinch_gore", interrupted and not self:GetIsReloading())

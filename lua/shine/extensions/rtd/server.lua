@@ -42,12 +42,12 @@ AddPoolCommand:AddParam{ Type = "number" }
 local function RollTheDice( Client )
 //Do something regarding pre-game?
 local Player = Client:GetControllingPlayer()
-  /*
-         if Player:isa("Egg") or Player:isa("Embryo") then
-         Shine:NotifyError( Player, "You cannot gamble while an egg/embryo (Yet)" )
+  
+         if Player then
+         Shine:NotifyError( Player, "Disabled" )
          return
          end
-     */    
+        
        //  if Player:isa("ReadyRoomPlayer") or (Player:GetTeamNumber() ~= 1 and Player:GetTeamNumber() ~= 2) then
        //  Shine:NotifyError( Player, "You must be an alien or marine to gamble (In this version, atleast)" )
        //  return

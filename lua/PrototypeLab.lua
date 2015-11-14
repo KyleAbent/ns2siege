@@ -348,30 +348,20 @@ end
 end // server
 function PrototypeLab:GetItemList(forPlayer)
 
-    if forPlayer:isa("Exo") then
     
-    local exobuttons = {}
-       // if forPlayer:GetHasDualGuns() then
-       //     return exobuttons
-        //elseif forPlayer:GetHasRailgun() then
-         if forPlayer:GetHasRailgun() then 
-          exobuttons[1] = kTechId.UpgradeToDualRailgun
-          exobuttons[2] = kTechId.ExoNanoArmor   
-        elseif forPlayer:GetHasMinigun() then
-          exobuttons[1] = kTechId.UpgradeToDualMinigun
-          exobuttons[2] = kTechId.ExoNanoArmor  
-        end    
-        
-        if forPlayer.nano then
-          exobuttons[2] = kTechId.None  
-        end
-            return exobuttons
-    end    
-       local otherbuttons =  { kTechId.Jetpack, kTechId.Exosuit, kTechId.DualMinigunExosuit, kTechId.ClawRailgunExosuit, kTechId.DualRailgunExosuit, kTechId.JumpPack }
+    if forPlayer:isa("Exo") then
+        return { kTechId.Exosuit }
+    end
+    
+       local otherbuttons =  { kTechId.Jetpack, kTechId.Exosuit, kTechId.JumpPack, kTechId.Resupply}
           
-          if forPlayer.hasjumppack or forPlayer:isa("JetpackMarine")  then
+          if forPlayer.hasjumppack or forPlayer:isa("JetpackMarine")  or forPlayer:isa("Exo")  then
               otherbuttons[1] = kTechId.None
-              otherbuttons[6] = kTechId.None
+              otherbuttons[3] = kTechId.None
+           end
+           
+           if forPlayer.hasreupply then
+            otherbuttons[4] = kTechId.None
            end
             
          return otherbuttons

@@ -602,10 +602,16 @@ function BuildTechData()
       [kTechDataTooltipInfo] = "Mimics the NS1/HL1 JumpPack (With Attempted Balance Modifications WIP) - Press DUCK + Jump @ the same time to mindfuck the alien team."},
 
              { [kTechDataId] = kTechId.FireBullets,
-        [kTechDataCostKey] = kJumpPackCost,
+        [kTechDataCostKey] = kFireBulletsCost,
         [kTechDataDisplayName] = "Fire Bullets", 
         [kTechDataHotkey] = Move.Z, 
       [kTechDataTooltipInfo] = "Experiment: 10% Damage Bonus to Structures. .01 Energy Drain per bullet on Players. Sets Structures & Players On Fire"},
+
+             { [kTechDataId] = kTechId.Resupply,
+        [kTechDataCostKey] = kResupplyCost,
+        [kTechDataDisplayName] = "Resupply", 
+        [kTechDataHotkey] = Move.Z, 
+      [kTechDataTooltipInfo] = "Checks every 10 seconds to see if you need a medpack/ammopack, and gives you either one or both. Spawns only five times then you need to rebuy it."},
 
 
         // hand grenades
@@ -712,7 +718,7 @@ function BuildTechData()
        [kTechDataRequiresInfestation] = true, 
       [kTechDataDisplayName] = "Etheral Gate", 
         [kTechDataCostKey] = 8, 
-     [kTechDataCooldown] = 16, 
+     [kTechDataCooldown] = kEtherealGateCoolDown, 
       [kTechDataTooltipInfo] =  "Kind of puts marines and structures in another dimension - making them useless - but also unable be damaged"},
       
             { [kTechDataId] = kTechId.ControlledHallucination,  

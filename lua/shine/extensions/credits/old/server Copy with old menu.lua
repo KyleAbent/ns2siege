@@ -43,7 +43,77 @@ self.PlayerSpentAmount = {}
 return true
 end
 
+local function GetPathingRequirementsMet(position, extents)
 
+    local noBuild = Pathing.GetIsFlagSet(position, extents, Pathing.PolyFlag_NoBuild)
+    local walk = Pathing.GetIsFlagSet(position, extents, Pathing.PolyFlag_Walk)
+    return not noBuild and walk
+    
+end
+function Plugin:HasSentry(Player)
+    for _, sentry in ipairs(GetEntitiesForTeam("Sentry", 1)) do
+        if sentry:GetOwner() == Player and sentry.iscreditstructure == true then return true end
+    end
+    return false
+end
+
+function Plugin:HasExtractor(Player)
+    for _, extractor in ipairs(GetEntitiesForTeam("Extractor", 1)) do
+        if extractor.ParentId == Player:GetId() and extractor.iscreditstructure == true then return true end
+    end
+    return false
+end
+
+
+function Plugin:HasHarvester(Player)
+    for _, harvester in ipairs(GetEntitiesForTeam("Harvester", 2)) do
+        if harvester.ParentId == Player:GetId() then return true end
+    end
+    return false
+end
+
+function Plugin:HasArc(Player)
+local arcs = 0
+    for _, ARC in ipairs(GetEntitiesForTeam("ARC", 1)) do
+        if ARC:GetOwner() == Player and ARC.iscreditstructure == true then arcs = arcs + 1 end
+    end
+   if arcs >=1 then return true end
+    return false
+end
+
+function Plugin:HasResPoint(Player)
+     for _, respoint in ientitylist(Shared.GetEntitiesWithClassname("ResourcePoint")) do 
+        if respoint.ParentId == Player:GetId() then return true end
+    end
+    return false
+end
+
+function Plugin:HasThreeHydras(Player)
+local hydrascount = 0
+local hydras = {}
+    for _, hydra in ipairs(GetEntitiesForTeam("Hydra", 2)) do
+        if hydra:GetOwner() == Player and hydra.iscreditstructure == true then hydrascount = hydrascount + 1 end
+        table.insert(hydras, hydra)
+    end
+    
+    
+    if hydrascount ~= 3 then return false end
+
+            if #hydras > 0 then
+            local hydra = table.random(hydras)
+                DestroyEntity(hydra)
+            end
+ 
+    return true
+end
+function Plugin:HasThreeMacs(Player)
+local macs = 0
+    for _, mac in ipairs(GetEntitiesForTeam("MAC", 1)) do
+        if mac:GetOwner() == Player and mac.iscreditstructure == true then macs = macs + 1 end
+    end
+    if macs >=3 then return true end
+    return false
+end
 function Plugin:BecauseFuckSpammingCommanders(player)
 if not GetGamerules():GetGameStarted() then return end
 local CreditCost = 1
@@ -64,6 +134,13 @@ player:GiveItem(NutrientMist.kMapName)
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
 return
 end
+local function GetIsAlienInSiege(Player)
+   if  Player.GetLocationName and 
+   string.find(Player:GetLocationName(), "siege") or string.find(Player:GetLocationName(), "Siege") then
+   return true
+    end
+    return false
+ end
  
 function Plugin:LoadBadges()
      local function UsersResponse( Response )
@@ -311,13 +388,13 @@ end
    end
    */
 
-if self:GetPlayerCreditsInfo() <= 250 then
+/*
 self:NotifyCredits( Client, "Hi! Welcome To Siege! Around here, we run a custom Plugin titled Credits. ", true )
 self:NotifyCredits( Client, "What Are Credits? Credits are points that allow you to purchase in game items, in return for playing Siege!", true )
 self:NotifyCredits( Client, "It's simple, really. 10 in game score = 1 credit. You earn score by killing enemies, building structures, basically playing the game", true )
 self:NotifyCredits( Client, "At the end of each round, there's a credit bonus based on how well your team performed.. and sometimes there's double credit weekends.", true )
-self:NotifyCredits( Client, "To spend credits, press M and click Credits, This message will go away once you have 250+ credits. Thanks & Enjoy Siege :D", true )
-end
+self:NotifyCredits( Client, "To spend credits, press M and click Cerdits, or bind a key to sh_buy <item> - This message will go away once you start spending! Thanks & Enjoy Siege :D", true )
+*/
 
   if GetGamerules():GetGameStarted() then
 
@@ -449,12 +526,12 @@ if Player:isa("Commander") or not Player:GetIsAlive() then
 return
 end
 
-
-if Player and String ~= "NutrientMist" or String ~= "GlowGreen" or String ~= "Mac" or String ~= "Hydra" or String ~= "Glow" then
- self:NotifyCredits( Client, "Not all options are available right now.", true)
+/*
+if Player then
+ self:NotifyCredits( Client, "Purchases currently disabled. ", true)
  return
 end
-
+*/
 local CreditCost = 1
 local AddTime = 0
 

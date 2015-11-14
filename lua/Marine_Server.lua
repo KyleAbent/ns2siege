@@ -63,7 +63,33 @@ end
 function Marine:GetDamagedAlertId()
     return kTechId.MarineAlertSoldierUnderAttack
 end
+local function GetDroppackSoundName(techId)
 
+    if techId == kTechId.MedPack then
+        return MedPack.kHealthSound
+    elseif techId == kTechId.AmmoPack then
+        return AmmoPack.kPickupSound
+   // elseif techId == kTechId.CatPack then
+   //     return CatPack.kPickupSound
+    end 
+   
+end
+function Marine:TriggerDropPack(position, techId)
+
+    local mapName = LookupTechData(techId, kTechDataMapName)
+    local success = false
+    if mapName then
+    
+        local droppack = CreateEntity(mapName, position, self:GetTeamNumber())
+        StartSoundEffectForPlayer(GetDroppackSoundName(techId), self)
+       // self:ProcessSuccessAction(techId)
+        success = true
+        
+    end
+
+    return success
+
+end
 function Marine:SetPoisoned(attacker)
 
     self.poisoned = true
@@ -314,6 +340,9 @@ function Marine:AttemptToBuy(techIds)
               elseif techId == kTechId.FireBullets then
               //  self:AddResources(-GetCostForTech(techId))
                 self.hasfirebullets = true
+                return true
+              elseif techId == kTechId.Resupply then
+                self.hasreupply = true
                 return true
                end
                 

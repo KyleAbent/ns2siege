@@ -787,7 +787,7 @@ function MAC:GetFrontDoorsOpen()
         if Server then
             local gameRules = GetGamerules()
             if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
                    return true
                end
             end

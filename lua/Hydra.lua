@@ -251,8 +251,8 @@ function Hydra:AddXP(amount)
         self.level = self.level + xpReward
    
       
-    self:AdjustMaxHealth(kHydraHealth * (self.level/100) + kHydraHealth) 
-    self:AdjustMaxArmor(kHydraArmor * (self.level/100) + kHydraArmor)
+   // self:AdjustMaxHealth(kHydraHealth * (self.level/100) + kHydraHealth) 
+   // self:AdjustMaxArmor(kHydraArmor * (self.level/100) + kHydraArmor)
     
     return xpReward
     

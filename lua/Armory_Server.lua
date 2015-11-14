@@ -62,12 +62,13 @@ function Armory:GetTimeToResupplyPlayer(player)
     
 end
 function Armory:OnStun()
-    
+      /*
                 local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
                 bonewall.modelsize = 0.5
                 bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
                 bonewall.targetid = self:GetId()
-                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
+       */
+            //    self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
                 self.stunned = true
                 self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
 end

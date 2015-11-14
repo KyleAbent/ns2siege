@@ -210,14 +210,16 @@ function Lerk:ModifyGravityForce(gravityTable)
     end
 
 end
+
 function Lerk:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
-	local scale = self.modelsize *  .80
+	local scale = self.modelsize //*  .80
         coords.xAxis = coords.xAxis * scale
         coords.yAxis = coords.yAxis * scale
         coords.zAxis = coords.zAxis * scale
     return coords
 end
+
 function Lerk:GetAngleSmoothRate()
     return 6
 end

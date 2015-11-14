@@ -29,6 +29,7 @@ function MarineBuy_GetWeaponDescription(techId)
         gWeaponDescription[kTechId.PulseGrenade] = "WEAPON_DESC_PULSE_GRENADE"
         gWeaponDescription[kTechId.Jetpack] = "WEAPON_DESC_JETPACK"
         gWeaponDescription[kTechId.JumpPack] = "Mimics the NS1/HL1 JumpPack (With Attempted Balance Modifications WIP) - Press DUCK + Jump @ the same time to mindfuck the alien team."
+        gWeaponDescription[kTechId.Resupply] = "Checks if you need a medpack and/or ammopack every 10 seconds. Spawns 1 of each or both for up to 5 times. After the 5th time, you must rebuy."
         gWeaponDescription[kTechId.Exosuit] = "WEAPON_DESC_EXO"
         gWeaponDescription[kTechId.DualMinigunExosuit] = "WEAPON_DESC_DUALMINIGUN_EXO"
         gWeaponDescription[kTechId.UpgradeToDualMinigun] = "WEAPON_DESC_DUALMINIGUN_EXO"
