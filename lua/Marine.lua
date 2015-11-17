@@ -461,7 +461,7 @@ function Marine:FindNearbyAutoPickupWeapon()
 		local closestWeapon = nil
 		local closestDistance = Math.infinity
 		
-		local pickupPriority = { [kTechId.Flamethrower] = 1, [kTechId.GrenadeLauncher] = 2, [kTechId.Shotgun] = 3 }
+		local pickupPriority = { [kTechId.HeavyMachineGun] = 1, [kTechId.Shotgun] = 2, [kTechId.Flamethrower] = 3, [kTechId.GrenadeLauncher] = 4,  }
 		
 		
 		local currentWeapon = self:GetWeaponInHUDSlot(1)

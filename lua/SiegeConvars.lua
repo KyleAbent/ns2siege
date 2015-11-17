@@ -1,7 +1,14 @@
 kEtherealGateCoolDown = 20
 kOnosEggCost = 150
 
+//kNumShadessPerGorge = 3
+//kNumShiftsPerGorge 3
+
+kMaxAlienStructureRange = 25 
+kMaxAlienStructuresofType = 8
+
 kMACEMpCoolDown = 10
+kEMPCost = 10
 
 kPercentofPrimalBuildPointsAssistToGiveLerk = .5
 kPercentofAssistKillPointsForPrimalLerk = .5
@@ -9,6 +16,17 @@ kPercentofAssistKillPointsForPrimalLerk = .5
 kShellBuildTime = 4
 
 kExosuitDropCost = 50
+
+//compmod remix
+kHeavyMachineGunDamage = 10	
+kHeavyMachineGunDamageType = kDamageType.Puncture	
+kHeavyMachineGunClipSize = 125	
+kHeavyMachineGunWeight = 0.55		 
+kHeavyMachineGunCost = 20			
+kHeavyMachineGunDropCost = 25		
+kHeavyMachineGunPointValue = 7		
+kHeavyMachineGunSpread = Math.Radians(3.8)
+////
 
 kSiegeObsAutoScanCooldown = 8 //Obs turns into siege mode while in siege room during siege and scans every this many seconds
 
@@ -97,7 +115,7 @@ kMoveUpVector = 10
 kMoveZVector = 0
 kMoveXVector = 0
 ///
-kResupplyCost = 10
+kResupplyCost = 7
 kFuncMoveableSpeed = 0.25
 kSiegeDoorSpeed = 0.25
 kFireBulletsCost = 5
@@ -109,7 +127,7 @@ kFuncDoorWeldRate = 1
 kAddAmountofFuncDoorBroken = .1
 kShouldArcsFireAtCysts = false
 //kAlienTeamPresBonusMult = 1
-kCreditMultiplier = 2 // for double credit weekend change 1 to 2 :P
+kCreditMultiplier = 1 // for double credit weekend change 1 to 2 :P
 kSideDoorTime = 300 
 kMarineRespawnProtection = 5.06
 kFrontDoorTime = 360 //6 min
@@ -242,8 +260,8 @@ kBioMassThreeTime = 30
 
 
 kOnosHealtPerBioMass = 18
-kWhipSupply = 10
-kCragSupply = 8
+kWhipSupply = 7
+kCragSupply = 7
 
 kPhasePriotityCooldown = 0
 kPhasePriotityCost = 0

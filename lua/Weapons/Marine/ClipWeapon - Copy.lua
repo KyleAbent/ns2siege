@@ -521,7 +521,7 @@ function ClipWeapon:OnDraw(player, previousWeaponMapName)
 end
 
 function ClipWeapon:OnHolster(player)
-
+    if player:isa("Exo") then return end
     Weapon.OnHolster(self, player)
     
     CancelReload(self)
@@ -605,19 +605,20 @@ end
 function ClipWeapon:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ClipWeapon:OnUpdateAnimationInput")
-    
-  //  local stunned = false
+
+   // local taunting = false
     local interrupted = false
     local player = self:GetParent()
     if player then
     
-    ///    if HasMixin(player, "Stun") and player:GetIsStunned() then
-    //        stunned = true
-   //     end
-        
+
         if player.GetIsInterrupted and player:GetIsInterrupted() then
             interrupted = true
         end
+        
+       // if player.GetIsTaunting and player:GetIsTaunting() then
+       //    taunting = true
+      //  end
         
         if player:GetIsIdle() then
             local totalTime = math.round(Shared.GetTime() - idleTime)
@@ -639,8 +640,7 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
     end                   
     
     local activity = "none"
-  //  if not stunned then
-    
+ //   if not taunting then
         if self:GetIsReloading() then
             activity = "reload"     
         elseif self.primaryAttacking then
@@ -648,8 +648,7 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
         elseif self.secondaryAttacking then
             activity = "secondary"
         end
-        
-  //  end
+   //  end  
     
     modelMixin:SetAnimationInput("activity", activity)
     modelMixin:SetAnimationInput("flinch_gore", interrupted and not self:GetIsReloading())

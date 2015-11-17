@@ -23,7 +23,7 @@ Script.Load("lua/Marine.lua")
  */
 class 'ReadyRoomPlayer' (Player)
 
-ReadyRoomPlayer.kModelName = PrecacheAsset("seasonal/holiday2012/models/snowman01.model")
+ReadyRoomPlayer.kModelName = PrecacheAsset("models/marine/Dropship/dropship.model")
 ReadyRoomPlayer.kMapName = "ready_room_player"
 
 local networkVars = 
@@ -71,9 +71,9 @@ end
 function ReadyRoomPlayer:OnAdjustModelCoords(modelCoords)
 
     local coords = modelCoords
-    coords.xAxis = coords.xAxis * 1
-    coords.yAxis = coords.yAxis * 1
-    coords.zAxis = coords.zAxis * 1
+    coords.xAxis = coords.xAxis * 0.3
+    coords.yAxis = coords.yAxis * 0.3
+    coords.zAxis = coords.zAxis * 0.3
     
     modelCoords.origin = modelCoords.origin + modelCoords.yAxis * .30
       

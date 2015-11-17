@@ -142,10 +142,10 @@ end
        for _, entity in pairs(entities) do
          if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
            Shared.ConsoleCommand("sh_zedtime")
-           if entity:GetLocationName() then
-           Print("room is %s", entity:GetLocationName())
-           end
-           entity:InsideMainRoom()
+        //   if entity:GetLocationName() then
+        //   Print("room is %s", entity:GetLocationName())
+        //   end
+          if HasMixin(entity, "Combat") then entity:InsideMainRoom() end
            if entity:isa("PowerPoint") then entity:SetMainRoom() end
            //CreateEntity(EtherealGate.kMapName, entity:GetOrigin(), 2)
        end

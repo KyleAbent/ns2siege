@@ -479,6 +479,7 @@ function Armory:GetItemList(forPlayer)
     
         itemList = {   
             kTechId.LayMines,
+            kTechId.HeavyMachineGun,
             kTechId.Shotgun,
             kTechId.Welder,
             kTechId.ClusterGrenade,
@@ -488,7 +489,7 @@ function Armory:GetItemList(forPlayer)
             kTechId.Flamethrower,
         }
  
-      if not forPlayer.hasfirebullets then itemList[9] = kTechId.FireBullets end    
+      if not forPlayer.hasfirebullets then itemList[10] = kTechId.FireBullets end    
     return itemList
     
 end

@@ -42,12 +42,12 @@ AddPoolCommand:AddParam{ Type = "number" }
 local function RollTheDice( Client )
 //Do something regarding pre-game?
 local Player = Client:GetControllingPlayer()
-  
-         if Player then
-         Shine:NotifyError( Player, "Disabled" )
+  /*
+         if Player:isa("Egg") or Player:isa("Embryo") then
+         Shine:NotifyError( Player, "You cannot gamble while an egg/embryo (Yet)" )
          return
          end
-        
+     */    
        //  if Player:isa("ReadyRoomPlayer") or (Player:GetTeamNumber() ~= 1 and Player:GetTeamNumber() ~= 2) then
        //  Shine:NotifyError( Player, "You must be an alien or marine to gamble (In this version, atleast)" )
        //  return
@@ -493,17 +493,17 @@ function Plugin:RollMarineJetpackMarineRandomWeapon(Player)
           end
 end
 function Plugin:MarineJetpackMarineStun(Player)
-     local kStunDuration = 3
+     local kStunDuration = math.random(1,10)
      if Player:isa("Marine") then
            if not Player:GetIsOnGround() then self:RollMarineCombat(Player) return end
-           self:NotifyMarineCombat( Player, "stunned", true, kStunDuration)
+           self:NotifyMarineCombat( Player, "stunned for %s seconds", true, kStunDuration)
      elseif Player:isa("JetpackMarine") then
            if not Player:GetIsOnGround() then self:RollJetpackCombat(Player) return end
-           self:NotifyJetpackMarineCombat( Player, "stunned", true, kStunDuration)
+           self:NotifyJetpackMarineCombat( Player, "stunned for %s seconds", true, kStunDuration)
      end
-      Player:SetStun()
+     Player:SetStun(kStunDuration)
      self.Users[ Player:GetClient() ] = Shared.GetTime() + 30
-     Shine.ScreenText.Add( 50, {X = 0.20, Y = 0.80,Text = "Stunned",Duration = kStunDuration,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 1,FadeIn = 0,}, Player ) 
+     Shine.ScreenText.Add( 50, {X = 0.20, Y = 0.80,Text = "Stunned for %s",Duration = kStunDuration,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 1,FadeIn = 0,}, Player ) 
 end
 function Plugin:MarineJetpackMarineExoCombatCatpack(Player)
             local kCatPackDuration = math.random(8,60)

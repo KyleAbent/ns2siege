@@ -49,6 +49,7 @@ Script.Load("lua/ModularExo_Exosuit.lua")
 Script.Load("lua/ModularExo_Marine.lua")
 Script.Load("lua/ModularExo_PrototypeLab.lua")
 
+Script.Load("lua/weapons/HeavyMachineGun.lua")
 
 if Client then
 	Script.Load("lua/ExtraEntitiesMod/eem_Player_Client.lua")

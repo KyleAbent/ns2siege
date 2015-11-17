@@ -486,7 +486,10 @@ function MarineTeam:InitTechTree()
     // Weapon-specific
     
     self.techTree:AddUpgradeNode(kTechId.ArmoryHealth,           kTechId.None,              kTechId.None)
-           
+   
+
+    self.techTree:AddTargetedBuyNode(kTechId.HeavyMachineGun,            kTechId.AdvancedArmoryUpgrade,         kTechId.None)
+        
     self.techTree:AddResearchNode(kTechId.ShotgunTech,           kTechId.Armory,              kTechId.None)
     self.techTree:AddTargetedBuyNode(kTechId.Shotgun,            kTechId.ShotgunTech,         kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.DropShotgun,     kTechId.ShotgunTech,         kTechId.None)

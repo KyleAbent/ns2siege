@@ -668,6 +668,7 @@ local kBlockDoers =
     "Minigun",
     "Pistol",
     "Rifle",
+    "HeavyMachineGun",
     "HeavyRifle",
     "Shotgun",
     "Axe",

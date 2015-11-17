@@ -321,6 +321,9 @@ if Server then
                 soundToPlay = AlienCommander.kRupterSound    
             elseif techId == kTechId.Contamination then
                 soundToPlay = AlienCommander.kContaminationSound    
+            elseif techId == kTechId.CommTunnelEntrance then
+                soundToPlay = AlienCommander.kContaminationSound    
+
             end
 
             if soundToPlay then                
@@ -419,7 +422,7 @@ end
 local gAlienMenuButtons =
 {
     [kTechId.BuildMenu] = { kTechId.Cyst, kTechId.Harvester, kTechId.DrifterEgg, kTechId.Hive,
-                            kTechId.ThreatMarker, kTechId.NeedHealingMarker, kTechId.ExpandingMarker, kTechId.None },
+                            kTechId.ThreatMarker, kTechId.NeedHealingMarker, kTechId.ExpandingMarker, kTechId.CommTunnelEntrance },
                             
     [kTechId.AdvancedMenu] = { kTechId.Crag, kTechId.Shade, kTechId.Shift, kTechId.Whip,
                                kTechId.Shell, kTechId.ControlledHallucination, kTechId.EtheralGate, kTechId.None },

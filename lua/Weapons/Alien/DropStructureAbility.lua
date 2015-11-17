@@ -13,6 +13,11 @@ Script.Load("lua/Weapons/Alien/GorgeTunnelAbility.lua")
 Script.Load("lua/Weapons/Alien/WebsAbility.lua")
 Script.Load("lua/Weapons/Alien/BabblerEggAbility.lua")
 
+Script.Load("lua/Weapons/Alien/WhipAbility.lua")
+Script.Load("lua/Weapons/Alien/CragAbility.lua")
+Script.Load("lua/Weapons/Alien/ShiftAbility.lua")
+Script.Load("lua/Weapons/Alien/ShadeAbility.lua")
+
 class 'DropStructureAbility' (Ability)
 
 local kMaxStructuresPerType = 20
@@ -23,7 +28,7 @@ DropStructureAbility.kMapName = "drop_structure_ability"
 local kCreateFailSound = PrecacheAsset("sound/NS2.fev/alien/gorge/create_fail")
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 
-DropStructureAbility.kSupportedStructures = { HydraStructureAbility, ClogAbility, BabblerEggAbility, GorgeTunnelAbility, WebsAbility }
+DropStructureAbility.kSupportedStructures = { HydraStructureAbility, ClogAbility, BabblerEggAbility, GorgeTunnelAbility, WebsAbility, WhipStructureAbility, CragStructureAbility, ShiftStructureAbility, ShadeStructureAbility }
 
 local networkVars =
 {
@@ -429,14 +434,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     if GetPointBlocksAttachEntities(displayOrigin) then
         validPosition = false
     end
-      local frontdoor = GetEntitiesWithinRange("FrontDoor", player:GetOrigin(), kGorgeNoBuildNearDoorsRadius)
-   if #frontdoor >=1 then validPosition = false end
-  /*
-   if  player.GetLocationName and 
-   string.find(player:GetLocationName(), "siege") or string.find(player:GetLocationName(), "Siege") then
-   validPosition = false 
-    end
-*/   
+    
     if not structureAbility:GetIsPositionValid(displayOrigin, player, trace.normal, lastClickedPosition, trace.entity) then
         validPosition = false
     end    

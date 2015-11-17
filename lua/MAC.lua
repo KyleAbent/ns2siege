@@ -1168,6 +1168,9 @@ end
     end
         return success, true
 end
+function MAC:OnKill(attacker, doer, point, direction)
+self:TriggerEMP()
+end
 function MAC:OnOverrideDoorInteraction(inEntity)
     // MACs will not open the door if they are currently
     // welding it shut

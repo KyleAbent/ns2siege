@@ -50,11 +50,11 @@ end
 
 function CatalystMixin:GetCatalystScalar()
 
-    if self.isCatalysted then
+ //   if self.isCatalysted then
         return 1
-    end
+  //  end
     
-    return 0
+   // return 0
     
 end
 

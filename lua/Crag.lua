@@ -493,10 +493,21 @@ function Crag:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("moving", self.moving)
     
 end
-
-function Crag:GetCanBeUsed(player, useSuccessTable)
-    useSuccessTable.useSuccess = false    
+/*
+function Crag:GetCanBeUsedConstructed(byPlayer)
+return byPlayer:isa("Gorge")
 end
+function Crag:OnUse(player, elapsedTime, useSuccessTable)
 
+        player:SetHUDSlotActive(2)
+        local dropStructureAbility = player:GetWeapon(DropStructureAbility.kMapName)
+        if dropStructureAbility then
+            dropStructureAbility:SetActiveStructure(7)
+        end
 
+              
+        if Server then DestroyEntity(self) end
+    
+end
+*/
 Shared.LinkClassToMap("Crag", Crag.kMapName, networkVars)

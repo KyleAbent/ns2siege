@@ -970,6 +970,25 @@ function Whip:OnTag(tagName)
     end
     
  end
+ 
+ 
+ function Whip:GetCanBeUsedConstructed(byPlayere)
+return true //byPlayere:isa("Gorge")
+end
+function Whip:OnUse(player, elapsedTime, useSuccessTable)
+
+      player:SetHUDSlotActive(2)
+      
+              local weapon = player:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") then
+        weapon:SetActiveStructure(6)
+        end
+end
+/*
+function Whip:OnConstructionComplete()
+if self:GetOwner() ~= nil and self:GetOwner():isa("Gorge") then  self:GiveOrder(kTechId.Follow, self:GetOwner():GetId(), self:GetOwner():GetOrigin(), nil, false, false)  end
+end
+*/
 // --- End attack animation
 end //end of whip_server.lua
 
