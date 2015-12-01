@@ -12,7 +12,7 @@ Script.Load("lua/Mixins/GroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/Weapons/Marine/ExoWeaponHolder.lua")
 Script.Load("lua/MapBlipMixin.lua")
-Script.Load("lua/VortexAbleMixin.lua")
+//Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
@@ -142,7 +142,7 @@ Exo.kYExtents = 1.2
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
 AddMixinNetworkVars(GroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
-AddMixinNetworkVars(VortexAbleMixin, networkVars)
+//AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -164,7 +164,7 @@ local function SmashNearbyEggs(self)
 
     assert(Server)
     
-    if not GetIsVortexed(self) then
+    //if not GetIsVortexed(self) then
     
         local nearbyEggs = GetEntitiesWithinRange("Egg", self:GetOrigin(), kSmashEggRange)
         for e = 1, #nearbyEggs do
@@ -176,7 +176,7 @@ local function SmashNearbyEggs(self)
             nearbyEmbryos[e]:Kill(self, self, self:GetOrigin(), Vector(0, -1, 0))
         end
         
-    end
+    //end
     
     // Keep on killing those nasty eggs forever.
     return true
@@ -189,7 +189,7 @@ function Exo:OnCreate()
     
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
     InitMixin(self, GroundMoveMixin)
-    InitMixin(self, VortexAbleMixin)
+    //InitMixin(self, VortexAbleMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kExoFov })
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
@@ -311,7 +311,7 @@ function Exo:GetCanDoorInteract(inEntity)
 return false
 end
 function Exo:GetIsStunAllowed()
-    return self:GetLastStunTime() + 4 < Shared.GetTime() and GetAreFrontDoorsOpen() and not self:GetIsVortexed()
+    return self:GetLastStunTime() + 4 < Shared.GetTime() and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
 function Exo:OnInitialized()
 
@@ -652,7 +652,7 @@ function Exo:GetReceivesVaporousDamage()
 end
 
 function Exo:GetCanBeWeldedOverride()
-    return not self:GetIsVortexed() and self:GetArmor() < self:GetMaxArmor(), false
+    return self:GetArmor() < self:GetMaxArmor(), false
 end
 
 function Exo:GetWeldPercentageOverride()

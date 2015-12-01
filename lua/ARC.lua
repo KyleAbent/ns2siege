@@ -585,6 +585,7 @@ function ARC:OnUpdate(deltaTime)
     
     if Server then
     
+    
       /*
             if self.CheckModelCoords == nil or (Shared.GetTime() > self.CheckModelCoords + 90) then
             self:UpdateModelCoords()

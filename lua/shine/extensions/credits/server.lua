@@ -8,7 +8,7 @@ local HTTPRequest = Shared.SendHTTPRequest
 Shine.CreditData = {}
 Shine.LinkFile = {}
 Shine.BadgeFile = {}
-Plugin.Version = "1.0"
+Plugin.Version = "10.28"
 
 local CreditsPath = "config://shine/plugins/credits.json"
 local URLPath = "config://shine/CreditsLink.json"
@@ -18,7 +18,8 @@ local BadgesPath = "config://shine/UserConfig.json"
 Shine.Hook.SetupClassHook( "ScoringMixin", "AddScore", "OnScore", "PassivePost" )
 Shine.Hook.SetupClassHook( "NS2Gamerules", "ResetGame", "OnReset", "PassivePost" )
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyMist", "BecauseFuckSpammingCommanders", "Replace" )
-
+Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyMed", "BuyMed", "Replace" )
+Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyAmmo", "BuyAmmo", "Replace" )
 
 
 
@@ -39,14 +40,34 @@ self.MarineTotalSpent = 0
 self.AlienTotalSpent = 0
 self.Refunded = false
 
-self.MarineCommander = {}
-self.AlienCommander = {}
 self.PlayerSpentAmount = {}
 
 return true
 end
 
 
+function Plugin:BuyMed(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+
+        if player:GetResources() < 2 then
+        self:NotifyBuy( Client, "Medpack costs 2 resources, you have %s resources. Purchase invalid.", true, player:GetResources())
+        else
+        self:SimpleTimer(2, function () if not player then return else player:GiveItem(MedPack.kMapName) player:SetResources(player:GetResources() - 2) end end)
+        end
+end
+function Plugin:BuyAmmo(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+
+        if player:GetResources() < 2 then
+        self:NotifyBuy( Client, "AmmoPack costs 2 resources, you have %s resources. Purchase invalid.", true, player:GetResources()) 
+        else
+       self:SimpleTimer(2, function () if not player then return else player:GiveItem(AmmoPack.kMapName) player:SetResources(player:GetResources() - 2) end end)
+        end
+end
 local function GetPathingRequirementsMet(position, extents)
 
     local noBuild = Pathing.GetIsFlagSet(position, extents, Pathing.PolyFlag_NoBuild)
@@ -60,7 +81,14 @@ function Plugin:HasSentry(Player)
     end
     return false
 end
-
+function Plugin:HasObs(Player)
+local obs = 0
+    for _, observ in ipairs(GetEntitiesForTeam("Observatory", 1)) do
+        if observ:GetOwner() == Player and observ.iscreditstructure == true then obs = obs + 1 end
+    end
+   if obs == 3 then return true end
+    return false
+end
 function Plugin:HasExtractor(Player)
     for _, extractor in ipairs(GetEntitiesForTeam("Extractor", 1)) do
         if extractor.ParentId == Player:GetId() and extractor.iscreditstructure == true then return true end
@@ -68,6 +96,12 @@ function Plugin:HasExtractor(Player)
     return false
 end
 
+function Plugin:HasIP(Player)
+    for _, IP in ipairs(GetEntitiesForTeam("InfantryPortal", 1)) do
+        if IP.ParentId == Player:GetId() and IP.iscreditstructure == true then return true end
+    end
+    return false
+end
 
 function Plugin:HasHarvester(Player)
     for _, harvester in ipairs(GetEntitiesForTeam("Harvester", 2)) do
@@ -93,12 +127,22 @@ function Plugin:HasResPoint(Player)
 end
 
 function Plugin:HasThreeHydras(Player)
-local hydras = 0
+local hydrascount = 0
+local hydras = {}
     for _, hydra in ipairs(GetEntitiesForTeam("Hydra", 2)) do
-        if hydra:GetOwner() == Player and hydra.iscreditstructure == true then hydras = hydras + 1 end
+        if hydra:GetOwner() == Player and hydra.iscreditstructure == true then hydrascount = hydrascount + 1 end
+        table.insert(hydras, hydra)
     end
-    if hydras >=3 then return true end
-    return false
+    
+    
+    if hydrascount ~= 3 then return false end
+
+            if #hydras > 0 then
+            local hydra = table.random(hydras)
+                DestroyEntity(hydra)
+            end
+ 
+    return true
 end
 function Plugin:HasThreeMacs(Player)
 local macs = 0
@@ -173,19 +217,10 @@ end
 function Plugin:NotifySiege( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[Siege]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
 end
-function Plugin:CommLoginPlayer(Building, Player)
-
-if Player:GetTeamNumber() == 1 then
-self.MarineCommander = {}
-self.MarineCommander[Player:GetClient()] = true
-else
-self.AlienCommander = {}
-self.AlienCommander[Player:GetClient()] = true
-end
 
 
 
-end
+
 function Plugin:OnReset()
   if self.GameStarted and not self.Refunded then
        self:NotifyCredits( nil, "Did you spend any credits only for the round to reset? If so, then no worries! - You have just been refunded!", true )
@@ -284,10 +319,8 @@ function Plugin:CalculateEndofRoundCredits()
        self.alienbonus = Clamp( self.aliencredits / GetGamerules():GetTeam(kTeam2Index):GetNumPlayers(), 5*kCreditMultiplier, 100*kCreditMultiplier )
        local mtotal = math.round(self.marinebonus, 2)
        local atotal = math.round(self.alienbonus, 2)
-       local mtotal2 = math.round(self.marinebonus * 1.5, 2)
-       local atotal2 = math.round(self.alienbonus * 1.5, 2)
-       self:NotifyCredits( nil, "Marines: + %s credits - Commander: 50 percent Bonus (+ %s credits)", true, mtotal, mtotal2 )
-       self:NotifyCredits( nil, "Aliens: + %s credits - Commander: 50 percent Bonus (+ %s credits)", true, atotal, atotal2)
+       self:NotifyCredits( nil, "Marines: + %s credits", true, mtotal, mtotal2 )
+       self:NotifyCredits( nil, "Aliens: + %s credits", true, atotal, atotal2)
        self.marinecredits = self.marinecredits + self.marinebonus
        self.aliencredits = self.aliencredits + self.alienbonus
        
@@ -302,10 +335,10 @@ function Plugin:DistributeEndofRoundCredits()
       local player = Players[ i ]
       if player then
           if player:GetTeamNumber() == 1 then
-             self.CreditUsers[ player:GetClient() ] = self:GetPlayerCreditsInfo(player:GetClient()) + ConditionalValue(self.MarineCommander[player:GetClient()] == true, self.marinecredits * 1.5, self.marinecredits)
+             self.CreditUsers[ player:GetClient() ] = self:GetPlayerCreditsInfo(player:GetClient()) + self.marinebonus
              Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(player:GetClient()) ), player:GetClient()) 
           elseif player:GetTeamNumber() == 2 then
-             self.CreditUsers[ player:GetClient() ] = self:GetPlayerCreditsInfo(player:GetClient()) + ConditionalValue(self.AlienCommander[player:GetClient()] == true, self.aliencredits * 1.5, self.aliencredits)
+             self.CreditUsers[ player:GetClient() ] = self:GetPlayerCreditsInfo(player:GetClient()) + self.alienbonus
              Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(player:GetClient()) ), player:GetClient()) 
         end
         self:SimpleTimer(4, function ()
@@ -321,11 +354,15 @@ function Plugin:DistributeEndofRoundCredits()
             end)
             end)
             
-             if not Shared.GetTime() > kMaxServerAgeBeforeMapChange then
+            /*
+              local Time = Shared.GetTime()
+             if not Time > kMaxServerAgeBeforeMapChange then
                         self:SimpleTimer( 25, function() 
                  self:LoadBadges()
             end)
             end
+            */
+            
           /*  
       self:SimpleTimer( 25, function() 
        local LinkFiley = Shine.LoadJSONFile( URLPath )
@@ -458,19 +495,19 @@ function Plugin:SetGameState( Gamerules, State, OldState )
                   if Player then
                   self:SaveCredits(Player:GetClient())
                      if Player:GetTeamNumber() == 1 or Player:GetTeamNumber() == 2 then
-                    Shine.ScreenText.Add( 80, {X = 0.40, Y = 0.15,Text = "(Your)Total Credits Earned:".. math.round((Player:GetScore() / 10 + ConditionalValue(Player:GetTeamNumber() == 1, self.marinecredits, self.aliencredits)), 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
-                    Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.20,Text = "(Your)Total Credits Spent:".. self.PlayerSpentAmount[Player:GetClient()], Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
+                    Shine.ScreenText.Add( 80, {X = 0.40, Y = 0.15,Text = "Total Credits Earned:".. math.round((Player:GetScore() / 10 + ConditionalValue(Player:GetTeamNumber() == 1, self.marinebonus, self.alienbonus)), 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
+                    Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.20,Text = "Total Credits Spent:".. self.PlayerSpentAmount[Player:GetClient()], Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
                      end
                   end
              end
       end)
       self:SimpleTimer(3, function ()    
-      Shine.ScreenText.Add( 82, {X = 0.40, Y = 0.10,Text = "End of round Stats:",Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
+    //  Shine.ScreenText.Add( 82, {X = 0.40, Y = 0.10,Text = "End of round Stats:",Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
     // Shine.ScreenText.Add( 83, {X = 0.40, Y = 0.25,Text = "(Server Wide)Total Credits Earned:".. math.round((self.marinecredits + self.aliencredits), 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
-      Shine.ScreenText.Add( 84, {X = 0.40, Y = 0.25,Text = "(Marine)Total Credits Earned:".. math.round(self.marinecredits, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
-      Shine.ScreenText.Add( 85, {X = 0.40, Y = 0.30,Text = "(Alien)Total Credits Earned:".. math.round(self.aliencredits, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
-      Shine.ScreenText.Add( 86, {X = 0.40, Y = 0.35,Text = "(Marine)Total Credits Spent:".. math.round(self.MarineTotalSpent, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
-      Shine.ScreenText.Add( 87, {X = 0.40, Y = 0.40,Text = "(Alien)Total Credits Spent:".. math.round(self.AlienTotalSpent, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
+    //  Shine.ScreenText.Add( 84, {X = 0.40, Y = 0.25,Text = "(Marine)Total Credits Earned:".. math.round(self.marinecredits, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
+    //  Shine.ScreenText.Add( 85, {X = 0.40, Y = 0.30,Text = "(Alien)Total Credits Earned:".. math.round(self.aliencredits, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
+    //  Shine.ScreenText.Add( 86, {X = 0.40, Y = 0.35,Text = "(Marine)Total Credits Spent:".. math.round(self.MarineTotalSpent, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
+    //  Shine.ScreenText.Add( 87, {X = 0.40, Y = 0.40,Text = "(Alien)Total Credits Spent:".. math.round(self.AlienTotalSpent, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
       end)
    end
      
@@ -478,6 +515,9 @@ end
 
 function Plugin:NotifyGeneric( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[Admin Abuse]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
+end
+function Plugin:NotifyLerkLift( Player, String, Format, ... )
+Shine:NotifyDualColour( Player, 255, 165, 0,  "[Lerk Lift]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
 end
 function Plugin:NotifyMarine( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 250, 235, 215,  "[Credits]",  40, 248, 255, String, Format, ... )
@@ -488,7 +528,9 @@ end
 function Plugin:NotifyCredits( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[Credits]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
 end
-
+function Plugin:NotifyBuy( Player, String, Format, ... )
+Shine:NotifyDualColour( Player, 255, 165, 0,  "[NS2Siege]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
+end
 function Plugin:Cleanup()
 	self:Disable()
 	self.BaseClass.Cleanup( self )    
@@ -672,6 +714,10 @@ self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchas
 return
 end
 
+if self:HasObs(Player) then
+self:NotifyCredits(Client, "Three credit obs per player at the moment.", true)
+return
+end
 
 if not Player:GetIsOnGround() then
  self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
@@ -692,6 +738,8 @@ if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
   self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
 obs.isGhostStructure = false
 end
+obs.ignorelimit = true
+obs:SetOwner(Player)
 obs.iscreditstructure = true
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
    self.BuyUsersTimer[Client] = Shared.GetTime() + 5
@@ -837,12 +885,16 @@ return
 end
 
 if String == "InfantryPortal" then
-CreditCost = 10
+CreditCost = 20
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
 end
 
+if self:HasIP(Player) then
+self:NotifyCredits( Client, "1 Max Credit IP Active at once", true)
+return
+end
 
 if not Player:GetIsOnGround() then
  self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
@@ -865,6 +917,8 @@ ip.isGhostStructure = false
 end
 ip.iscreditstructure = true
 ip.creditstructre = true
+ip.ParentId = Player:GetId()
+ip.level = 50
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 10
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -914,7 +968,7 @@ self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchas
 return
 end
 if self:HasArc(Player) then
-self:NotifyCredits(Client, "Three credit ARC per player at the moment.", true)
+self:NotifyCredits(Client, "One credit ARC per player at the moment.", true)
 return
 end
 if not Player:GetIsOnGround() then
@@ -929,14 +983,16 @@ end
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
 local arc = CreateEntity(ARC.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-//arc:GiveOrder(kTechId.ARCDeploy, arc:GetId(), arc:GetOrigin(), nil, false, false)
+arc:GiveOrder(kTechId.ARCDeploy, arc:GetId(), arc:GetOrigin(), nil, false, false)
 
+/*
 if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
   arc:SetConstructionComplete()
  else
   self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
 arc.isGhostStructure = false
 end
+*/
 
 arc:SetIsCreditStructure()
 arc:SetOwner(Player)
@@ -1334,6 +1390,20 @@ self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
 self.MarineTotalSpent = self.MarineTotalSpent + CreditCost
 return
 end
+if String == "Taunt" then
+CreditCost = 5
+if self:GetPlayerCreditsInfo(Client) < CreditCost then
+self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
+ return
+end
+Player:ToggleTaunt(8)
+self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
+Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
+Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
+self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
+self.MarineTotalSpent = self.MarineTotalSpent + CreditCost
+return
+end
 if String == "GlowPurple" then
 CreditCost = 5
 if self:GetPlayerCreditsInfo(Client) < CreditCost then
@@ -1390,7 +1460,7 @@ Player:GetTeam():RemoveSupplyUsed(5)
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
 return
 end
-
+/*
 if String == "ResPoint" then
 CreditCost = 100
 if self.CreditUsers[ Client ] and self.CreditUsers[ Client ] < CreditCost then
@@ -1419,6 +1489,7 @@ respoint.ParentId = Player:GetId()
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
 return
 end
+*/
 /*
 if String == "TechPoint"  then
     CreditCost = 500
@@ -1803,13 +1874,12 @@ if self:GetPlayerCreditsInfo(Client) < CreditCost then
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
 end
-if self:HasThreeHydras(Player) then
-self:NotifyCredits(Client, "Three Credit Hydras Max. Destroy the others to continue", true)
-return
-end
  if GetIsAlienInSiege(Player) then
 self:NotifyCredits( Client, "Aliens Cannot Build Credit Structures In Siege.", true)
 return 
+end
+if self:HasThreeHydras(Player) then
+self:NotifyCredits(Client, "Three Credit Hydras Detected. Deleting 1 to spawn a new one.", true)
 end
 /*
 if not Player:GetIsOnGround() then

@@ -769,7 +769,7 @@ function AlienTeam:InitTechTree()
     self.techTree:AddBuildNode(kTechId.EtheralGate, kTechId.ShadeHive)
     self.techTree:AddBuildNode(kTechId.Rupture, kTechId.BioMassTwo)
     self.techTree:AddBuildNode(kTechId.BoneWall, kTechId.BioMassThree)
-    self.techTree:AddBuildNode(kTechId.CommTunnelEntrance, kTechId.BioMassFour)
+    self.techTree:AddBuildNode(kTechId.CommTunnel, kTechId.BioMassFour)
     self.techTree:AddBuildNode(kTechId.Contamination, kTechId.BioMassNine)
     self.techTree:AddAction(kTechId.SelectDrifter)
     self.techTree:AddAction(kTechId.SelectHallucinations, kTechId.ShadeHive)
@@ -851,7 +851,7 @@ function AlienTeam:InitTechTree()
     self.techTree:AddBuildNode(kTechId.Shade,                     kTechId.ShadeHive,          kTechId.None)
     
     // Alien upgrade structure
-    
+        self.techTree:AddUpgradeNode(kTechId.Digest, kTechId.None, kTechId.None)
         self.techTree:AddResearchNode(kTechId.EggBeaconChoiceTwo,     kTechId.None,                kTechId.BioMassOne)  
     self.techTree:AddResearchNode(kTechId.SmellOrder,     kTechId.None,                kTechId.BioMassFive)
     self.techTree:AddResearchNode(kTechId.EggBeaconChoiceOne,     kTechId.None,                kTechId.BioMassEleven)

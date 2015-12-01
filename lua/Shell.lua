@@ -195,7 +195,7 @@ end
 function Shell:GenerateRandomNumberofEggsNearbyDerpHead()
     self.shellSpawnPoints = { }
     local minNeighbourDistance = .5
-    local maxEggSpawns = math.random(1,4)
+    local maxEggSpawns = math.random(3,6)
     local maxAttempts = maxEggSpawns * 10
     for index = 1, maxAttempts do
     

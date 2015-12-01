@@ -161,8 +161,10 @@ function CombatMixin:InsideMainRoom()
               
     end   // Create marine order
     
+    // if entity:isa("Player") or entity:isa("PowerPoint") then - not here yet
       CreatePheromone(kTechId.ThreatMarker, self:GetOrigin(), 2)  //Make alien threat
       
+      /*
          // Make drifters useful // just enzyme for now
    for _, drifter in ipairs(GetEntitiesWithinRange("Drifter", self:GetOrigin(), 30)) do
         if self:GetIsAlive() and not self:isa("Commander") and self:GetTeamNumber() == 2 then  
@@ -170,7 +172,9 @@ function CombatMixin:InsideMainRoom()
         end
               
     end
-                                                             //flicker marine lights
+             //Disabled because crashing error relating to particle effects etc not knowing what to do with the enzyme or something?
+       */
+                                                      //flicker marine lights
        for _, powerpoint in ipairs(GetEntitiesWithinRange("PowerPoint", self:GetOrigin(), 999)) do
         if powerpoint:GetIsAlive() and self:GetLocationName() == powerpoint:GetLocationName() then
            powerpoint:SetMainRoom()

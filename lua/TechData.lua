@@ -292,7 +292,24 @@ function BuildTechData()
           [kTechDataMaxEnergy] = kCommandStationMaxEnergy, 
       [kTechDataPointValue] = kCommandStationPointValue, [kTechDataHotkey] = Move.C, [kTechDataTooltipInfo] = "COMMAND_STATION_TOOLTIP", [kTechDataObstacleRadius] = 2},       
 
-        { [kTechDataId] = kTechId.Recycle,               [kTechDataDisplayName] = "RECYCLE", [kTechDataCostKey] = 0,    [kTechIDShowEnables] = false,       [kTechDataResearchTimeKey] = kRecycleTime, [kTechDataHotkey] = Move.R, [kTechDataTooltipInfo] =  "RECYCLE_TOOLTIP"},
+        { [kTechDataId] = kTechId.Recycle,  
+       [kTechDataDisplayName] = "RECYCLE", 
+    [kTechDataCostKey] = 0,    
+   [kTechIDShowEnables] = false,   
+     [kTechDataResearchTimeKey] = kRecycleTime,
+     [kTechDataHotkey] = Move.R, 
+      [kTechDataTooltipInfo] =  "RECYCLE_TOOLTIP"},
+      
+      
+              { [kTechDataId] = kTechId.Digest,  
+       [kTechDataDisplayName] = "Digest", 
+    [kTechDataCostKey] = 0,    
+   [kTechIDShowEnables] = false,   
+     [kTechDataResearchTimeKey] = kRecycleTime,
+     [kTechDataHotkey] = Move.R, 
+      [kTechDataTooltipInfo] =  "At the moment just kills the entity - For commander control"},
+      
+      
         { [kTechDataId] = kTechId.MAC,    [kTechDataSupply] = kMACSupply,    [kTechDataHint] = "MAC_HINT",           [kTechDataMapName] = MAC.kMapName,                      [kTechDataDisplayName] = "MAC",  [kTechDataMaxHealth] = MAC.kHealth, [kTechDataMaxArmor] = MAC.kArmor, [kTechDataCostKey] = kMACCost, [kTechDataResearchTimeKey] = kMACBuildTime, [kTechDataModel] = MAC.kModelName, [kTechDataDamageType] = kMACAttackDamageType, [kTechDataInitialEnergy] = kMACInitialEnergy, [kTechDataMaxEnergy] = kMACMaxEnergy, [kTechDataMenuPriority] = 2, [kTechDataPointValue] = kMACPointValue, [kTechDataHotkey] = Move.M, [kTechDataTooltipInfo] = "MAC_TOOLTIP"},
         { [kTechDataId] = kTechId.CatPackTech, 
           [kTechDataCostKey] = kCatPackTechResearchCost,
@@ -428,7 +445,32 @@ function BuildTechData()
 [kTechDataPointValue] = kAdvancedArmoryPointValue},
 
 
-        { [kTechDataId] = kTechId.Observatory,  [kTechDataSupply] = kObservatorySupply, [kTechDataHint] = "OBSERVATORY_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",  [kTechDataRequiresPower] = true,        [kTechDataMapName] = Observatory.kMapName,    [kTechDataDisplayName] = "OBSERVATORY",  [kVisualRange] = Observatory.kDetectionRange, [kTechDataCostKey] = kObservatoryCost,       [kTechDataModel] = Observatory.kModelName,            [kTechDataBuildTime] = kObservatoryBuildTime, [kTechDataMaxHealth] = kObservatoryHealth,   [kTechDataEngagementDistance] = kObservatoryEngagementDistance, [kTechDataMaxArmor] = kObservatoryArmor,   [kTechDataInitialEnergy] = kObservatoryInitialEnergy,      [kTechDataMaxEnergy] = kObservatoryMaxEnergy, [kTechDataPointValue] = kObservatoryPointValue, [kTechDataHotkey] = Move.O, [kTechDataNotOnInfestation] = kPreventMarineStructuresOnInfestation, [kTechDataTooltipInfo] = "OBSERVATORY_TOOLTIP", [kTechDataObstacleRadius] = 0.25},
+        { [kTechDataId] = kTechId.Observatory, 
+      [kTechDataSupply] = kObservatorySupply,
+                   [kTechDataBuildRequiresMethod] = GetCheckObsyLimit, 
+        [kTechDataBuildMethodFailedMessage] = "Experiment: 3 Max Obs Per Room",  
+      [kTechDataHint] = "OBSERVATORY_HINT", 
+     [kTechDataGhostModelClass] = "MarineGhostModel", 
+       [kTechDataRequiresPower] = true,       
+      [kTechDataMapName] = Observatory.kMapName,  
+      [kTechDataDisplayName] = "OBSERVATORY", 
+     [kVisualRange] = Observatory.kDetectionRange, 
+    [kTechDataCostKey] = kObservatoryCost,    
+     [kTechDataModel] = Observatory.kModelName,    
+          [kTechDataBuildTime] = kObservatoryBuildTime, 
+  [kTechDataMaxHealth] = kObservatoryHealth,   
+   [kTechDataEngagementDistance] = kObservatoryEngagementDistance,
+    [kTechDataMaxArmor] = kObservatoryArmor, 
+    [kTechDataInitialEnergy] = kObservatoryInitialEnergy,   
+      [kTechDataMaxEnergy] = kObservatoryMaxEnergy, 
+   [kTechDataPointValue] = kObservatoryPointValue,
+    [kTechDataHotkey] = Move.O, 
+    [kTechDataNotOnInfestation] = kPreventMarineStructuresOnInfestation,
+    [kTechDataTooltipInfo] = "OBSERVATORY_TOOLTIP", 
+     [kTechDataObstacleRadius] = 0.25},
+     
+     
+     
         { [kTechDataId] = kTechId.DistressBeacon,  
           [kTechDataBuildTime] = 0.1,   
         [kTechDataDisplayName] = "DISTRESS_BEACON", 
@@ -1093,7 +1135,30 @@ function BuildTechData()
         // Upgrade structures and research
         { [kTechDataId] = kTechId.Crag, [kTechDataMaxAmount] = 3, [kTechDataAllowConsumeDrop] = true, [kTechDataBioMass] = kCragBiomass, [kTechDataSupply] = kCragSupply, [kTechDataHint] = "CRAG_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",    [kTechDataMapName] = Crag.kMapName,                         [kTechDataDisplayName] = "CRAG",  [kTechDataCostKey] = kCragCost,     [kTechDataRequiresInfestation] = true, [kTechDataHotkey] = Move.C,       [kTechDataBuildTime] = kCragBuildTime, [kTechDataModel] = Crag.kModelName,           [kTechDataMaxHealth] = kCragHealth, [kTechDataMaxArmor] = kCragArmor,   [kTechDataInitialEnergy] = kCragInitialEnergy,      [kTechDataMaxEnergy] = kCragMaxEnergy, [kTechDataPointValue] = kCragPointValue, [kVisualRange] = Crag.kHealRadius, [kTechDataTooltipInfo] = "CRAG_TOOLTIP", [kTechDataGrows] = true},
 
-        { [kTechDataId] = kTechId.Whip, [kTechDataMaxAmount] = 3, [kTechDataAllowConsumeDrop] = true, [kTechDataBioMass] = kWhipBiomass, [kTechDataSupply] = kWhipSupply, [kTechDataHint] = "WHIP_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",    [kTechDataMapName] = Whip.kMapName,                         [kTechDataDisplayName] = "WHIP",  [kTechDataCostKey] = kWhipCost,    [kTechDataRequiresInfestation] = true, [kTechDataHotkey] = Move.W,        [kTechDataBuildTime] = kWhipBuildTime, [kTechDataModel] = Whip.kModelName,           [kTechDataMaxHealth] = kWhipHealth, [kTechDataMaxArmor] = kWhipArmor,   [kTechDataDamageType] = kDamageType.Structural, [kTechDataInitialEnergy] = kWhipInitialEnergy,      [kTechDataMaxEnergy] = kWhipMaxEnergy, [kVisualRange] = Whip.kRange, [kTechDataPointValue] = kWhipPointValue, [kTechDataTooltipInfo] = "WHIP_TOOLTIP", [kTechDataGrows] = true},
+        { [kTechDataId] = kTechId.Whip, 
+       [kTechDataMaxAmount] = 3, 
+      [kTechDataAllowConsumeDrop] = true, 
+      [kTechDataBioMass] = kWhipBiomass, 
+      [kTechDataSupply] = kWhipSupply, 
+      [kTechDataHint] = "WHIP_HINT", 
+       [kTechDataGhostModelClass] = "AlienGhostModel",  
+       [kTechDataMapName] = Whip.kMapName,       
+       [kTechDataDisplayName] = "WHIP",  
+      [kTechDataCostKey] = kWhipCost,  
+        [kTechDataRequiresInfestation] = true, 
+      [kTechDataHotkey] = Move.W,      
+     [kTechDataBuildTime] = kWhipBuildTime, 
+      [kTechDataModel] = Whip.kModelName,     
+           [kTechDataMaxHealth] = kWhipHealth,
+       [kTechDataMaxArmor] = kWhipArmor,   
+      [kTechDataDamageType] = kDamageType.Structural, 
+      [kTechDataInitialEnergy] = kWhipInitialEnergy,  
+        [kTechDataMaxEnergy] = kWhipMaxEnergy, 
+       [kVisualRange] = Whip.kRange, 
+        [kTechDataPointValue] = kWhipPointValue, 
+       [kTechDataTooltipInfo] = "WHIP_TOOLTIP", 
+        [kTechDataGrows] = true},
+         
         { [kTechDataId] = kTechId.EvolveBombard, [kTechDataDisplayName] = "EVOLVE_BOMBARD",  [kTechDataCostKey] = kEvolveBombardCost, [kTechDataResearchTimeKey] = kEvolveBombardResearchTime, [kTechDataTooltipInfo] = "EVOLVE_BOMBARD_TOOLTIP" },
 
         { [kTechDataId] = kTechId.Shift, [kTechDataMaxAmount] = 3, [kTechDataAllowConsumeDrop] = true, [kTechDataBioMass] = kShiftBiomass, [kTechDataSupply] = kShiftSupply, [kTechDataHint] = "SHIFT_HINT", [kTechDataGhostModelClass] = "ShiftGhostModel",    [kTechDataMapName] = Shift.kMapName,                        [kTechDataDisplayName] = "SHIFT",  [kTechDataRequiresInfestation] = true, [kTechDataCostKey] = kShiftCost,    [kTechDataHotkey] = Move.S,        [kTechDataBuildTime] = kShiftBuildTime, [kTechDataModel] = Shift.kModelName,           [kTechDataMaxHealth] = kShiftHealth,  [kTechDataMaxArmor] = kShiftArmor,  [kTechDataInitialEnergy] = kShiftInitialEnergy,      [kTechDataMaxEnergy] = kShiftMaxEnergy, [kTechDataPointValue] = kShiftPointValue, [kVisualRange] = kEchoRange, [kTechDataTooltipInfo] = "SHIFT_TOOLTIP", [kTechDataGrows] = true },
@@ -1152,11 +1217,11 @@ function BuildTechData()
         
         
         
-                { [kTechDataId] = kTechId.CommTunnelEntrance, 
+                { [kTechDataId] = kTechId.CommTunnel, 
        [kTechDataSupply] = 0,
         [kTechDataGhostModelClass] = "AlienGhostModel", 
       [kTechDataModel] = TunnelEntrance.kModelName, 
-      [kTechDataMapName] = TunnelEntrance.kMapName,
+      [kTechDataMapName] = CommTunnel.kMapName,
        [kTechDataMaxHealth] = kTunnelEntranceHealth, 
       [kTechDataMaxArmor] = kTunnelEntranceArmor, 
      [kTechDataBuildTime] = kGorgeTunnelBuildTime, 
@@ -1165,8 +1230,8 @@ function BuildTechData()
        [kTechDataDisplayName] = "Comm Tunnel", 
       [kTechDataCostKey] = kGorgeTunnelCost,
        [kTechDataTooltipInfo] =  "GORGE_TUNNEL_TOOLTIP", 
-      [kTechDataBuildMethodFailedMessage] = "2 pairs of Comm tunnels max. Move current tunnels.",
-       [kTechDataBuildRequiresMethod] = GetCheckTunnelEntranceLimit, 
+      [kTechDataBuildMethodFailedMessage] = "2 comm tunnels max. Must be built near built cyst.",
+       [kTechDataBuildRequiresMethod] = GetCheckCommTunnelLimit, 
        [kTechDataMaxAmount] = kNumGorgeTunnelEntrances, [kTechDataCooldown] = kCommTunnelCooldown },
        
        
@@ -1286,21 +1351,21 @@ function BuildTechData()
         [kTechDataDisplayName] = "Rebirth", 
       [kTechDataSponitorCode] = "A",  
       [kTechDataCostKey] = kRebirthCost, 
-     [kTechDataTooltipInfo] = "You've tried Redemption, now try its alternative. Upon death, turns you back into a gestating egg (Back into the class you just died as) with a protective bonewall during the gestation.", },
+     [kTechDataTooltipInfo] = "You've tried Redemption, now try its alternative. Upon death, turns you back into a gestating egg (Back into the class you just died as).", },
    
                 { [kTechDataId] = kTechId.ThickenedSkin, 
        [kTechDataCategory] = kTechId.CragHiveTwo,  
         [kTechDataDisplayName] = "Thickened Skin", 
       [kTechDataSponitorCode] = "A",  
       [kTechDataCostKey] = 2, 
-     [kTechDataTooltipInfo] = "Put all of your energy into gaining +10% hp", },
+     [kTechDataTooltipInfo] = "+10% hp", },
      
                      { [kTechDataId] = kTechId.Hunger, 
        [kTechDataCategory] = kTechId.CragHiveTwo,  
         [kTechDataDisplayName] = "Hunger", 
       [kTechDataSponitorCode] = "B",  
       [kTechDataCostKey] = 2, 
-     [kTechDataTooltipInfo] = "+10% HP + 10 energy on enemy kill (player only)", },
+     [kTechDataTooltipInfo] = "+10% HP, +10 energy and effects of Primal Scream on enemy kill (player only)", },
    
 
              { [kTechDataId] = kTechId.Focus, 

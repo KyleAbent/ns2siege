@@ -21,8 +21,9 @@ Location.kMapName = "location"
 local networkVars =
 {
     showOnMinimap = "boolean",
-    lasttime = "time",
-    notapplied = "boolean",
+   // lasttime = "time",
+   // notapplied = "boolean",
+   mainroom = "boolean",
 }
 
 Shared.PrecacheString("")
@@ -42,13 +43,13 @@ function Location:OnInitialized()
     self:SetTriggerCollisionEnabled(true)
     
     self:SetPropagate(Entity.Propagate_Always)
-    self:AddTimedCallback(Location.OnUpdate, 30)
-    self.lasttime = 0
-    self.notapplied = true
+    //self:AddTimedCallback(Location.OnUpdate, 30)
+  //  self.lasttime = 0
+  //  self.notapplied = true
 end
 
 function Location:Reset()
-
+      self.mainroom = false
 end    
 
 function Location:OnDestroy()
@@ -65,6 +66,7 @@ function Location:GetShowOnMinimap()
     return self.showOnMinimap
 end
 if Server then
+/*
 function Location:GetIsSiege()
             local gameRules = GetGamerules()
             if gameRules then
@@ -89,7 +91,21 @@ end
               
       //   Print("check 1 complete") //Check complete. 
                //not when siege and only after front
-       if self:GetIsSiege() or not self:GetFront() then return true end // Cancel and continue loop check
+       if not self:GetFront() then return true end // Cancel and continue loop check
+       
+      if self:GetIsSiege() then
+
+              if string.find(self.name, "Siege") or string.find(self.name, "siege") then 
+                local powerpoint = GetPowerPointForLocation(self.name)
+                if powerpoint ~= nil then
+                powerpoint:InsideMainRoom()
+                end
+              end
+              
+              return true
+      end
+       
+       
     //    Print("check 2 complete")
         
               //geneerate list
@@ -141,10 +157,6 @@ end
 
        for _, entity in pairs(entities) do
          if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
-           Shared.ConsoleCommand("sh_zedtime")
-        //   if entity:GetLocationName() then
-        //   Print("room is %s", entity:GetLocationName())
-        //   end
           if HasMixin(entity, "Combat") then entity:InsideMainRoom() end
            if entity:isa("PowerPoint") then entity:SetMainRoom() end
            //CreateEntity(EtherealGate.kMapName, entity:GetOrigin(), 2)
@@ -153,10 +165,44 @@ end
     //   Print("check 4 complete")
   end//
        
-
-       
+        //   if entity:GetLocationName() then
+        //   Print("room is %s", entity:GetLocationName())
+        //   end
+        
+        Shared.ConsoleCommand("sh_zedtime")
         self.lasttime = Shared.GetTime()
         return true // to continue loop check
+    
+    end
+    */
+    function Location:ClearLocations()
+           self.mainroom = false
+           local entities = self:GetEntitiesInTrigger()
+           for _, entity in pairs(entities) do
+              if HasMixin(entity, "PowerConsumer") then entity.mainbattle = false end
+          end      
+end
+    function Location:GetIsMainRoom()
+       return self.mainroom
+    end
+    function Location:SetMainRoom()
+    self.mainroom = true
+    end
+    function Location:Intensify()
+    
+                      Print("check 5 complete")
+                   self:AddTimedCallback(Location.ClearLocations, 29)
+                    local entities = self:GetEntitiesInTrigger()
+                    for _, entity in pairs(entities) do
+                      if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
+                      if HasMixin(entity, "Combat") then entity:InsideMainRoom() end
+                      if entity:isa("PowerPoint") then entity:SetMainRoom() end
+                       if entity.GetLocationName then Print("room is: %s", entity:GetLocationName()) end
+                      //CreateEntity(EtherealGate.kMapName, entity:GetOrigin(), 2)
+                    end
+                  Print("check 6 complete")
+                  Shared.ConsoleCommand("sh_zedtime")
+                  return success
     
     end
     function Location:OnTriggerEntered(entity, triggerEnt)

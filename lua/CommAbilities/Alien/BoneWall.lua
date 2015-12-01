@@ -27,7 +27,7 @@ BoneWall.kModelName = PrecacheAsset("models/alien/infestationspike/infestationsp
 local kAnimationGraph = PrecacheAsset("models/alien/infestationspike/infestationspike.animation_graph")
 
 local kCommanderAbilityType = CommanderAbility.kType.OverTime
-local kLifeSpan = 6
+local kLifeSpan = 4
 
 local kMoveOffset = 4
 local kMoveDuration = 0.4
