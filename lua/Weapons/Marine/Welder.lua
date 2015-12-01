@@ -81,7 +81,7 @@ end
 
 function Welder:GetIsValidRecipient(recipient)
 
-    if self:GetParent() == nil and recipient and not ( HasMixin(recipient, "Vortexable") and GetIsVortexed(recipient) )  and recipient:isa("Marine") then
+    if self:GetParent() == nil and recipient and not GetIsVortexed(recipient) and recipient:isa("Marine") then
     
         local welder = recipient:GetWeapon(Welder.kMapName)
         return welder == nil
@@ -149,7 +149,7 @@ end
 // don't play 'welder_attack' and 'welder_attack_end' too often, would become annoying with the sound effects and also client fps
 function Welder:OnPrimaryAttack(player)
 
-    if not self.deployed then
+    if GetIsVortexed(player) or not self.deployed then
         return
     end
     

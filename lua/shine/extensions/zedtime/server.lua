@@ -4,8 +4,6 @@ KyleAbent@gmail.com / 12XNLDBRNAXfBCqwaBfwcBn43W3PkKUkUb
 local Shine = Shine
 local Plugin = Plugin
 
-Shine.Hook.SetupClassHook( "NS2Gamerules", "TriggerZedTime", "HookZedTime", "PassivePre" )
-
 
 Plugin.Version = "1.0"
 Plugin.HasConfig = true
@@ -78,9 +76,6 @@ function Plugin:SafeArmor(entity)
 end
 function Plugin:NotifyKillStats( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[KillStats]",  255, 0, 0, String, Format, ... )
-end
-function Plugin:HookZedTime()
-      self:TriggerZedTime(self.Config.minimumdurationzedtime, self.Config.maximumdurationzedtime)
 end
 function Plugin:TriggerZedTime(min, max)
    // if Shine.GetHumanPlayerCount() < self.Config.minimumplayerstoactivatezedtime then return end

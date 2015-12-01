@@ -1,14 +1,6 @@
 kEtherealGateCoolDown = 20
 kOnosEggCost = 150
 
-////main room formula
-kMainRoomPickEveryXSeconds = 30
-//kMainRoomWayPointMinimumSeconds = 25
-kMainRoomTimeInSecondsOfCombatToCount = 7
-kPercentofInCombatToQualify = .51
-kMainRoomDamageMult = 2
-//////
-
 //kNumShadessPerGorge = 3
 //kNumShiftsPerGorge 3
 
@@ -26,7 +18,7 @@ kShellBuildTime = 4
 kExosuitDropCost = 50
 
 //compmod remix
-kHeavyMachineGunDamage = 7
+kHeavyMachineGunDamage = 10	
 kHeavyMachineGunDamageType = kDamageType.Puncture	
 kHeavyMachineGunClipSize = 125	
 kHeavyMachineGunWeight = 0.55		 
@@ -188,14 +180,14 @@ kSpiderGorgeResearchCost = 15
 kSpiderGorgeResearchTime = 25
 kWallWalkEnergyCost = 0 
 
-kSentriesPerBattery = 6
+kSentriesPerBattery = 3
 
-kSentryBuildTime = 6
+kSentryBuildTime = 4
 kObservatorySupply = 1
-kPhaseGateSupply = 0
+kPhaseGateSupply = 1
 kARCSupply = 8
 kRoboticsFactorySupply = 3
-kSentrySupply = 5
+kSentrySupply = 6
 kPhaseGateSupply = 1
 //kMACSupply = 7
 kObservastorySupply = 2

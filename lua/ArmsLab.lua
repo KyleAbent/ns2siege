@@ -150,35 +150,6 @@ function ArmsLab:OnInitialized()
     self:SetModel(ArmsLab.kModelName, kAnimationGraph)
     self:GenerateResearchTimes()
 end
-local function GetArmorLevel(self)
-
-    local armorLevels = 0
-    
-    local techTree = self:GetTechTree()
-    if techTree then
-    
-        if techTree:GetHasTech(kTechId.Armor3) then
-            armorLevels = 3
-        elseif techTree:GetHasTech(kTechId.Armor2) then
-            armorLevels = 2
-        elseif techTree:GetHasTech(kTechId.Armor1) then
-            armorLevels = 1
-        end
-    
-    end
-    
-    return armorLevels
-
-end
-function ArmsLab:OnResearchComplete(researchId)
- if researchId ~= kTechId.kRifleClipSecondUnlockMax then
-     local armorLevel = GetArmorLevel(self)
-    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
-        player:UpdateArmorAmount(armorLevel)
-    end
- end
-end
-
 function ArmsLab:GenerateResearchTimes()
     if ArmsLab.Weapons1ResearchTime ~= 0 then return end
     ArmsLab.Weapons1ResearchTime = math.random(kWeapons1SecondUnlockMin, kWeapons1SecondUnlockMax)

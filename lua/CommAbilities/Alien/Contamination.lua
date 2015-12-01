@@ -110,7 +110,7 @@ function Contamination:OnInitialized()
 
 end
 function Contamination:GetTechButtons(techId)
-    return { kTechId.Shell, kTechId.NutrientMist, kTechId.EtheralGate, kTechId.Crag, 
+    return { kTechId.Shell, kTechId.NutrientMist, kTechId.EtherealGate, kTechId.Crag, 
              kTechId.Whip, kTechId.Drifter, kTechId.Shade, kTechId.Shift }
 end
 function Contamination:GetIsFlameAble()

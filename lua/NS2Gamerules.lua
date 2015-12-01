@@ -149,12 +149,10 @@ if Server then
             self.playedsiegesound = false
             self.respawnedplayers = false
             self.issuddendeath = false
-            self.mainrooms = Shared.GetTime()
             self.doorsopened = false
             self.sideopened = false
             self.siegedoorsopened = false
             self.iszedtime = false
-            self.lastexploitcheck = Shared.GetTime()
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
        //      self:AddTimedCallback(NS2Gamerules.SuddenDeath, kSiegeDoorTime + kTimeAfterSiegeOpeningToEnableSuddenDeath) 
@@ -1091,8 +1089,7 @@ function NS2Gamerules:OnUpdate(timePassed)
 */
     
         //Siege Front & Siege Doors
-         if self:GetGameStarted() and not self.siegedoorsopened and not Shared.GetCheatsEnabled() and (self.lastexploitcheck + 10) > Shared.GetTime()  then
-         self.lastexploitcheck = Shared.GetTime()
+         if self:GetGameStarted() and not self.siegedoorsopened and not Shared.GetCheatsEnabled() then
         // self.siegedoorsopened = true  
      //  if not self.alreadyhookedsiege then self:HookSiegeOpen() self.alreadyhookesiege = true end
           for _, entity in ipairs(GetEntitiesWithMixin("Live")) do
@@ -1807,66 +1804,6 @@ end
 function NS2Gamerules:GetIsSuddenDeath()
 return self.issuddendeath
 end
-function NS2Gamerules:ClearLocations()
-         self.mainrooms = Shared.GetTime()
-end
-function NS2Gamerules:GetCombatEntitiesCount()
-            local combatentities = 0
-            for _, entity in ipairs(GetEntitiesWithMixin("Combat")) do
-             local inCombat = (entity.timeLastDamageDealt + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime()) or (entity.lastTakenDamageTime + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime())
-                  if inCombat then combatentities = combatentities + 1 end
-             end
-            return combatentities
-end
-function NS2Gamerules:GetCombatEntitiesCountInRoom(location)
-       local entities = location:GetEntitiesInTrigger()
-       local eligable = 0
-             for _, entity in ipairs(entities) do
-             if HasMixin(entity, "Combat") then
-                local inCombat = (entity.timeLastDamageDealt + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime()) or (entity.lastTakenDamageTime + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime())
-                  if inCombat then
-                  eligable = eligable + 1
-                 end
-             end
-            end
-        return eligable
-end
-function NS2Gamerules:PickMainRoom()
-  //Kyle Abent ns2siege 11.22 kyleabent@gmail.com
-       if not self.doorsopened or (self.mainrooms + kMainRoomPickEveryXSeconds) > Shared.GetTime() then return true end 
-     local locations = EntityListToTable(Shared.GetEntitiesWithClassname("Location"))
-     for i = 1, #locations do //
-        local location = locations[i]
-               if self.siegedoorsopened then
-                          if string.find(location.name, "Siege") or string.find(location.name, "siege") then 
-                          local powerpoint = GetPowerPointForLocation(location.name)
-                             if powerpoint ~= nil then
-                             powerpoint:InsideMainRoom()
-                              end
-                           self.mainrooms = Shared.GetTime()
-                           self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds)
-                            return true //or break? meh.
-                          end
-                end //siege
-              if self:GetCombatEntitiesCountInRoom(location) >=  ( self:GetCombatEntitiesCount() * kPercentofInCombatToQualify ) then  
-                  self.mainrooms = Shared.GetTime() //Prevents 2 rooms being picked at once?
-                   self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds) // Clears and says is ready for another
-                      local entities = location:GetEntitiesInTrigger()
-                  if entities then
-                    for _, entity in ipairs(entities) do
-                      if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
-                      if HasMixin(entity, "Combat") then entity:InsideMainRoom() end
-                      if entity:isa("PowerPoint") then entity:SetMainRoom() end
-                    end
-                 self:TriggerZedTime()
-                  end
-             end//room check
-      end //locations do
-      return true
-end
-function NS2Gamerules:TriggerZedTime()
-
-end
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  
@@ -1881,9 +1818,6 @@ function NS2Gamerules:OpenFrontDoors()
                 frontdoor.cleaning = false
                 frontdoor.isvisible = false
                 end
-                
-              self:AddTimedCallback(NS2Gamerules.PickMainRoom, 5)
-                
               for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
               StartSoundEffectForPlayer(NS2Gamerules.kFrontDoorSound, player)
               
@@ -1922,7 +1856,7 @@ end
 function NS2Gamerules:SwitchShadesToSiegeMode()
 
           for index, Shade in ipairs(GetEntitiesForTeam("Shade", 2)) do
-               if not Shade:GetIsOnFire() and Shade:GetIsBuilt() and GetHasTech(Shade, kTechId.ShadeHive) and Shade:IsInRangeOfHive() and Shade:GetIsSiege() then 
+               if not Shade:GetIsOnFire() and GetHasTech(Shade, kTechId.ShadeHive) and Shade:IsInRangeOfHive() then 
                 Shade:PerformActivation(kTechId.ShadeInk, nil, normal, commander) 
                 end
           end

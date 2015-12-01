@@ -245,11 +245,11 @@ function RoboticsFactory:GetTechAllowed(techId, techNode, player)
     
 end
 function RoboticsFactory:GetIsStunAllowed()
-    return  self:GetLastStunTime() + 8 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
+    return  self:GetLastStunTime() + 4 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
 function RoboticsFactory:GetTechButtons(techId)
 
-    local techButtons = {  kTechId.None, kTechId.MAC, kTechId.None, kTechId.None, 
+    local techButtons = {  kTechId.None, kTechId.MAC, kTechId.MacWeldMacs, kTechId.None, 
                kTechId.None, kTechId.None, kTechId.None, kTechId.None }
                
     if self:GetTechId() ~= kTechId.ARCRoboticsFactory then
@@ -396,8 +396,8 @@ end
 function RoboticsFactory:OnTag(tagName)
     
     PROFILE("RoboticsFactory:OnTag")
-                                                                                   //siege fix for autobuild
-    if self.open and self.researchId ~= Entity.invalidId and tagName == "end" and self.builtEntity ~= nil then
+
+    if self.open and self.researchId ~= Entity.invalidId and tagName == "end" then
 
         self.builtEntity:Rollout(self, RoboticsFactory.kRolloutLength)
         self.builtEntity = nil

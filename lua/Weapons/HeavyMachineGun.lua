@@ -228,12 +228,7 @@ function HeavyMachineGun:GetWeight()
 end
 
 function HeavyMachineGun:GetDamageType()
-    local parent = self:GetParent()
-    if parent and parent.hasfirebullets then
-      return  kDamageType.PunctureFlame
-   else
-      return kHeavyMachineGunDamageType
-    end
+    return kHeavyMachineGunDamageType
 end
 
 function HeavyMachineGun:GetCatalystSpeedBase()

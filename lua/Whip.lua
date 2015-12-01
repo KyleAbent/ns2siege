@@ -90,7 +90,7 @@ function Whip:OnCreate()
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DamageMixin)
     InitMixin(self, AlienStructureMoveMixin, { kAlienStructureMoveSound = Whip.kWalkingSound })
-   // InitMixin(self, ResearchMixin)
+//    InitMixin(self, ResearchMixin)
     self.whipParentId = Entity.invalid
     self.attackYaw = 0
     
@@ -287,7 +287,7 @@ function Whip:GetTechButtons(techId)
     local techButtons = nil
 
     techButtons = { kTechId.None, kTechId.None, None, kTechId.WhipBombard,  
-                    kTechId.Slap, kTechId.None, kTechId.None, kTechId.Digest }
+                    kTechId.Slap, kTechId.None, kTechId.None, kTechId.None }
     if not self.moving then
      techButtons[1] = kTechId.Move  
     elseif self.moving then
@@ -296,16 +296,15 @@ function Whip:GetTechButtons(techId)
     return techButtons
     
 end
-
+/*
 function Whip:OnResearchComplete(researchId)
 
-    if researchId == kTechId.Digest then
-        self:TriggerEffects("digest", {effecthostcoords = self:GetCoords()} )
-        self:Kill()
+    if researchId == kTechId.ContaminationHP then
+         SetCachedTechData(kTechId.Contamination, kTechDataMaxHealth, 1300)
     end
         
 end
-
+*/
 function Whip:GetTechAllowed(techId, techNode, player)
     
     local allowed, canAfford = AlienStructure.GetTechAllowed(self, techId, techNode, player)
@@ -395,14 +394,7 @@ end
 function Whip:GetIsUnblocked()
     return self.unblockTime == 0 or (Shared.GetTime() > self.unblockTime)
 end
-function Whip:CheckSpaceAboveForJump()
 
-    local startPoint = self:GetOrigin() 
-    local endPoint = startPoint + Vector(1.2, 1.2, 1.2)
-    
-    return GetWallBetween(startPoint, endPoint, self)
-    
-end
 
 function Whip:OnUpdate(deltaTime)
 
@@ -412,14 +404,6 @@ function Whip:OnUpdate(deltaTime)
     
     if Server then 
    
-   /*
-           if not self.timeLastMoveUpdateCheck or self.timeLastMoveUpdateCheck + 15 < Shared.GetTime() then 
-            if self:CheckSpaceAboveForJump() then 
-            self:MoveToUnstuck()
-            end
-            self.timeLastMoveUpdateCheck = Shared.GetTime()
-        end
-       */ 
         self:UpdateRootState()           
         self:UpdateOrders(deltaTime)
         

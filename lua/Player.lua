@@ -882,9 +882,9 @@ local function AttemptToUse(self, timePassed)
         return false
     end
     
-//    if GetIsVortexed(self) then
-//        return false
-//    end
+    if GetIsVortexed(self) then
+        return false
+    end
     
     -- Trace to find use entity.
     local entity, usablePoint = self:PerformUseTrace()
@@ -915,12 +915,6 @@ function Player:Buy()
 end
 function Player:HookWithShineToBuyMist(player)
        self:Kill() //What a horrible Joke.. Oh Hey! Purchase Mist! ... *Dies
-end
-function Player:HookWithShineToBuyMed(player)
-       self:Kill() 
-end
-function Player:HookWithShineToBuyAmmo(player)
-       self:Kill()
 end
 function Player:Holster()
 

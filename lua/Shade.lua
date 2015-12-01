@@ -195,7 +195,7 @@ end
 function Shade:GetTechButtons(techId)
 
     local techButtons = { kTechId.ShadeInk, kTechId.Move, kTechId.ShadeCloak, kTechId.None, 
-                          kTechId.None, kTechId.None, kTechId.None, kTechId.Digest }
+                          kTechId.None, kTechId.None, kTechId.None, kTechId.None }
                       
     if self:GetIsSiege() and self:IsInRangeOfHive() then
     techButtons[1] = kTechId.None
@@ -221,9 +221,6 @@ function Shade:OnResearchComplete(researchId)
     // Transform into mature shade
     if researchId == kTechId.EvolveHallucinations then
         success = self:GiveUpgrade(kTechId.ShadePhantomMenu)
-    elseif researchId == kTechId.Digest then
-        self:TriggerEffects("digest", {effecthostcoords = self:GetCoords()} )
-        self:Kill()
     end
     
 end
@@ -325,8 +322,6 @@ end
 function Shade:OnUpdate(deltaTime)
     ScriptActor.OnUpdate(self, deltaTime)        
     UpdateAlienStructureMove(self, deltaTime)
-    
-    
 end
 
 function Shade:IsInRangeOfHive()

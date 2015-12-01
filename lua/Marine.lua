@@ -26,7 +26,7 @@ Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
-//Script.Load("lua/VortexAbleMixin.lua")
+Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/DisorientableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -179,7 +179,7 @@ AddMixinNetworkVars(GlowMixin, networkVars)
 AddMixinNetworkVars(SprintMixin, networkVars)
 AddMixinNetworkVars(OrderSelfMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
-//AddMixinNetworkVars(VortexAbleMixin, networkVars)
+AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
@@ -200,7 +200,7 @@ function Marine:OnCreate()
     InitMixin(self, CameraHolderMixin, { kFov = kDefaultFov })
     InitMixin(self, MarineActionFinderMixin)
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
-    //InitMixin(self, VortexAbleMixin)
+    InitMixin(self, VortexAbleMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, SelectableMixin)
     
@@ -313,10 +313,8 @@ function Marine:OnInitialized()
     
     if Server then
     
-        //self.armor = self:GetArmorAmount()
-       // self.maxArmor = self.armor
-       
-        self:SetArmorAmount()
+        self.armor = self:GetArmorAmount()
+        self.maxArmor = self.armor
         
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -392,16 +390,10 @@ end
 function Marine:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
 	local scale = self.modelsize
-	local hmgscale = self:GetHasHMG() and 1.3 or 1
-        coords.xAxis = (coords.xAxis * scale) * hmgscale
-        coords.yAxis = (coords.yAxis * scale) 
-        coords.zAxis = (coords.zAxis * scale) * hmgscale
+        coords.xAxis = coords.xAxis * scale
+        coords.yAxis = coords.yAxis * scale
+        coords.zAxis = coords.zAxis * scale
     return coords
-end
-function Marine:SetArmorAmount()
-    local newMaxArmor = (Marine.kBaseArmor + self:GetArmorLevel() * Marine.kArmorPerUpgradeLevel) + ConditionalValue(self:GetHasHMG(), 30, 0)
-    self:AdjustMaxArmor(newMaxArmor)
-    Print("armor is %s", newMaxArmor)
 end
 function Marine:GetArmorLevel()
 
@@ -521,22 +513,11 @@ function Marine:GetArmorAmount(armorLevels)
         end
     
     end
+    
+    return Marine.kBaseArmor + armorLevels * Marine.kArmorPerUpgradeLevel
+    
+end
 
-    
-    return (Marine.kBaseArmor + armorLevels * Marine.kArmorPerUpgradeLevel) + ConditionalValue(self:GetHasHMG(), 30, 0)
-    
-end
-function Marine:GetHasHMG()
-        local weapon = self:GetWeaponInHUDSlot(1)
-        local hmg = false
-    if (weapon) then
-        if (weapon:isa("HeavyMachineGun")) then
-            hmg = true
-        end
-    end
-    
-    return hmg
-end
 function Marine:GetNanoShieldOffset()
     return Vector(0, -0.1, 0)
 end
@@ -583,7 +564,7 @@ function Marine:HandleButtons(input)
         self.flashlightLastFrame = flashlightPressed
 
 		local autoPickup = self:FindNearbyAutoPickupWeapon() and bit.band(input.commands, Move.Drop) == 0
-        if (bit.band(input.commands, Move.Drop) ~= 0 or autoPickup) then
+        if (bit.band(input.commands, Move.Drop) ~= 0 or autoPickup) and not self:GetIsVortexed() then
         
             if Server then
             
@@ -604,7 +585,6 @@ function Marine:HandleButtons(input)
                             if toReplace then
                             
                                 self:RemoveWeapon(toReplace)
-                                self:SetArmorAmount()
                                 DestroyEntity(toReplace)
                                 
                             end
@@ -613,7 +593,6 @@ function Marine:HandleButtons(input)
                         
 						local active = nearbyDroppedWeapon:GetHUDSlot() == 1 or bit.band(input.commands, Move.Drop) ~= 0
                         self:AddWeapon(nearbyDroppedWeapon, active)
-                        self:SetArmorAmount()
                         StartSoundEffectAtOrigin(Marine.kGunPickupSound, self:GetOrigin())
 						
 						// Fixes problem where if a marine drops all weapons and picks a welder the axe remains active
@@ -633,8 +612,7 @@ function Marine:HandleButtons(input)
 					local activeWeapon = self:GetActiveWeapon()
 					
 					// No nearby weapon, drop our current weapon.
-                    if self:Drop() then			
-                        self:SetArmorAmount()			
+                    if self:Drop() then						
 						self.lastDroppedWeapon = activeWeapon                    
 						self.timeOfLastPickUpWeapon = Shared.GetTime()
 					end
@@ -722,7 +700,7 @@ function Marine:GetJumpHeight()
 end
 
 function Marine:GetCanBeWeldedOverride()
-    return self:GetArmor() < self:GetMaxArmor(), false
+    return not self:GetIsVortexed() and self:GetArmor() < self:GetMaxArmor(), false
 end
 
 // Returns -1 to 1
@@ -1157,7 +1135,7 @@ end
 // dont allow marines to me chain stomped. this gives them breathing time and the onos needs to time the stomps instead of spamming
 // and being able to permanently disable the marine
 function Marine:GetIsStunAllowed()
-    return self:GetLastStunTime() + 1.5 < Shared.GetTime() and not self.spawnprotection and (GetAreFrontDoorsOpen() or Shared.GetCheatsEnabled()) and self:GetIsOnGround()
+    return self:GetLastStunTime() + 1.5 < Shared.GetTime() and not self:GetIsVortexed() and not self.spawnprotection and (GetAreFrontDoorsOpen() or Shared.GetCheatsEnabled())
 end
 
 

@@ -40,7 +40,7 @@ end
  * Any Marine is a valid recipient.
  */
 function CatPack:GetIsValidRecipient(recipient)
-    return (recipient.GetCanUseCatPack and recipient:GetCanUseCatPack())
+    return not GetIsVortexed(recipient) and (recipient.GetCanUseCatPack and recipient:GetCanUseCatPack())
 end
 
 Shared.LinkClassToMap("CatPack", CatPack.kMapName)

@@ -62,10 +62,7 @@ Observatory.kRandomnlyGeneratedTimeToUnlock = 0
 
 local kAnimationGraph = PrecacheAsset("models/marine/observatory/observatory.animation_graph")
 
-local networkVars = { 
-                     lastscantime = "time",  
-                     ignorelimit = "boolean", 
-                     }
+local networkVars = { lastscantime = "time" }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
@@ -137,7 +134,7 @@ function Observatory:OnCreate()
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)  
     
     self.lastscantime = 0
-    self.ignorelimit = false
+    
 end
 
 function Observatory:OnInitialized()
@@ -591,29 +588,6 @@ function Observatory:OnUpdate(deltaTime)
         self.advancedBeaconTime = nil
     end
  
-end
-function GetCheckObsyLimit(techId, origin, normal, commander)
-    local location = GetLocationForPoint(origin)
-    local locationName = location and location:GetName() or nil
-    local numInRoom = 0
-    local validRoom = false
-    
-    if locationName then
-    
-        validRoom = true
-        
-        for index, obs in ientitylist(Shared.GetEntitiesWithClassname("Observatory")) do
-        
-            if obs:GetLocationName() == locationName and not obs.ignorelimit then
-                numInRoom = numInRoom + 1
-            end
-            
-        end
-        
-    end
-    
-    return validRoom and numInRoom < 3
-    
 end
 function Observatory:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent

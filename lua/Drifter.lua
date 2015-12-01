@@ -43,7 +43,7 @@ Script.Load("lua/CommAbilities/Alien/EnzymeCloud.lua")
 Script.Load("lua/CommAbilities/Alien/HallucinationCloud.lua")
 Script.Load("lua/CommAbilities/Alien/MucousMembrane.lua")
 Script.Load("lua/CommAbilities/Alien/StormCloud.lua")
-Script.Load("lua/ResearchMixin.lua")
+
 class 'Drifter' (ScriptActor)
 
 Drifter.kMapName = "drifter"
@@ -131,7 +131,6 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(StormCloudMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
-AddMixinNetworkVars(ResearchMixin, networkVars)
 
 function Drifter:OnCreate()
 
@@ -161,7 +160,6 @@ function Drifter:OnCreate()
     InitMixin(self, SoftTargetMixin)
     InitMixin(self, StormCloudMixin)
     InitMixin(self, UmbraMixin)
-    InitMixin(self, ResearchMixin)
     
     self:SetUpdates(true)
     self:SetLagCompensated(true)
@@ -818,7 +816,7 @@ end
 function Drifter:GetTechButtons(techId)
 
     local techButtons = { kTechId.EnzymeCloud, kTechId.Hallucinate, kTechId.MucousMembrane, kTechId.SelectHallucinations,
-                          kTechId.Grow, kTechId.Move, kTechId.Patrol, kTechId.Digest }
+                          kTechId.Grow, kTechId.Move, kTechId.Patrol, kTechId.FollowAlien }
 /*
     if self.hasCelerity then
         techButtons[6] = kTechId.DrifterCelerity
@@ -835,14 +833,7 @@ function Drifter:GetTechButtons(techId)
     return techButtons
     
 end
-function Drifter:OnResearchComplete(researchId)
 
-    if researchId == kTechId.Digest then
-        self:TriggerEffects("digest", {effecthostcoords = self:GetCoords()} )
-        self:Kill()
-    end
-   
-end
 function Drifter:SpawnCloudAt(position)
 
     local team = self:GetTeam()

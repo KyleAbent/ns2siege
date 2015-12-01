@@ -22,7 +22,7 @@ Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-//Script.Load("lua/FlinchMixin.lua")
+Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
@@ -124,7 +124,7 @@ AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
-//AddMixinNetworkVars(FlinchMixin, networkVars)
+AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(AttackOrderMixin, networkVars)
@@ -185,7 +185,7 @@ function MAC:OnCreate()
     InitMixin(self, RagdollMixin)
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
-    //InitMixin(self, FlinchMixin)
+    InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
@@ -301,7 +301,7 @@ local function GetAutomaticOrder(self)
             primaryTarget = Shared.GetEntity(currentOrder:GetParam())
         end
 
-        if primaryTarget and ( HasMixin(primaryTarget, "Weldable") and primaryTarget:GetWeldPercentage() < .8 ) then
+        if primaryTarget and (HasMixin(primaryTarget, "Weldable") and primaryTarget:GetWeldPercentage() < 1) and ( not primaryTarget:isa("MAC") or primaryTarget:isa("MAC") and GetHasTech(self, kTechId.MacWeldMacs) )then
             
             target = primaryTarget
             orderType = kTechId.AutoWeld
@@ -332,7 +332,7 @@ local function GetAutomaticOrder(self)
                     local weldable = weldables[w]
                     // There are cases where the weldable's weld percentage is very close to
                     // 100% but not exactly 100%. This second check prevents the MAC from being so pedantic.
-                    if weldable:GetCanBeWelded(self) and weldable:GetWeldPercentage() < 1 and not GetIsWeldedByOtherMAC(self, weldable) then
+                    if weldable:GetCanBeWelded(self) and weldable:GetWeldPercentage() < 1 and not GetIsWeldedByOtherMAC(self, weldable) and ( not weldable:isa("MAC") or weldable:isa("MAC") and GetHasTech(self, kTechId.MacWeldMacs) ) then
                     
                         target = weldable
                         orderType = kTechId.AutoWeld
@@ -381,17 +381,6 @@ end
 function MAC:GetReceivesStructuralDamage()
     return true
 end
-function MAC:GetIsFront()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
 function MAC:GetCanBeUsed(player, useSuccessTable)
   useSuccessTable.useSuccess = true 
 end
@@ -408,7 +397,7 @@ function MAC:OnUse(player, elapsedTime, useSuccessTable)
             self.timeOfLastUse = time
             
         end
-        self:GiveOrder(kTechId.FollowAndWeld, player:GetId(), player:GetOrigin(), nil, true, true) 
+        self:GiveOrder(kTechId.FollowAndWeld, player:GetId(), player:GetOrigin(), nil, false, false) 
     end
     
 end
@@ -682,6 +671,13 @@ function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
 
     if self.timeOfLastWeld == 0 or time > self.timeOfLastWeld + MAC.kWeldRate then
     
+        // Not allowed to weld after taking damage recently.
+        if Shared.GetTime() - self:GetTimeLastDamageTaken() <= 1.0 then
+        
+
+            return kOrderStatus.InProgress
+            
+        end
     
         // It is possible for the target to not be weldable at this point.
         // This can happen if a damaged Marine becomes Commander for example.
@@ -834,11 +830,11 @@ function MAC:UpdateGreetings()
     end
 
 end
-/*
+
 function MAC:GetCanBeWeldedOverride()
     return self.lastTakenDamageTime + 1 < Shared.GetTime()
 end
-*/
+
 function MAC:GetEngagementPointOverride()
     return self:GetOrigin()
 end
@@ -1143,7 +1139,7 @@ end
 function MAC:GetTechButtons(techId)
 
     local techButtons ={ kTechId.Move, kTechId.Stop, kTechId.Attack, kTechId.Welding,
-             kTechId.None, kTechId.None, kTechId.None, kTechId.Recycle }
+             kTechId.MACEMP, kTechId.None, kTechId.None, kTechId.Recycle }
              
              if self:GetMapHasFuncDoor() then
                          if self.MoveThroughlockedoors then

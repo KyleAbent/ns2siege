@@ -453,10 +453,11 @@ function PowerPoint:GetTechAllowed(techId, techNode, player)
     return true, true
 end
 function PowerPoint:SetMainRoom()
-self:Flicker() // off
-self:AddTimedCallback(function() self:Flicker() end, 5) //on
-self:AddTimedCallback(function() self:Flicker() end, 12) // off
-self:AddTimedCallback(function() self:Flicker() end, 25) // on
+self:AddTimedCallback(function() self:Flicker() end, 5)
+self:AddTimedCallback(function() self:Flicker() end, 10)
+self:AddTimedCallback(function() self:Flicker() end, 15)
+self:AddTimedCallback(function() self:Flicker() end, 20)
+self:AddTimedCallback(function() self:Flicker() end, 25)
 end
 function PowerPoint:Flicker()
           if self:GetLightMode() ~= kLightMode.Normal then 

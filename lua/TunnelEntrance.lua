@@ -629,5 +629,13 @@ function TunnelEntrance:OverrideHintString( hintString, forEntity )
     return hintString
     
 end
+function GetCheckTunnelEntranceLimit(techId, origin, normal, commander) 	
+		
+local tunnelEntrances = 0 
+for index, tunnelEntrance in ientitylist(Shared.GetEntitiesWithClassname("TunnelEntrance")) do 
+tunnelEntrances = tunnelEntrances + 1 
+end 
+return tunnelEntrances < 4 
+end 
 
 Shared.LinkClassToMap("TunnelEntrance", TunnelEntrance.kMapName, networkVars)

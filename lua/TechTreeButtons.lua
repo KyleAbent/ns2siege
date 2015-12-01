@@ -246,7 +246,7 @@ kTechIdToMaterialOffset[kTechId.HeavyRifleTech] = 73
 kTechIdToMaterialOffset[kTechId.Aura] = 113
 kTechIdToMaterialOffset[kTechId.Leap] = 67
 kTechIdToMaterialOffset[kTechId.BileBomb] = 68
-kTechIdToMaterialOffset[kTechId.CommTunnel] = 103
+kTechIdToMaterialOffset[kTechId.CommTunnelEntrance] = 103
 kTechIdToMaterialOffset[kTechId.GorgeTunnel] = 103
 kTechIdToMaterialOffset[kTechId.GorgeTunnelTech] = 103
 kTechIdToMaterialOffset[kTechId.Stab] = 105
@@ -354,7 +354,6 @@ kTechIdToMaterialOffset[kTechId.AdvancedArmoryUpgrade] = 99
 
 kTechIdToMaterialOffset[kTechId.Spikes] = 106
 kTechIdToMaterialOffset[kTechId.Recycle] = 108
-kTechIdToMaterialOffset[kTechId.Digest] = 108
 kTechIdToMaterialOffset[kTechId.Storm] = 113
 kTechIdToMaterialOffset[kTechId.Patrol] = 120
 kTechIdToMaterialOffset[kTechId.Move] = 117

@@ -409,9 +409,9 @@ local function FireBullets(self, player)
     local filter = EntityFilterTwo(player, self)
     local range = self:GetRange()
     
-//    if GetIsVortexed(player) then
-//        range = 5
-//    end
+    if GetIsVortexed(player) then
+        range = 5
+    end
     
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()

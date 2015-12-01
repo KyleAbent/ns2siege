@@ -179,7 +179,7 @@ function Alien:TriggerRebirthCountDown(player)
 end
 function Alien:TriggerRebirth()
 
-         //NS2Siege Writing Kyle Abent (Modified/Remixed Formula Function)
+
         local position = self:GetOrigin()
         local trace = Shared.TraceRay(position, position + Vector(0, -0.5, 0), CollisionRep.Move, PhysicsMask.AllButPCs, EntityFilterOne(self))
         
@@ -255,9 +255,9 @@ function Alien:TriggerRebirth()
                newPlayer:SetGestationData(upgradeManager:GetUpgrades(), newLifeFormTechId, 10, 10) //Skulk to X 
                
                //Spawn protective boneshield    
-              //  local bonewall = CreateEntity(BoneWall.kMapName, newPlayer:GetOrigin(), 2)    
-              //  bonewall.modelsize = .5
-            //    StartSoundEffectForPlayer(AlienCommander.kBoneWallSpawnSound, newPlayer)
+                local bonewall = CreateEntity(BoneWall.kMapName, newPlayer:GetOrigin(), 2)    
+                bonewall.modelsize = .5
+                StartSoundEffectForPlayer(AlienCommander.kBoneWallSpawnSound, newPlayer)
                // CreateEntity(NutrientMist.kMapName, newPlayer:GetOrigin(), 2)    
                 success = true
                 

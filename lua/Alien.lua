@@ -287,7 +287,7 @@ local level = 0
       elseif self:isa("Gorge") then
         lifeformstrengthmult = .9
       elseif self:isa("Lerk") then
-        lifeformstrengthmult =.9
+        lifeformstrengthmult =.8
       elseif self:isa("Fade") then
        lifeformstrengthmult = .7
       elseif self:isa("Onos") then
@@ -748,7 +748,7 @@ function Alien:OnUpdateAnimationInput(modelMixin)
     attackSpeed = attackSpeed * ( self.electrified and kElectrifiedAttackSpeed or 1 )
     attackSpeed = attackSpeed + ( self:GetHasPrimalScream() and kPrimalScreamROFIncrease or 0)
     if GetHasFocusUpgrade(self) and self:QualifiesForFocus() then attackSpeed = attackSpeed - (.33 * ( self:GetFocousLevel() ) ) end
-    if self:isa("Onos") then if self:GetActiveWeapon():isa("Gore") then if self:GetActiveWeapon():GetIsStomping() then attackSpeed = attackSpeed * 1.15 end end end
+    if self:isa("Onos") and self:GetActiveWeapon():GetIsStomping() then attackSpeed = attackSpeed * 1.15 end
    
     if self.ModifyAttackSpeed then
     

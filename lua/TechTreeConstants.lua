@@ -27,7 +27,7 @@ kTechId = createTechIdEnum({
     'SpawnMarine', 'SpawnAlien', 'CollectResources', 'TransformResources', 'Research',
     
     // General orders and actions ("Default" is right-click)
-    'Default', 'Move', 'Patrol', 'Attack', 'Build', 'Construct', 'AutoConstruct', 'Grow', 'Cancel', 'Recycle', 'Digest', 'Weld', 'AutoWeld', 'Stop', 'SetRally', 'SetTarget', 'Follow', 'HoldPosition', 'FollowAlien',
+    'Default', 'Move', 'Patrol', 'Attack', 'Build', 'Construct', 'AutoConstruct', 'Grow', 'Cancel', 'Recycle', 'Weld', 'AutoWeld', 'Stop', 'SetRally', 'SetTarget', 'Follow', 'HoldPosition', 'FollowAlien',
     // special mac order (follows the target, welds the target as priority and others in range)
     'FollowAndWeld',
     
@@ -134,7 +134,7 @@ kTechId = createTechIdEnum({
 
     // Alien structures 
       
-    'Hive', 'HiveHeal', 'CragHive', 'CragHiveTwo', 'ShadeHive', 'ControlledHallucination', 'ShiftHive','Harvester', 'PresBonus', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel', 'CommTunnel', 'EvolutionChamber',
+    'Hive', 'HiveHeal', 'CragHive', 'CragHiveTwo', 'ShadeHive', 'ControlledHallucination', 'ShiftHive','Harvester', 'PresBonus', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel', 'CommTunnelEntrance', 'EvolutionChamber',
     'GorgeEgg', 'LerkEgg', 'FadeEgg', 'OnosEgg',
     
     // Infestation upgrades

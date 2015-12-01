@@ -160,24 +160,12 @@ function JetpackMarine:GetFuel()
     end
     
 end
-function JetpackMarine:GetHasHMG()
-        local weapon = self:GetWeaponInHUDSlot(1)
-        local hmg = false
-    if (weapon) then
-        if (weapon:isa("HeavyMachineGun")) then
-            hmg = true
-        end
-    end
-    
-    return hmg
-end
 function JetpackMarine:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
 	local scale = self.modelsize
-    local hmgscale = self:GetHasHMG() and 1.3 or 1
-        coords.xAxis = (coords.xAxis * scale) * hmgscale
-        coords.yAxis = (coords.yAxis * scale) 
-        coords.zAxis = (coords.zAxis * scale) * hmgscale
+        coords.xAxis = coords.xAxis * scale
+        coords.yAxis = coords.yAxis * scale
+        coords.zAxis = coords.zAxis * scale
     return coords
 end
 function JetpackMarine:GetMaxViewOffsetHeight()

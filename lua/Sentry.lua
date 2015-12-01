@@ -36,7 +36,7 @@ Script.Load("lua/SupplyUserMixin.lua")
 
 local kSpinUpSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_up")
 local kSpinDownSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_down")
-local kSentryWeldGainXp =  0.45
+local kSentryWeldGainXp =  0.30
 local kSentryScaleSize = 1.8
 
 class 'Sentry' (ScriptActor)
@@ -83,7 +83,7 @@ Sentry.kMuzzleNode = "fxnode_sentrymuzzle"
 Sentry.kEyeNode = "fxnode_eye"
 Sentry.kLaserNode = "fxnode_eye"
 Sentry.Damage = 5
-Sentry.kSentryGainXp =  0.08
+Sentry.kSentryGainXp =  0.06
 Sentry.kSentryLoseXp = 0.06
 Sentry.kSentryMaxLevel = 50
 
@@ -266,9 +266,9 @@ end
 function Sentry:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
 local damage = 1
     if doer:isa("SwipeBlink") then
-       damage = damage * (self.level/100) + damage
+       damage = damage * 2
     elseif doer:isa("DotMarker") or doer:isa("Gore") then
-       damage = damage - (self.level/100) * damage
+       damage = damage * .5
     end
   damageTable.damage = damageTable.damage * damage 
 end
@@ -442,14 +442,6 @@ function Sentry:LoseXP(amount)
 end
 function Sentry:GetLevel()
         return Round(self.level, 2)
-end
-function Sentry:OnKill(attacker, doer, point, direction)
-self:TriggerEMP()
-end
-function Sentry:TriggerEMP()
-    CreateEntity(EMPBlast.kMapName,  self:GetOrigin(), self:GetTeamNumber())
-    return true
-    
 end
 function Sentry:OnDamageDone(doer, target)
 if doer == self then

@@ -119,7 +119,7 @@ if Server then
        if not self.powered then
        
         if not self.mainbattle or ( self:GetIsSiege() and not string.find(self:GetLocationName(), "Siege") and not string.find(self:GetLocationName(), "siege") ) then 
-         damageTable.damage = damageTable.damage * kMainRoomDamageMult
+         damageTable.damage = damageTable.damage * 2 
         end
         
         end

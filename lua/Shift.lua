@@ -401,7 +401,7 @@ function Shift:GetTechButtons(techId)
     else
 
         techButtons = { kTechId.ShiftEcho, kTechId.Move, kTechId.ShiftEnergize, kTechId.None, 
-                        kTechId.None, kTechId.None, kTechId.None, kTechId.Digest }
+                        kTechId.None, kTechId.None, kTechId.None, kTechId.None }
                         
         if self.moving then
             techButtons[2] = kTechId.Stop
@@ -436,7 +436,6 @@ function Shift:OnUpdate(deltaTime)
 
     if Server then
 
-
         if not self.timeLastButtonCheck or self.timeLastButtonCheck + 2 < Shared.GetTime() then
         
             self.timeLastButtonCheck = Shared.GetTime()
@@ -461,10 +460,7 @@ if Server then
         -- Transform into mature shift
         if researchId == kTechId.EvolveEcho then
             self:GiveUpgrade(kTechId.ShiftEcho)
-    elseif researchId == kTechId.Digest then
-        self:TriggerEffects("digest", {effecthostcoords = self:GetCoords()} )
-        self:Kill()
-    end
+        end
         
     end
 
