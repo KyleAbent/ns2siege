@@ -208,6 +208,7 @@ function Shockwave:Detonate()
                   //  if not enemy:isa("Exo") or (enemy:isa("Exo") and GetHasTech(self, kTechId.StompUpgrade) ) then
                     enemy:SetStun()
                   //  end
+                  break // version 11.30
                 end  
             end
         

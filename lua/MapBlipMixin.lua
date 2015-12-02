@@ -154,6 +154,8 @@ function MapBlipMixin:GetMapBlipInfo()
         blipTeam = self:GetTeamNumber()
     elseif self:isa("ResourcePoint") then
         blipType = kMinimapBlipType.ResourcePoint
+   elseif self:isa("CommTunnel") then
+        blipType = kMinimapBlipType.TunnelEntrance
     elseif self:isa("TechPoint") then
         blipType = kMinimapBlipType.TechPoint
     // Don't display PowerPoints unless they are in an unpowered state.

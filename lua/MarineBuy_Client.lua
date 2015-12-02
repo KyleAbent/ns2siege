@@ -15,7 +15,7 @@ function MarineBuy_GetWeaponDescription(techId)
         gWeaponDescription = { }
         gWeaponDescription[kTechId.Axe] = "WEAPON_DESC_AXE"
         gWeaponDescription[kTechId.Pistol] = "WEAPON_DESC_PISTOL"
-        gWeaponDescription[kTechId.HeavyMachineGun] = "Bug avoca for a description. Until then, I'm gonna get away with not having one."
+        gWeaponDescription[kTechId.HeavyMachineGun] = "The best version yet"
         gWeaponDescription[kTechId.Rifle] = "WEAPON_DESC_RIFLE"
         gWeaponDescription[kTechId.Shotgun] = "WEAPON_DESC_SHOTGUN"
         gWeaponDescription[kTechId.HeavyRifle] = "Pronounced an-eye-full.. ~ up to +20% dmg against Oni."

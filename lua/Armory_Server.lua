@@ -68,7 +68,7 @@ function Armory:OnStun()
                 bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
                 bonewall.targetid = self:GetId()
        */
-            //    self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
+                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
                 self.stunned = true
                 self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
 end

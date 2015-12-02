@@ -49,7 +49,7 @@ function Marine:OnTakeDamage(damage, attacker, doer, point)
             
         end
 
-        if (doer:isa("Gore") or doer:isa("Shockwave")) and not self:GetIsVortexed() then
+        if (doer:isa("Gore") or doer:isa("Shockwave")) then
         
             self.interruptAim = true
             self.interruptStartTime = Shared.GetTime()
@@ -132,7 +132,7 @@ end
 function Marine:CopyPlayerDataFrom(player)
 
     Player.CopyPlayerDataFrom(self, player)
-    self.hasfirebullets = player.hasfirebullets
+   if self:isa("JetpackMarine") then self.hasfirebullets = player.hasfirebullets end //May this prevent the always spawning with it if otherwise?
     if player.parasited and GetGamerules():GetGameStarted() then
         self.timeParasited = player.timeParasited
         self.parasited = player.parasited
@@ -340,6 +340,10 @@ function Marine:AttemptToBuy(techIds)
               elseif techId == kTechId.FireBullets then
               //  self:AddResources(-GetCostForTech(techId))
                 self.hasfirebullets = true
+                return true
+              elseif techId == kTechId.HeavyMachineGun then
+                         self:GiveItem(HeavyMachineGun.kMapName)
+                         self:SetArmorAmount()
                 return true
               elseif techId == kTechId.Resupply then
                 self.hasreupply = true

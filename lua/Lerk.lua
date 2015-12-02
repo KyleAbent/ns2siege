@@ -213,7 +213,8 @@ end
 
 function Lerk:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
-	local scale = self.modelsize //*  .80
+    local value = Clamp(self:GetHealthScalar(), .8, 1)
+	local scale = self.modelsize *  ConditionalValue(self:GetHealthScalar() <= .5, value, 1)
         coords.xAxis = coords.xAxis * scale
         coords.yAxis = coords.yAxis * scale
         coords.zAxis = coords.zAxis * scale
@@ -264,6 +265,31 @@ function Lerk:OverrideGetMoveYaw()
         return 90
     end
     
+end
+local function GetHitsFace(self, doer, hitPoint)
+
+
+    
+        local viewDirection = GetNormalizedVectorXZ(self:GetViewCoords().zAxis)
+        local zPosition = viewDirection:DotProduct(GetNormalizedVector(hitPoint - self:GetOrigin()))
+
+        return zPosition > -0.1
+    
+
+
+end
+function Lerk:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
+
+local damage = 1
+    
+    if hitPoint ~= nil and doer:isa("HeavyMachineGun") and GetHitsFace(self, doer, hitPoint) then
+    
+       damage =  damage * .9
+        self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )
+        
+    end
+  damageTable.damage = damageTable.damage * damage 
+  
 end
 function Lerk:GetMovePhysicsMask()
     return PhysicsMask.AlienNonOnos

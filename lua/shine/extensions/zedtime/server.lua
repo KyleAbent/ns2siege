@@ -4,6 +4,8 @@ KyleAbent@gmail.com / 12XNLDBRNAXfBCqwaBfwcBn43W3PkKUkUb
 local Shine = Shine
 local Plugin = Plugin
 
+Shine.Hook.SetupClassHook( "NS2Gamerules", "TriggerZedTime", "HookZedTime", "PassivePre" )
+
 
 Plugin.Version = "1.0"
 Plugin.HasConfig = true
@@ -34,7 +36,7 @@ end
  function Plugin:NotifyGeneric( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[ZedTime]",  255, 0, 0, String, Format, ... )
 end
-/*
+
  function Plugin:OnEntityKilled( Gamerules, Victim, Attacker, Inflictor, Point, Dir ) 
  
  /*
@@ -55,13 +57,13 @@ end
                    self.minimumtimebetweenzeds = Shared.GetTime()
                    end
      end
+     */
      
-     
-     if Victim and Victim:isa("Player") then
-      self:NotifyKillStats(Victim, "Attacker: %s, Health:%s, Armor:%s", SafeClassName(Victim), self:SafeHealth(Victim), self:SafeArmor(Victim), true)
+     if Victim and Victim:isa("Player") and Attacker and Attacker:isa("Player") then
+      self:NotifyKillStats(Victim, "Health:%s, Armor:%s", self:SafeHealth(Attacker), self:SafeArmor(Attacker), true)
      end
 end
-*/
+
 function Plugin:SafeHealth(entity)
     if entity ~= nil and entity.GetHealth then
         return entity:GetHealth()
@@ -76,6 +78,9 @@ function Plugin:SafeArmor(entity)
 end
 function Plugin:NotifyKillStats( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[KillStats]",  255, 0, 0, String, Format, ... )
+end
+function Plugin:HookZedTime()
+      self:TriggerZedTime(self.Config.minimumdurationzedtime, self.Config.maximumdurationzedtime)
 end
 function Plugin:TriggerZedTime(min, max)
    // if Shine.GetHumanPlayerCount() < self.Config.minimumplayerstoactivatezedtime then return end

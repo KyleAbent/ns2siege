@@ -286,7 +286,7 @@ function Crag:TryHeal(target)
     heal = heal * self:GetCragsInRange()/3 + heal
     
     if self:GetIsSiege() and target:isa("Hive") or target:isa("Crag") then
-       heal = heal * 1.5
+       heal = heal * 1.3
     end
     
     if target:GetHealthScalar() ~= 1 and (not target.timeLastCragHeal or target.timeLastCragHeal + Crag.kHealInterval <= Shared.GetTime()) then
@@ -346,7 +346,47 @@ function Crag:UpdateHealing()
     end
     
 end
+/*
+if Server then
+function Crag:OnOrderComplete(currentOrder)
+    if currentOrder:GetType() == kTechId.Move then 
+    // Print("Moving Complete") 
 
+   Print("Checking")
+    local startPoint = self:GetOrigin() 
+    local endPoint = startPoint + Vector(1.5, 1, 1.5)
+    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Move, PhysicsMask.Bullets,  EntityFilterOne(self))
+    
+    
+    if trace.entity ~= nil and trace.entity:isa("Crag") and trace.entity ~= self then 
+
+        local extents = LookupTechData(kTechId.Crag, kTechDataMaxExtents, nil)
+        local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), 1.5, 2.5, EntityFilterAll())
+        
+        if spawnPoint ~= nil then
+            spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+        end
+ 
+        if spawnPoint then
+        Print("Order Given to unstuck")
+        self:AddTimedCallback(Crag.ActualOrder, 1)
+
+        end
+    
+    end
+
+
+
+
+    end
+end
+end
+function Crag:ActualOrder()
+   self:GiveOrder(kTechId.Move, nil, spawnPoint)
+   return false
+end
+*/
 function Crag:GetMaxSpeed()
     return kAlienStructureMoveSpeed
 end
@@ -361,8 +401,9 @@ function Crag:OnUpdate(deltaTime)
     
     
     if Server then
-    
-
+  
+        
+        
         if not self.timeLastCragUpdate then
             self.timeLastCragUpdate = Shared.GetTime()
         end
@@ -412,7 +453,7 @@ end
 function Crag:GetTechButtons(techId)
 
     local techButtons = { kTechId.HealWave, kTechId.Move, kTechId.CragHeal, kTechId.None,
-                          kTechId.CragUmbra, kTechId.None, kTechId.None, kTechId.None}
+                          kTechId.CragUmbra, kTechId.None, kTechId.None, kTechId.Digest}
     
      if self:GetIsSiege() and self:IsInRangeOfHive() then
     techButtons[1] = kTechId.None
@@ -425,7 +466,14 @@ function Crag:GetTechButtons(techId)
     return techButtons
     
 end
+function Crag:OnResearchComplete(researchId)
 
+    if researchId == kTechId.Digest then
+        self:TriggerEffects("digest", {effecthostcoords = self:GetCoords()} )
+        self:Kill()
+    end
+        
+end
 function Crag:PerformAction(techNode)
 
     if techNode:GetTechId() == kTechId.Stop then
@@ -510,4 +558,5 @@ function Crag:OnUse(player, elapsedTime, useSuccessTable)
     
 end
 */
+
 Shared.LinkClassToMap("Crag", Crag.kMapName, networkVars)

@@ -285,9 +285,9 @@ local function Shoot(self, leftSide)
         local spreadDirection = CalculateSpread(shootCoords, kMinigunSpread, NetworkRandom)
         
         local range = kMinigunRange
-        if GetIsVortexed(player) then
-            range = 5
-        end
+ //       if GetIsVortexed(player) then
+  //          range = 5
+  //      end
         
         local endPoint = startPoint + spreadDirection * range
         
@@ -298,7 +298,7 @@ local function Shoot(self, leftSide)
         local impactPoint = trace.endPoint - hitOffset
         local surfaceName = trace.surface
         local effectFrequency = self:GetTracerEffectFrequency()
-        local showTracer = ConditionalValue(GetIsVortexed(player), false, math.random() < effectFrequency)
+        local showTracer =  math.random() < effectFrequency
         
         local numTargets = #targets
         

@@ -107,7 +107,7 @@ function Gamerules_GetDamageMultiplier()
     
 end
 
-kDamageType = enum( {'Acid', 'Xenocide', 'Normal', 'Light', 'Heavy', 'Puncture', 'Structural', 'StructuralHeavy', 'Splash', 'Gas', 'NerveGas',
+kDamageType = enum( {'Acid', 'Xenocide', 'Normal', 'Light', 'Heavy', 'Puncture', 'PunctureFlame', 'Structural', 'StructuralHeavy', 'Splash', 'Gas', 'NerveGas',
            'StructuresOnly', 'Falling', 'Door', 'Flame', 'Infestation', 'Corrode', 'ArmorOnly', 'Biological', 'StructuresOnlyLight', 'Spreading', 'GrenadeLauncher', 'Flamethrower' } )
 
 // Describe damage types for tooltips
@@ -116,6 +116,7 @@ kDamageTypeDesc = {
     "Light damage: reduced vs. armor",
     "Heavy damage: extra vs. armor",
     "Puncture damage: extra vs. players",
+    "PunctureFlame: same as above but with flame damage additions",
     "Structural damage: Double vs. structures",
     "StructuralHeavy damage: Double vs. structures and double vs. armor",
     "Gas damage: affects breathing targets only",
@@ -186,11 +187,15 @@ local function HalfHealthPerArmor(target, attacker, doer, damage, armorFractionU
 end
 local function XenocideScale(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint)
 local scale = 1
+
+/*
 if  target:isa("Marine") or target:isa("JetpackMarine") and not target:isa("Exo") then
 scale = scale * (12/100) + scale
 elseif target:isa("Exo") or target.GetReceivesStructuralDamage then
 scale = scale * (31/100) + scale
 end
+*/
+
 damage = damage * scale
  return damage, armorFractionUsed, healthPerArmor 
 end
@@ -318,7 +323,29 @@ end
 local function MultiplyForPlayers(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint)
     return ConditionalValue(target:isa("Player") or target:isa("Exosuit"), damage * kPuncturePlayerDamageScalar, damage), armorFractionUsed, healthPerArmor
 end
-
+local function MultiplyForPlayersModified(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint)
+   
+     if target:isa("Player") or target:isa("Exosuit") then
+     damage = damage * kPuncturePlayerDamageScalar
+     end
+     
+     if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) or target:isa("Clog") or target:isa("Egg") then
+        damage = damage * 1.10
+    end
+    
+    if HasMixin(target, "Fire") then target:SetOnFire(attacker, doer) end
+    
+              //  if target.GetEnergy and target.SetEnergy then
+              //   target:SetEnergy(target:GetEnergy() - 0.1 * 10) // too much lol
+              //  end
+                
+           if Server and target:isa("Alien") then
+                target:CancelEnzyme()
+                target:CancelPrimal()
+            end
+            
+    return damage, armorFractionUsed, healthPerArmor
+end
 local function ReducedDamageAgainstSmall(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint)
 
     if target.GetIsSmallTarget and target:GetIsSmallTarget() then
@@ -475,7 +502,10 @@ local function BuildDamageTypeRules()
     kDamageTypeRules[kDamageType.Puncture] = {}
     table.insert(kDamageTypeRules[kDamageType.Puncture], MultiplyForPlayers)
     // ------------------------------
-    
+   // Puncture flame rules
+    kDamageTypeRules[kDamageType.PunctureFlame] = {}
+    table.insert(kDamageTypeRules[kDamageType.PunctureFlame], MultiplyForPlayersModified)
+    // ---------
     // Spreading damage rules
     kDamageTypeRules[kDamageType.Spreading] = {}
     table.insert(kDamageTypeRules[kDamageType.Spreading], ReducedDamageAgainstSmall)

@@ -1,14 +1,3 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\TunnelEntrance.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-//    Entrance to a gorge tunnel. A "GorgeTunnel" entity is created once both entrances are completed.
-//    In case both tunnel entrances are destroyed, the tunnel will collapse.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -38,18 +27,19 @@ Script.Load("lua/TeleportMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
+Script.Load("lua/ResearchMixin.lua")
 
 Script.Load("lua/Tunnel.lua")
 
-class 'TunnelEntrance' (ScriptActor)
+class 'CommTunnel' (ScriptActor)
 
-TunnelEntrance.kMapName = "tunnelentrance"
+CommTunnel.kMapName = "CommTunnel"
 
 local kDigestDuration = 1.5
 local kTunnelInfestationRadius = 7
 
-TunnelEntrance.kModelName = PrecacheAsset("models/alien/tunnel/mouth.model")
-TunnelEntrance.kModelNameShadow = PrecacheAsset("models/alien/tunnel/mouth_shadow.model")
+CommTunnel.kModelName = PrecacheAsset("models/alien/tunnel/mouth.model")
+CommTunnel.kModelNameShadow = PrecacheAsset("models/alien/tunnel/mouth_shadow.model")
 local kAnimationGraph = PrecacheAsset("models/alien/tunnel/mouth.animation_graph")
 
 local networkVars = { 
@@ -61,6 +51,7 @@ local networkVars = {
     destLocationId = "entityid",
     //otherSideInfested = "boolean"
     movedbycommander = "boolean",
+   // iscommtunnel  = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -83,6 +74,7 @@ AddMixinNetworkVars(InfestationMixin, networkVars)
 AddMixinNetworkVars(TeleportMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(AlienStructureMoveMixin, networkVars)
+AddMixinNetworkVars(ResearchMixin, networkVars)
 
 local function UpdateInfestationStatus(self)
 
@@ -127,7 +119,7 @@ local function UpdateInfestationStatus(self)
 
 end
 
-function TunnelEntrance:OnCreate()
+function CommTunnel:OnCreate()
 
     ScriptActor.OnCreate(self)
     
@@ -153,6 +145,7 @@ function TunnelEntrance:OnCreate()
     InitMixin(self, InfestationMixin)
     InitMixin(self, TeleportMixin)
     InitMixin(self, PathingMixin)
+    InitMixin(self, ResearchMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, AlienStructureMoveMixin, { kAlienStructureMoveSound = Whip.kWalkingSound })
     
@@ -177,11 +170,11 @@ function TunnelEntrance:OnCreate()
     //self.otherSideInfested = false
 end
 
-function TunnelEntrance:OnInitialized()
+function CommTunnel:OnInitialized()
 
     ScriptActor.OnInitialized(self)
     
-    self:SetModel(TunnelEntrance.kModelName, kAnimationGraph)
+    self:SetModel(CommTunnel.kModelName, kAnimationGraph)
     
     if Server then
     
@@ -205,7 +198,7 @@ function TunnelEntrance:OnInitialized()
 
 end
 
-function TunnelEntrance:OnDestroy()
+function CommTunnel:OnDestroy()
 
     ScriptActor.OnDestroy(self)
     
@@ -218,43 +211,43 @@ function TunnelEntrance:OnDestroy()
     
 end
 
-function TunnelEntrance:SetVariant(gorgeVariant)
+function CommTunnel:SetVariant(gorgeVariant)
 
     if gorgeVariant == kGorgeVariant.shadow then
-        self:SetModel(TunnelEntrance.kModelNameShadow, kAnimationGraph)
+        self:SetModel(CommTunnel.kModelNameShadow, kAnimationGraph)
     else
-        self:SetModel(TunnelEntrance.kModelName, kAnimationGraph)
+        self:SetModel(CommTunnel.kModelName, kAnimationGraph)
     end
     
 end
 
-function TunnelEntrance:GetInfestationRadius()
+function CommTunnel:GetInfestationRadius()
     return kTunnelInfestationRadius
 end
 
-function TunnelEntrance:GetInfestationMaxRadius()
+function CommTunnel:GetInfestationMaxRadius()
     return kTunnelInfestationRadius // self.otherSideInfested and kTunnelInfestationRadius or 0
 end
 
 if not Server then
-    function TunnelEntrance:GetOwner()
+    function CommTunnel:GetOwner()
         return self.ownerId ~= nil and Shared.GetEntity(self.ownerId)
     end
 end
 
-function TunnelEntrance:GetOwnerClientId()
+function CommTunnel:GetOwnerClientId()
     return self.ownerClientId
 end
 
-function TunnelEntrance:GetDigestDuration()
+function CommTunnel:GetDigestDuration()
     return kDigestDuration
 end
 
-function TunnelEntrance:GetCanDigest(player)
+function CommTunnel:GetCanDigest(player)
     return self.allowDigest and player == self:GetOwner() and player:isa("Gorge") and (not HasMixin(self, "Live") or self:GetIsAlive())
 end
 
-function TunnelEntrance:SetOwner(owner)
+function CommTunnel:SetOwner(owner)
 
     if owner and not self.ownerClientId then
     
@@ -275,31 +268,31 @@ function TunnelEntrance:SetOwner(owner)
     end
     
 end
-function TunnelEntrance:GetCanAutoBuild()
+function CommTunnel:GetCanAutoBuild()
     return self:GetGameEffectMask(kGameEffect.OnInfestation)
 end
 
-function TunnelEntrance:GetReceivesStructuralDamage()
+function CommTunnel:GetReceivesStructuralDamage()
     return true
 end
 
-function TunnelEntrance:GetIsWallWalkingAllowed()
+function CommTunnel:GetIsWallWalkingAllowed()
     return false
 end
 
-function TunnelEntrance:GetDamagedAlertId()
+function CommTunnel:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
 
-function TunnelEntrance:GetCanSleep()
+function CommTunnel:GetCanSleep()
     return not self.moving
 end
 
-function TunnelEntrance:GetTechButtons(techId)
+function CommTunnel:GetTechButtons(techId)
     local techButtons = nil
     
         techButtons = { kTechId.Move, kTechId.None, kTechId.None, kTechId.None,  
-                    kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+                    kTechId.None, kTechId.None, kTechId.None, kTechId.Digest }
                     
       if self.moving then
       techButtons[2] = kTechId.Stop
@@ -307,11 +300,18 @@ function TunnelEntrance:GetTechButtons(techId)
     
     return techButtons
 end
-function TunnelEntrance:GetMaxSpeed()
+function CommTunnel:GetMaxSpeed()
     return kAlienStructureMoveSpeed
 end
+function CommTunnel:OnResearchComplete(researchId)
 
-function TunnelEntrance:OnOverrideOrder(order)
+    if researchId == kTechId.Digest then
+        self:TriggerEffects("digest", {effecthostcoords = self:GetCoords()} )
+        self:Kill()
+    end
+        
+end
+function CommTunnel:OnOverrideOrder(order)
     if order:GetType() == kTechId.Default or order:GetType() == kTechId.Move then
              if not self.movedbycommander then self.movedbycommander = true end
              order:SetType(kTechId.Move)
@@ -325,11 +325,11 @@ function TunnelEntrance:OnOverrideOrder(order)
     end
              
 end
-function TunnelEntrance:GetIsConnected()
+function CommTunnel:GetIsConnected()
     return self.connected
 end
 
-function TunnelEntrance:Interact()
+function CommTunnel:Interact()
 
     self.beingUsed = true
     self.clientBeingUsed = true
@@ -339,7 +339,7 @@ end
 
 if Server then
 
-    function TunnelEntrance:OnTeleportEnd()
+    function CommTunnel:OnTeleportEnd()
     
         local tunnel = Shared.GetEntity(self.tunnelId)
         if tunnel then
@@ -374,7 +374,7 @@ if Server then
     
     end
 
-    function TunnelEntrance:OnUpdate(deltaTime)
+    function CommTunnel:OnUpdate(deltaTime)
 
         ScriptActor.OnUpdate(self, deltaTime)    
 
@@ -426,7 +426,7 @@ if Server then
 
     end
 
-    function TunnelEntrance:GetTunnelEntity()
+    function CommTunnel:GetTunnelEntity()
     
         if self.tunnelId and self.tunnelId ~= Entity.invalidId then
             return Shared.GetEntity(self.tunnelId)
@@ -434,7 +434,7 @@ if Server then
     
     end
 
-    function TunnelEntrance:UpdateConnectedTunnel()
+    function CommTunnel:UpdateConnectedTunnel()
 
         local hasValidTunnel = self.tunnelId ~= nil and Shared.GetEntity(self.tunnelId) ~= nil
 
@@ -464,11 +464,11 @@ if Server then
 
     end
 
-    function TunnelEntrance:OnConstructionComplete()
+    function CommTunnel:OnConstructionComplete()
         self:UpdateConnectedTunnel()
     end
     
-    function TunnelEntrance:OnKill(attacker, doer, point, direction)
+    function CommTunnel:OnKill(attacker, doer, point, direction)
 
         ScriptActor.OnKill(self, attacker, doer, point, direction)
         self:TriggerEffects("death")
@@ -488,21 +488,21 @@ if Server then
 
 end
 
-function TunnelEntrance:GetHealthbarOffset()
+function CommTunnel:GetHealthbarOffset()
     return 1
 end
 
-function TunnelEntrance:GetCanBeUsed(player, useSuccessTable)
+function CommTunnel:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = self.connected and useSuccessTable.useSuccess and self:GetCanDigest(player)  
 end
 
-function TunnelEntrance:GetCanBeUsedConstructed()
+function CommTunnel:GetCanBeUsedConstructed()
     return true
 end
 
 if Server then
 
-    function TunnelEntrance:SuckinEntity(entity)
+    function CommTunnel:SuckinEntity(entity)
     
         if entity and HasMixin(entity, "TunnelUser") and self.tunnelId then
         
@@ -522,13 +522,13 @@ if Server then
     
     end
     
-    function TunnelEntrance:OnEntityExited(entity)
+    function CommTunnel:OnEntityExited(entity)
         self.timeLastExited = Shared.GetTime()
         self:TriggerEffects("tunnel_exit_3D")
     end
 
 end   
-function TunnelEntrance:CheckSpaceAboveForJump()
+function CommTunnel:CheckSpaceAboveForJump()
 
     local startPoint = self:GetOrigin() 
     local endPoint = startPoint + Vector(1.2, 1.2, 1.2)
@@ -536,7 +536,7 @@ function TunnelEntrance:CheckSpaceAboveForJump()
     return GetWallBetween(startPoint, endPoint, self)
     
 end
-function TunnelEntrance:MoveToUnstuck()
+function CommTunnel:MoveToUnstuck()
         local extents = LookupTechData(kTechId.GorgeTunnel, kTechDataMaxExtents, nil)
         local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
         local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 7, EntityFilterAll())
@@ -549,7 +549,7 @@ function TunnelEntrance:MoveToUnstuck()
         self:SetOrigin(spawnPoint)
         end
 end
-function TunnelEntrance:OnUpdateAnimationInput(modelMixin)
+function CommTunnel:OnUpdateAnimationInput(modelMixin)
 
     local sucking = self.beingUsed or (self.clientBeingUsed and self.timeLastInteraction and self.timeLastInteraction + 0.1 > Shared.GetTime())
     -- sucking will be nil when self.clientBeingUsed is nil. Handle this case here.
@@ -561,11 +561,11 @@ function TunnelEntrance:OnUpdateAnimationInput(modelMixin)
     
 end
 
-function TunnelEntrance:GetEngagementPointOverride()
+function CommTunnel:GetEngagementPointOverride()
     return self:GetOrigin() + Vector(0, 0.25, 0)
 end
 
-function TunnelEntrance:OnUpdateRender()
+function CommTunnel:OnUpdateRender()
 
     local showDecal = self:GetIsVisible() and not self:GetIsCloaked() and self:GetIsAlive()
 
@@ -579,7 +579,7 @@ function TunnelEntrance:OnUpdateRender()
 end
 
 
-function TunnelEntrance:GetDestinationLocationName()
+function CommTunnel:GetDestinationLocationName()
 
     local location = Shared.GetEntity(self.destLocationId)   
     if location then
@@ -589,7 +589,7 @@ function TunnelEntrance:GetDestinationLocationName()
 end
 
 
-function TunnelEntrance:GetUnitNameOverride(viewer)
+function CommTunnel:GetUnitNameOverride(viewer)
 
     local unitName = GetDisplayName(self)    
     
@@ -617,7 +617,7 @@ function TunnelEntrance:GetUnitNameOverride(viewer)
 
 end
 
-function TunnelEntrance:OverrideHintString( hintString, forEntity )
+function CommTunnel:OverrideHintString( hintString, forEntity )
     
     if not GetAreEnemies(self, forEntity) then
         local locationName = self:GetDestinationLocationName()
@@ -629,5 +629,20 @@ function TunnelEntrance:OverrideHintString( hintString, forEntity )
     return hintString
     
 end
+function GetCheckCommTunnelLimit(techId, origin, normal, commander) 	
+		
+local CommTunnels = 0 
+for index, CommTunnel in ientitylist(Shared.GetEntitiesWithClassname("CommTunnel")) do 
+CommTunnels = CommTunnels + 1 
+end 
 
-Shared.LinkClassToMap("TunnelEntrance", TunnelEntrance.kMapName, networkVars)
+local cysts = 0 
+for _, cyst in ipairs(GetEntitiesForTeamWithinRange("Cyst", 2, origin, 7 )) do
+ if cyst:GetIsBuilt() then cysts = cysts + 1 end
+end 
+
+ 
+return CommTunnels < 2 and cysts > 0
+end 
+
+Shared.LinkClassToMap("CommTunnel", CommTunnel.kMapName, networkVars)

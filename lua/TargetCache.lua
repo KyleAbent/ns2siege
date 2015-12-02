@@ -329,8 +329,8 @@ function StaticTargetCache:AddPossibleTargets(selector, result)
     for targetId, range in pairs(self.targetIdToRangeMap) do
         PROFILE("StaticTargetCache:AddPossibleTargets/loop")
         local target = Shared.GetEntity(targetId)
-        
-            if target and not target:isa("BoneShield") and not target:isa("SoundEffect") and target:GetIsAlive() and target:GetCanTakeDamage() then 
+        if not HasMixin(target, "Live") then return end 
+            if target and not target:isa("BoneShield") and target:GetIsAlive() and target:GetCanTakeDamage() then 
                 PROFILE("StaticTargetCache:AddPossibleTargets/_ApplyFilters")
                 if selector:_ApplyFilters(target, target:GetEngagementPoint()) then
                     table.insert(result,target)

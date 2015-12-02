@@ -273,12 +273,12 @@ function PathingMixin:MoveToTarget(physicsGroupMask, endPoint, movespeed, time)
     end
 
     // Don't move during repositioning
-    if HasMixin(self, "Repositioning") and self:GetIsRepositioning() then
+//    if HasMixin(self, "Repositioning") and self:GetIsRepositioning() then
     
-        maxSpeed = 0
-        return false
+  //      maxSpeed = 0
+  //      return false
         
-    end
+ //   end
     
     if maxSpeed < movespeed then
         // use the copied cursor and discard the current cursor

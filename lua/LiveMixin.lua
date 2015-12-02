@@ -498,7 +498,8 @@ function LiveMixin:Kill(attacker, doer, point, direction)
         end
       if self:GetTeamNumber() == 1 and self:isa("Player") then 
         if attacker and attacker:isa("Alien") and GetHasHungerUpgrade(attacker) then
-        //  attacker.primaled = true
+          attacker.primaled = true
+          attacker:TriggerEffects("primal_scream")
        //   attacker:TriggerEnzyme(4)
           attacker:AddEnergy(10)
        //   attacker.timeUmbraExpires = Shared.GetTime() + 4

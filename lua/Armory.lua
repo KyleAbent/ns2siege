@@ -291,7 +291,7 @@ function Armory:AddXP(amount)
     
 end
 function Armory:GetIsStunAllowed()
-    return self:GetLastStunTime() + 4 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
+    return self:GetLastStunTime() + 8 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
 function Armory:LoseXP(amount)
 
