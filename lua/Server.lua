@@ -35,8 +35,8 @@ Script.Load("lua/ServerAdmin.lua")
 Script.Load("lua/TournamentMode.lua")
 Script.Load("lua/ServerAdminCommands.lua")
 Script.Load("lua/ServerWebInterface.lua")
-Script.Load("lua/MapCycleOverWrite.lua")
-//Script.Load("lua/MapCycle.lua")
+//Script.Load("lua/MapCycleOverWrite.lua")
+Script.Load("lua/MapCycle.lua")
 Script.Load("lua/ConsistencyConfig.lua")
 Script.Load("lua/Mantis.lua")
 
@@ -291,8 +291,8 @@ function OnMapLoadEntity(mapName, groupName, values)
 
 end
 
-function OnMapPreLoad()
-
+function OnMapPreLoad() 
+    
     Shared.PreLoadSetGroupNeverVisible(kCollisionGeometryGroupName)
     Shared.PreLoadSetGroupNeverVisible(kMovementCollisionGroupName)
     Shared.PreLoadSetGroupNeverVisible(kInvisibleCollisionGroupName)
@@ -426,8 +426,8 @@ end
  * Called by the engine to test if a player (represented by the entity they are
  * controlling) can hear another player for the purposes of voice chat.
  */
-local function OnCanPlayerHearPlayer(listener, speaker)
-    return GetGamerules():GetCanPlayerHearPlayer(listener, speaker)
+local function OnCanPlayerHearPlayer(listener, channelType)
+    return GetGamerules():GetCanPlayerHearPlayer(listener, channelType)
 end
 
 

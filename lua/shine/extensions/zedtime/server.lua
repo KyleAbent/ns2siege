@@ -59,22 +59,12 @@ end
      end
      */
      
+     /*
      if Victim and Victim:isa("Player") and Attacker and Attacker:isa("Player") then
-      self:NotifyKillStats(Victim, "Health:%s, Armor:%s", self:SafeHealth(Attacker), self:SafeArmor(Attacker), true)
+      self:NotifyKillStats(Victim, "Health:%s, Armor:%s", Attacker:GetHealth(), Attacker:GetArmor(), true)
      end
-end
-
-function Plugin:SafeHealth(entity)
-    if entity ~= nil and entity.GetHealth then
-        return entity:GetHealth()
-    end
-    return "nil"
-end
-function Plugin:SafeArmor(entity)
-    if entity ~= nil and entity.GetArmor then
-        return entity:GetArmor()
-    end
-    return "nil"
+     */
+     
 end
 function Plugin:NotifyKillStats( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[KillStats]",  255, 0, 0, String, Format, ... )

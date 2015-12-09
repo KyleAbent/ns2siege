@@ -224,6 +224,26 @@ local function ApplyAttackerModifiers(target, attacker, doer, damage, armorFract
         damage = doer:ComputeDamageAttackerOverride(attacker, damage, damageType)
     end
     
+    if doer and doer:isa("HeavyMachineGun") and target and target:isa("Player") then
+          
+            local dist = doer:GetDistance(target)
+            local kDistanceDropOff = 10 //Lower dmg at or further than this
+            local kDistanceGain = 5  //Increase dmg at or closer than this
+            //Print("%s", dist)        //Debug
+           // Print("%s unmodified dmg", damage) //Debug
+            if dist >= kDistanceDropOff then //Rules for distance dropoff
+            local distanceclamped = Clamp(dist - kDistanceDropOff, 1,3)//so 15 distance - 10 dropoff = 5 clamped to 3
+            damage = damage - distanceclamped  //Dmg = 7(weapons 0) - 3 = 4  ?
+            //Print("%s modified dmg", damage) //debug
+            elseif dist <= kDistanceGain then //rules for distance increase
+            local distanceclamped = Clamp(kDistanceGain-dist, 1, 3) //so 5 - 1 = 4
+            damage = damage + distanceclamped //dmg = 7+4 = 11
+            //Print("%s modified dmg", damage)  //debug
+            end
+            
+   end
+   
+    
     if attacker and attacker.ComputeDamageAttackerOverrideMixin then
         damage = attacker:ComputeDamageAttackerOverrideMixin(attacker, damage, damageType, doer, hitPoint)
     end

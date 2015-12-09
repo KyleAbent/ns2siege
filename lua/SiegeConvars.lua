@@ -135,7 +135,6 @@ kFuncDoorWeldRate = 1
 kAddAmountofFuncDoorBroken = .1
 kShouldArcsFireAtCysts = false
 //kAlienTeamPresBonusMult = 1
-kCreditMultiplier = 1 // for double credit weekend change 1 to 2 :P
 kSideDoorTime = 300 
 kMarineRespawnProtection = 5.06
 kFrontDoorTime = 360 //6 min

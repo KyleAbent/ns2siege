@@ -311,7 +311,7 @@ function Exo:GetCanDoorInteract(inEntity)
 return false
 end
 function Exo:GetIsStunAllowed()
-    return self:GetLastStunTime() + 4 < Shared.GetTime() and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
+    return self:GetLastStunTime() + 8 < Shared.GetTime() and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
 function Exo:OnInitialized()
 

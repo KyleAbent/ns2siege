@@ -162,9 +162,9 @@ end
 function AlienCommander:HiveCompleteSoRefreshTechsManually()
    UpdateAbilityAvailability(self, self.GetTierOneTechId, self.GetTierTwoTechId, self.GetTierThreeTechId)
 end
-function AlienCommander:OnProcessMove(input)
+//function AlienCommander:OnProcessMove(input)
 
-    Commander.OnProcessMove(self, input)
+  //  Commander.OnProcessMove(self, input)
     
    // if Server then
                   //WHY ?
@@ -176,7 +176,7 @@ function AlienCommander:OnProcessMove(input)
         
    // end
     
-end
+//end
 
 local function SelectNearest(self, className)
 
@@ -425,7 +425,7 @@ local gAlienMenuButtons =
                             kTechId.ThreatMarker, kTechId.NeedHealingMarker, kTechId.ExpandingMarker, kTechId.CommTunnel },
                             
     [kTechId.AdvancedMenu] = { kTechId.Crag, kTechId.Shade, kTechId.Shift, kTechId.Whip,
-                               kTechId.Shell, kTechId.ControlledHallucination, kTechId.EtheralGate, kTechId.None },
+                               kTechId.Shell, kTechId.Veil, kTechId.ControlledHallucination, kTechId.EtheralGate},
 
     [kTechId.AssistMenu] = { kTechId.HealWave, kTechId.ShadeInk, kTechId.SelectShift, kTechId.SelectDrifter,
                              kTechId.NutrientMist, kTechId.Rupture, kTechId.BoneWall, kTechId.Contamination }

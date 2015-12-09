@@ -1051,8 +1051,8 @@ function Marine:OnProcessMove(input)
              self:TriggerDropPack(self:GetOrigin(), kTechId.MedPack)
              end
              
-             if self:GetWeaponInHUDSlot(1) and self:GetWeaponInHUDSlot(1):GetAmmoFraction() < 1
-             or self:GetWeaponInHUDSlot(2) and self:GetWeaponInHUDSlot(2):isa("Pistol") and self:GetWeaponInHUDSlot(2):GetAmmoFraction() < 1                                 then
+             if self:GetWeaponInHUDSlot(1) and self:GetWeaponInHUDSlot(1):GetAmmoFraction() <= .5
+             or self:GetWeaponInHUDSlot(2) and self:GetWeaponInHUDSlot(2):isa("Pistol") and self:GetWeaponInHUDSlot(2):GetAmmoFraction() <= .5                                 then
              self:TriggerDropPack(self:GetOrigin(), kTechId.AmmoPack) 
              end
              
@@ -1157,7 +1157,7 @@ end
 // dont allow marines to me chain stomped. this gives them breathing time and the onos needs to time the stomps instead of spamming
 // and being able to permanently disable the marine
 function Marine:GetIsStunAllowed()
-    return self:GetLastStunTime() + 1.5 < Shared.GetTime() and not self.spawnprotection and (GetAreFrontDoorsOpen() or Shared.GetCheatsEnabled()) and self:GetIsOnGround()
+    return self:GetLastStunTime() + 4 < Shared.GetTime() and not self.spawnprotection and (GetAreFrontDoorsOpen() or Shared.GetCheatsEnabled()) and self:GetIsOnGround()
 end
 
 

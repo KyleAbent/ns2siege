@@ -390,30 +390,6 @@ if Server then
             self.timeLastMoveUpdateCheck = Shared.GetTime()
         end
         
-        // temp fix: push AI units away to prevent players getting stuck
-        if self:GetIsAlive() and ( not self.timeLastAIPushUpdate or self.timeLastAIPushUpdate + 1.4 < Shared.GetTime() ) then
-        
-            local baseYaw = 0
-            self.timeLastAIPushUpdate = Shared.GetTime()
-
-            for i, entity in ipairs(GetEntitiesWithMixinWithinRange("Repositioning", self:GetOrigin(), 1.4)) do
-            
-                if entity:GetCanReposition() then
-                
-                    entity.isRepositioning = true
-                    entity.timeLeftForReposition = 1
-                    
-                    baseYaw = entity:FindBetterPosition( GetYawFromVector(entity:GetOrigin() - self:GetOrigin()), baseYaw, 0 )
-                    
-                    if entity.RemoveFromMesh ~= nil then
-                        entity:RemoveFromMesh()
-                    end
-                    
-                end
-            
-            end
-        
-        end
         
         local destructionAllowedTable = { allowed = true }
         if self.GetDestructionAllowed then

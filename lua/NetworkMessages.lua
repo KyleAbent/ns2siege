@@ -899,19 +899,8 @@ local kVoteEjectCastMessage =
     votesMoreNeeded = "integer (0 to 64)"
 }
 
-function BuildRookieMessage(isRookie)
 
-    local t = {}
 
-    t.isRookie = isRookie
-    
-    return t
-    
-end
-
-function ParseRookieMessage(t)
-    return t.isRookie
-end
 
 
 local kGameEndMessage =
@@ -957,11 +946,7 @@ Shared.RegisterNetworkMessage("DebugCapsule", kDebugCapsuleMessage)
 Shared.RegisterNetworkMessage( "TechNodeBase", kTechNodeBaseMessage )
 Shared.RegisterNetworkMessage( "ClearTechTree", {} )
 
-local kRookieMessage =
-{
-    isRookie = "boolean"
-}
-Shared.RegisterNetworkMessage( "SetRookieMode", kRookieMessage )
+
 
 
 local kCommunicationStatusMessage = 

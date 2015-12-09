@@ -1186,7 +1186,24 @@ function BuildTechData()
 
         { [kTechDataId] = kTechId.Shift, [kTechDataMaxAmount] = 3, [kTechDataAllowConsumeDrop] = true, [kTechDataBioMass] = kShiftBiomass, [kTechDataSupply] = kShiftSupply, [kTechDataHint] = "SHIFT_HINT", [kTechDataGhostModelClass] = "ShiftGhostModel",    [kTechDataMapName] = Shift.kMapName,                        [kTechDataDisplayName] = "SHIFT",  [kTechDataRequiresInfestation] = true, [kTechDataCostKey] = kShiftCost,    [kTechDataHotkey] = Move.S,        [kTechDataBuildTime] = kShiftBuildTime, [kTechDataModel] = Shift.kModelName,           [kTechDataMaxHealth] = kShiftHealth,  [kTechDataMaxArmor] = kShiftArmor,  [kTechDataInitialEnergy] = kShiftInitialEnergy,      [kTechDataMaxEnergy] = kShiftMaxEnergy, [kTechDataPointValue] = kShiftPointValue, [kVisualRange] = kEchoRange, [kTechDataTooltipInfo] = "SHIFT_TOOLTIP", [kTechDataGrows] = true },
 
-        { [kTechDataId] = kTechId.Veil, [kTechDataBioMass] = kVeilBiomass, [kTechDataHint] = "VEIL_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",     [kTechDataMapName] = Veil.kMapName,                         [kTechDataDisplayName] = "VEIL",  [kTechDataCostKey] = kVeilCost,     [kTechDataRequiresInfestation] = true, [kTechDataHotkey] = Move.C,       [kTechDataBuildTime] = kVeilBuildTime, [kTechDataModel] = Veil.kModelName,           [kTechDataMaxHealth] = kVeilHealth, [kTechDataMaxArmor] = kVeilArmor,  [kTechDataPointValue] = kVeilPointValue, [kTechDataTooltipInfo] = "VEIL_TOOLTIP", [kTechDataGrows] = true, [kTechDataObstacleRadius] = 0.5 },
+        { [kTechDataId] = kTechId.Veil, 
+         [kTechDataBioMass] = kVeilBiomass, [kTechDataHint] = "VEIL_HINT", 
+        [kTechDataGhostModelClass] = "AlienGhostModel",   
+          [kTechDataMapName] = Veil.kMapName,   
+          [kTechDataDisplayName] = "Structure Beacon", 
+       [kTechDataCostKey] = kVeilCost,  
+       [kTechDataRequiresInfestation] = true, 
+      [kTechDataHotkey] = Move.C,    
+       [kTechDataCooldown] = 30,
+        [kTechDataBuildTime] = 4, 
+      [kTechDataModel] = Veil.kModelName,    
+         [kTechDataMaxHealth] = kVeilHealth,
+         [kTechDataMaxArmor] = kVeilArmor,  
+       [kTechDataPointValue] = kVeilPointValue, 
+       [kTechDataTooltipInfo] = "Moves all commander built shift, shades, crags, whips to the origin of this structure placement (Ignores crags and shades in hive radius and credit structures in general)", 
+          [kTechDataGrows] = true, 
+        [kTechDataObstacleRadius] = 0.5 },
+        
         { [kTechDataId] = kTechId.TwoVeils, [kTechDataDisplayName] = "TWO_VEILS", [kTechIDShowEnables] = false, [kTechDataTooltipInfo] = "TWO_VEILS_TOOLTIP"},               
         { [kTechDataId] = kTechId.ThreeVeils, [kTechDataDisplayName] = "THREE_VEILS", [kTechIDShowEnables] = false, [kTechDataTooltipInfo] = "THREE_VEILS_TOOLTIP"},  
 

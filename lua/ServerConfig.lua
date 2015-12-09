@@ -33,6 +33,7 @@ local defaultConfig = {
                                 auto_kick_afk_capacity = 0.5,
                                 voting = { 
                                     votekickplayer = true, 
+                                    votekickbantime = 30, 
                                     votechangemap = true, 
                                     voteresetgame = true, 
                                     votegagplayer = true,
@@ -43,10 +44,15 @@ local defaultConfig = {
                                 pregamealltalk = false,
                                 hiveranking = true,
                                 use_own_consistency_config = false,
+                                consistency_enabled = true, 
                                 jit_maxmcode=35000,
                                 jit_maxtrace=20000,
                                 mod_backup_servers = {},
                                 mod_backup_before_steam = false,
+	                            dyndns = "",
+					            enabledyndns = false,
+					            season = "ByDate",
+					            season_month = 0, 
                             },
                         tags = { "rookie" }
                       }
@@ -61,20 +67,7 @@ local reservedSlotsDefaultConfig = {
 }
 local reservedSlotsConfig = LoadConfigFile(reservedSlotsConfigFileName, reservedSlotsDefaultConfig)
 
--- Add the tags to the server if they exist in the file.
-if config.tags then
 
-    for t = 1, #config.tags do
-    
-        if not type(config.tags[t]) == "string" then
-            Shared.Message("Warning: Tags in " .. configFileName .. " must be strings")
-        else
-            Server.AddTag(config.tags[t])
-        end
-        
-    end
-    
-end
 
 
 
@@ -83,8 +76,31 @@ function Server.GetConfigSetting(name)
     if config.settings then
         return config.settings[name]
     end
-    return nil
-    
+end
+
+local kServerIp = IPAddressToString(Server.GetIpAddress())
+do
+    -- Add the tags to the server if they exist in the file.
+    if config.tags then
+
+        for t = 1, #config.tags do
+
+            if not type(config.tags[t]) == "string" then
+                Shared.Message("Warning: Tags in " .. configFileName .. " must be strings")
+            else
+                Server.AddTag(config.tags[t])
+            end
+
+        end
+
+    end
+
+    --set up the dyndns
+    local dyndns = Server.GetConfigSetting("enabledyndns") and Server.GetConfigSetting("dyndns") or ""
+    if dyndns ~= "" then
+        kServerIp = dyndns
+        Server.AddTag(string.format("DYNDNS_%s", dyndns))
+    end
 end
 
 function Server.GetHasTag(tag)

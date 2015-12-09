@@ -717,8 +717,8 @@ function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
                 end
                 
                 // If we're close enough to weld, weld (unless we must move to behind the player)
-                if not forceMove and closeEnoughToWeld then
-
+                if not forceMove and closeEnoughToWeld and not GetIsVortexed(self) then
+                
                     orderTarget:OnWeld(self, MAC.kWeldRate * (self.level/100) + MAC.kWeldRate)
                     self:AddXP(MAC.GainXp)
                     self.timeOfLastWeld = time
@@ -840,7 +840,7 @@ function MAC:GetCanBeWeldedOverride()
 end
 */
 function MAC:GetEngagementPointOverride()
-    return self:GetOrigin()
+    return self:GetOrigin() + Vector(0, self:GetHoverHeight(), 0)
 end
 
 local function GetCanConstructTarget(self, target)

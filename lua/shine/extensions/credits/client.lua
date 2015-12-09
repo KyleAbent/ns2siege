@@ -105,9 +105,9 @@ Shine.VoteMenu:AddPage ("SpendFun", function( self )
        local player = Client.GetLocalPlayer()
      self:AddSideButton( "LowGravity(1)", function() Shared.ConsoleCommand ("sh_buy Gravity")  end) 
    //  self:AddSideButton( "Shrink(5)", function() Shared.ConsoleCommand ("sh_buy Shrink")  end) 
-      if player:GetTeamNumber() == 2 then
+     // if player:GetTeamNumber() == 2 then
      self:AddSideButton( "Grow(5)", function() Shared.ConsoleCommand ("sh_buy Grow")  end) 
-      end
+    //  end
       
       if player:GetTeamNumber() == 1 then
      self:AddSideButton( "GlowPurple(5)", function() Shared.ConsoleCommand ("sh_buy GlowPurple")  end)

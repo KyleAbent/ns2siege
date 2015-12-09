@@ -338,7 +338,9 @@ function ARC:Deploy(commander)
         self:ClearOrders()
         self.deployMode = ARC.kDeployMode.Deploying
         self:TriggerEffects("arc_deploying")
-    
+        self:CheckArc()
+        self:AddTimedCallback(RepositioningMixin.CheckArc, 4)
+          
     end
 
 end

@@ -530,12 +530,15 @@ local level = 0
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
         //Print("Length = %s", roundlength)
       //  if ArmsLab.Weapons1ResearchTime == 0 then return level end
-                    if roundlength > 300 then
+      
+                 if roundlength > kSiegeDoorTime then
+                      level = .478
+                     elseif roundlength > 900 then
+                      level = .43
+                     elseif  roundlength > 600 then
+                      level = .35
+                    elseif roundlength > 300 then
                       level = .25
-                    elseif  roundlength > 600 then
-                      level = .15
-                    elseif roundlength > 900 then
-                      level = .08
                     end
                     
        return level

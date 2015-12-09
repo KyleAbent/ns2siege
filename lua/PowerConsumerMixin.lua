@@ -65,8 +65,11 @@ function PowerConsumerMixin:GetIsPowered()
     return self.powered or self.powerSurge or self:GetHasSentryBatteryInRadius()
 end
 function PowerConsumerMixin:GetHasSentryBatteryInRadius()
-      local battery = GetEntitiesWithinRange("SentryBattery", self:GetOrigin(), SentryBattery.kRange)
-   if #battery >=1 then return true end
+      local backupbattery = GetEntitiesWithinRange("SentryBattery", self:GetOrigin(), SentryBattery.kRange)
+          for index, battery in ipairs(backupbattery) do
+            if GetIsUnitActive(battery) then return true end
+           end      
+ 
    return false
 end
 function PowerConsumerMixin:GetCanBeUsed(player, useSuccessTable)

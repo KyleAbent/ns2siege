@@ -128,7 +128,16 @@ if Server then
         end
 
     end
-
+     function NS2Gamerules:CreateFirstShiftHive()
+         
+        for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
+           hive:UpgradeToTechId(kTechId.ShiftHive)
+           local team = hive:GetTeam()
+           if team then
+           team:OnUpgradeChamberConstructed(hive)
+           end
+        end
+     end
     function NS2Gamerules:SetGameState(state)
     
         if state ~= self.gameState then
@@ -155,6 +164,7 @@ if Server then
             self.siegedoorsopened = false
             self.iszedtime = false
             self.lastexploitcheck = Shared.GetTime()
+            self:CreateFirstShiftHive()
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
        //      self:AddTimedCallback(NS2Gamerules.SuddenDeath, kSiegeDoorTime + kTimeAfterSiegeOpeningToEnableSuddenDeath) 
@@ -1833,6 +1843,7 @@ function NS2Gamerules:GetCombatEntitiesCountInRoom(location)
 end
 function NS2Gamerules:PickMainRoom()
   //Kyle Abent ns2siege 11.22 kyleabent@gmail.com
+    if not self:GetGameStarted() then return end //pregame bug fix? because at start of round says self.mainrooms = shared.gettime //12.5
        if not self.doorsopened or (self.mainrooms + kMainRoomPickEveryXSeconds) > Shared.GetTime() then return true end 
      local locations = EntityListToTable(Shared.GetEntitiesWithClassname("Location"))
      for i = 1, #locations do //

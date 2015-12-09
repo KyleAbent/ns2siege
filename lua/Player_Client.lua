@@ -1795,11 +1795,11 @@ function Player:GetIsMinimapVisible()
 end
 
 local function Player_CanThrowObject( self )
-    -- Don't throw object if already using something or if in commander view
-    if self:GetIsUsing() or self:GetIsCommander() then
+//    if not IsSeasonForThrowing() then
         return false
-    end	
+  //  end
         
+        /*
     -- Only allow in RR and pre-game (not post-game.)
     if self:GetTeamNumber() ~= kTeamReadyRoom then
         local entityList = Shared.GetEntitiesWithClassname("GameInfo")
@@ -1823,6 +1823,7 @@ local function Player_CanThrowObject( self )
     end
     
     return true
+    */
 end
 
 
@@ -1874,6 +1875,8 @@ function Player:SendKeyEvent(key, down)
             elseif GetIsBinding(key, "ToggleMinimapNames") then
                 local newValue = not Client.GetOptionBoolean("minimapNames", true)
                 Client.SetOptionBoolean("minimapNames", newValue)
+           elseif GetIsBinding(key, "Use") and Player_CanThrowObject( self ) then
+                Shared.ConsoleCommand("throwobject " .. GetSeason())
             end
             
         end

@@ -13,7 +13,12 @@ class 'AmmoPack' (DropPack)
 
 AmmoPack.kMapName = "ammopack"
 
-AmmoPack.kModelName = PrecacheAsset("models/marine/ammopack/ammopack.model")
+//if GetSeason() == "Fall" then
+    AmmoPack.kModelName = PrecacheAsset("seasonal/holiday2012/models/gift_ammopack_01.model")
+//else
+//    AmmoPack.kModelName = PrecacheAsset("models/marine/ammopack/ammopack.model")
+//end
+
 AmmoPack.kPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_ammo")
 
 AmmoPack.kNumClips = 5

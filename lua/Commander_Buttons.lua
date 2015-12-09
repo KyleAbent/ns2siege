@@ -287,50 +287,6 @@ function CommanderUI_MenuButtonOffset(index)
             if selectedEnts and selectedEnts[1] then
                 techId = selectedEnts[1]:GetTechId()
             end
-        else
-        
-            // show the back arrow when a menu button is at the bottom right
-            if index == 12 and GetIsMenu(techId) then
-            
-                techId = kTechId.RootMenu
-        
-            // override upgrade structures for alien commander
-            elseif player:isa("AlienCommander") then
-            
-          //      if techId == kTechId.Shell then
-
-            //        if player.shellCount == 1 then
-              //          techId = kTechId.SecondShell
-               //     elseif player.shellCount == 2 then
-                //        techId = kTechId.ThirdShell
-                //    elseif player.shellCount > 2 then
-                //        techId = kTechId.FullShell
-                //    end
-                  //elseif  
-                if techId == kTechId.Spur then
-                    
-                    if player.spurCount == 1 then
-                        techId = kTechId.SecondSpur
-                    elseif player.spurCount == 2 then
-                        techId = kTechId.ThirdSpur
-                    elseif player.spurCount > 2 then
-                        techId = kTechId.FullSpur
-                    end
-                    
-                elseif techId == kTechId.Veil then
-                    
-                    if player.veilCount == 1 then
-                        techId = kTechId.SecondVeil
-                    elseif player.veilCount == 2 then
-                        techId = kTechId.ThirdVeil
-                    elseif player.veilCount > 2 then
-                        techId = kTechId.FullVeil
-                    end
-                    
-                end
-            
-            end
-        
         end
 
         return GetMaterialXYOffset(techId, player:isa("MarineCommander"))

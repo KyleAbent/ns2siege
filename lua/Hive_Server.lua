@@ -26,20 +26,7 @@ function Hive:OnResearchComplete(researchId)
     
     local newTechId = kTechId.Hive
     
-    if researchId == kTechId.ResearchBioMassOne or researchId == kTechId.ResearchBioMassTwo or 
-       researchId == kTechId.ResearchBioMassThree or researchId == kTechId.ResearchBioMassFour then
-    
-        self.bioMassLevel = math.min(6, self.bioMassLevel + 1)
-        self:GetTeam():GetTechTree():SetTechChanged()
-        success = true
-    
-               local team = self:GetTeam()
-        if team then
-         team:UpdateBioMassLevel()
-         team:UpdateShellLevel()
-         end
-         
-    elseif researchId == kTechId.UpgradeToCragHive then
+    if researchId == kTechId.UpgradeToCragHive then
     
         success = self:UpgradeToTechId(kTechId.CragHive)
         newTechId = kTechId.CragHive
@@ -792,15 +779,34 @@ function Hive:UpdateAliensWeaponsManually() ///Seriously this makes more sense t
         alien:HiveCompleteSoRefreshTechsManually() 
    end
 end
+function Hive:AutoUpgrade()
+        if GetShellLevel(2) == 0  then
+           self:UpgradeToTechId(kTechId.CragHive)
+           local team = self:GetTeam()
+           if team then
+           team:OnUpgradeChamberConstructed(self)
+           end
+        else 
+           self:UpgradeToTechId(kTechId.ShadeHive)
+           local team = self:GetTeam()
+           if team then
+           team:OnUpgradeChamberConstructed(self)
+           end
+        end
+end
 function Hive:OnConstructionComplete()
 
-    self.bioMassLevel = 1
+    self.bioMassLevel = 4
 
                local team = self:GetTeam()
         if team then
          team:UpdateBioMassLevel()
          end
          
+    if not GetGamerules():GetFrontDoorsOpen() then
+     self:AutoUpgrade()
+    end
+    
     // Play special tech point animation at same time so it appears that we bash through it.
     local attachedTechPoint = self:GetAttached()
     if attachedTechPoint then
@@ -815,16 +821,6 @@ function Hive:OnConstructionComplete()
         team:OnHiveConstructed(self)
     end
     self:UpdateAliensWeaponsManually()
-    if self.hiveType == 1 then
-        self:OnResearchComplete(kTechId.UpgradeToCragHive)
-        team:OnUpgradeChamberConstructed(self)
-    elseif self.hiveType == 2 then
-        self:OnResearchComplete(kTechId.UpgradeToShadeHive)
-        team:OnUpgradeChamberConstructed(self)
-    elseif self.hiveType == 3 then
-        self:OnResearchComplete(kTechId.UpgradeToShiftHive)
-        team:OnUpgradeChamberConstructed(self)
-    end
     
 end
 

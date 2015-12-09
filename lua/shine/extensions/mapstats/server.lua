@@ -29,13 +29,13 @@ self.MapStatsData = MapStatsFile
        
        if  MarineWinAmount ~=  AlienWinAmount then
           if MarineWinAmount > AlienWinAmount then 
-               if Shared.GetMapName() ~= "ns2_rockdownsiege2" and Shared.GetMapName() ~= "ns2_biodome_siege" then     
+               if Shared.GetMapName() ~= "ns2_rockdownsiege2" and Shared.GetMapName() ~= "ns_realsiege" then     
                    local unclampedtime =  kFrontDoorTime - ( (MarineWinAmount - AlienWinAmount) * 10 )
                    local clampedtime = Clamp(unclampedtime, 300, 480) 
                    kFrontDoorTime = clampedtime
                end
                
-                   if Shared.GetMapName() ~= "ns2_tram_siege" then
+                   if Shared.GetMapName() ~= "ns_realsiege" then
                    local unclampedsiegetime = kSiegeDoorTime + ( (MarineWinAmount - AlienWinAmount) * 30 )
                    local clampedsiegetime = Clamp(unclampedsiegetime, 900, 1500)
                    kSiegeDoorTime = clampedsiegetime
@@ -82,12 +82,12 @@ self.MapStatsData = MapStatsFile
                   
                    
          elseif AlienWinAmount > MarineWinAmount then
-              if Shared.GetMapName() ~= "ns2_rockdownsiege2" and Shared.GetMapName() ~= "ns2_biodome_siege" and Shared.GetMapName() ~= "ns2_tram_siege" then   
+              if Shared.GetMapName() ~= "ns2_rockdownsiege2" and Shared.GetMapName() ~= "ns_realsiege" and Shared.GetMapName() ~= "ns2_tram_siege" then   
                    local unclampedtime = kSiegeDoorTime - ( (AlienWinAmount - MarineWinAmount) * 30 )
                    local clampedtime = Clamp(unclampedtime, 900, 1500) 
                    kSiegeDoorTime = clampedtime
                end  
-              if Shared.GetMapName() ~= "ns2_biodome_siege" then           
+              if Shared.GetMapName() ~= "ns_realsiege" then           
                    local unclampedtimefront = kFrontDoorTime + ( (AlienWinAmount - MarineWinAmount) * 10 )
                    local clampedtimefront = Clamp(unclampedtimefront, 300, 480) 
                    kFrontDoorTime = clampedtimefront

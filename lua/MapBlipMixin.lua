@@ -183,7 +183,7 @@ function MapBlipMixin:GetMapBlipInfo()
         blipTeam = self:GetTeamNumber()
         isAttacked = false
         
-      elseif self:isa("Clog") then
+      elseif self:isa("Clog") or self:isa("Contamination") then
     
         blipType = kMinimapBlipType.Infestation
        

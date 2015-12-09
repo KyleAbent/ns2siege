@@ -119,6 +119,11 @@ function BoneWall:OnKill(attacker, doer, point, direction)
 //   if entity  then
 //  if entity:isa("Armory") or entity:isa("RoboticsFactory") then self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) entity.stunned = false end 
 //  end
+    for _, stunned in ipairs(GetEntitiesWithMixinWithinRange("Stun", self:GetOrigin(), 1)) do
+         stunned.timeLastStun = Shared.GetTime()
+         break
+    end
+    
     self:TriggerEffects("death")
     if Server then
     if not self:GetIsDestroyed() then

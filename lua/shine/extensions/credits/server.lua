@@ -75,49 +75,6 @@ local function GetPathingRequirementsMet(position, extents)
     return not noBuild and walk
     
 end
-function Plugin:HasSentry(Player)
-    for _, sentry in ipairs(GetEntitiesForTeam("Sentry", 1)) do
-        if sentry:GetOwner() == Player and sentry.iscreditstructure == true then return true end
-    end
-    return false
-end
-function Plugin:HasObs(Player)
-local obs = 0
-    for _, observ in ipairs(GetEntitiesForTeam("Observatory", 1)) do
-        if observ:GetOwner() == Player and observ.iscreditstructure == true then obs = obs + 1 end
-    end
-   if obs == 3 then return true end
-    return false
-end
-function Plugin:HasExtractor(Player)
-    for _, extractor in ipairs(GetEntitiesForTeam("Extractor", 1)) do
-        if extractor.ParentId == Player:GetId() and extractor.iscreditstructure == true then return true end
-    end
-    return false
-end
-
-function Plugin:HasIP(Player)
-    for _, IP in ipairs(GetEntitiesForTeam("InfantryPortal", 1)) do
-        if IP.ParentId == Player:GetId() and IP.iscreditstructure == true then return true end
-    end
-    return false
-end
-
-function Plugin:HasHarvester(Player)
-    for _, harvester in ipairs(GetEntitiesForTeam("Harvester", 2)) do
-        if harvester.ParentId == Player:GetId() then return true end
-    end
-    return false
-end
-
-function Plugin:HasArc(Player)
-local arcs = 0
-    for _, ARC in ipairs(GetEntitiesForTeam("ARC", 1)) do
-        if ARC:GetOwner() == Player and ARC.iscreditstructure == true then arcs = arcs + 1 end
-    end
-   if arcs >=1 then return true end
-    return false
-end
 
 function Plugin:HasResPoint(Player)
      for _, respoint in ientitylist(Shared.GetEntitiesWithClassname("ResourcePoint")) do 
@@ -126,49 +83,23 @@ function Plugin:HasResPoint(Player)
     return false
 end
 
-function Plugin:HasThreeHydras(Player)
-local hydrascount = 0
-local hydras = {}
-    for _, hydra in ipairs(GetEntitiesForTeam("Hydra", 2)) do
-        if hydra:GetOwner() == Player and hydra.iscreditstructure == true then hydrascount = hydrascount + 1 end
-        table.insert(hydras, hydra)
+function Plugin:HasLimitOf(Player, classname, teamnumbber, limit)
+local entitycount = 0
+local entities = {}
+    for _, entity in ipairs( GetEntitiesForTeam(classname, teamnumbber)) do
+        if entity:GetOwner() == Player and entity.iscreditstructure == true then entitycount = entitycount + 1 end
+        table.insert(entities, entity)
     end
     
-    
-    if hydrascount ~= 3 then return false end
+     //             <
+    if entitycount ~= limit then return false end
 
-            if #hydras > 0 then
-            local hydra = table.random(hydras)
-                DestroyEntity(hydra)
+            if #entities > 0 then
+            local entity = table.random(entities)
+             if string.find(classname, "Sentry") or string.find(classname, "Observatory") or string.find(classname, "ARC") then return true end
+                DestroyEntity(entity)
             end
- 
-    return true
-end
-function Plugin:HasThreeCrags(Player)
-local cragscount = 0
-local crags = {}
-    for _, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
-        if crag:GetOwner() == Player and crag.iscreditstructure == true then cragscount = cragscount + 1 end
-        table.insert(crags, crag)
-    end
-    
-    
-    if cragscount ~= 3 then return false end
-
-            if #crags > 0 then
-            local crag = table.random(crags)
-                DestroyEntity(crag)
-            end
- 
-    return true
-end
-function Plugin:HasThreeMacs(Player)
-local macs = 0
-    for _, mac in ipairs(GetEntitiesForTeam("MAC", 1)) do
-        if mac:GetOwner() == Player and mac.iscreditstructure == true then macs = macs + 1 end
-    end
-    if macs >=3 then return true end
-    return false
+     return true
 end
 function Plugin:BecauseFuckSpammingCommanders(player)
 if not GetGamerules():GetGameStarted() then return end
@@ -275,6 +206,17 @@ end
 function Plugin:OnFirstThink() 
 local CreditsFile = Shine.LoadJSONFile( CreditsPath )
 self.CreditData = CreditsFile
+
+// for double credit weekend change 1 to 2 :P
+
+     //   local date = os.date("*t", Shared.GetSystemTime())
+     //   local day = date.day
+     //   if string.find(day, "Friday") or string.find(day, "Saturday") or day == string.find(day, "Sunday") then
+       // kCreditMultiplier = 2 
+     //   else
+        kCreditMultiplier = 1
+      //  end
+        
 
 /*
      local function UsersResponse( Response )
@@ -690,9 +632,8 @@ if self:GetPlayerCreditsInfo(Client) < CreditCost then
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
 end
-if self:HasThreeMacs(Player) then
-self:NotifyCredits(Client, "Three Credit Macs Max. Destroy the others to continue", true)
-return
+if self:HasLimitOf(Player, string.format("MAC"), 1, 3) then 
+self:NotifyCredits(Client, "Three Credit Macs Max. Destroying 1 to make another", true)
 end
 
 /*
@@ -732,7 +673,7 @@ self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchas
 return
 end
 
-if self:HasObs(Player) then
+if self:HasLimitOf(Player, string.format("Observatory"), 1, 3) then
 self:NotifyCredits(Client, "Three credit obs per player at the moment.", true)
 return
 end
@@ -801,7 +742,9 @@ if not Player:GetIsOnGround() then
  self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
  return
  end
- 
+ if self:HasLimitOf(Player, string.format("Armory"), 1, 5) then 
+self:NotifyCredits(Client, "Five Credit Armories Max. Deleting 1 to spawn another", true)
+end
 if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Armory) ) then
 self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
 return 
@@ -817,6 +760,7 @@ if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
   self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
 armory.isGhostStructure = false
 end
+armory:SetOwner(Player)
 armory.iscreditstructure = true
 Player:GetTeam():RemoveSupplyUsed(kArmorySupply)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
@@ -833,7 +777,7 @@ if self:GetPlayerCreditsInfo(Client) < CreditCost then
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
 end
-if self:HasSentry(Player) then
+if self:HasLimitOf(Player, string.format("Sentry"), 1, 1) then 
 self:NotifyCredits(Client, "One credit sentry per player at the moment.", true)
 return
 end
@@ -909,9 +853,8 @@ self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchas
 return
 end
 
-if self:HasIP(Player) then
-self:NotifyCredits( Client, "1 Max Credit IP Active at once", true)
-return
+if self:HasLimitOf(Player, string.format("InfantryPortal"), 1, 2) then 
+self:NotifyCredits(Client, "Two Credit IPS Max. Deleting 1 to spawn another", true)
 end
 
 if not Player:GetIsOnGround() then
@@ -937,6 +880,7 @@ ip.iscreditstructure = true
 ip.creditstructre = true
 ip.ParentId = Player:GetId()
 ip.level = 50
+ip:SetOwner(Player)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 10
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -955,6 +899,9 @@ if not Player:GetIsOnGround() then
  self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
  return
  end
+  if self:HasLimitOf(Player, string.format("RoboticsFactory"), 1, 3) then 
+self:NotifyCredits(Client, "Three Credit Robos Max. Deleting 1 to spawn another", true)
+end
  if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.RoboticsFactory) ) then
 self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
 return 
@@ -970,6 +917,7 @@ robo.isGhostStructure = false
 end
 //robo.isGhostStructure = false
 robo.iscreditstructure = true
+robo:SetOwner(Player)
 Player:GetTeam():RemoveSupplyUsed(kRoboticsFactorySupply)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 15
@@ -985,7 +933,7 @@ if self:GetPlayerCreditsInfo(Client) < CreditCost then
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
 end
-if self:HasArc(Player) then
+if self:HasLimitOf(Player, string.format("ARC"), 1, 1) then
 self:NotifyCredits(Client, "One credit ARC per player at the moment.", true)
 return
 end
@@ -1305,7 +1253,7 @@ self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase in
  return
 end
 
-if self:HasExtractor(Player) then
+if self:HasLimitOf(Player, string.format("Extractor"), 1, 1) then
 self:NotifyCredits(Client, "One credit Extractor per player at the moment.", true)
 return
 end
@@ -1322,7 +1270,7 @@ end
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 self:NotifyCredits( nil, "%s a purchased a %s for %s credits", true, Player:GetName(), String, CreditCost)
 local extractor = CreateEntity(Extractor.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-extractor.ParentId = Player:GetId()
+extractor:SetOwner(Player)
 extractor.iscreditstructure = true
 if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
   extractor:SetConstructionComplete()
@@ -1382,27 +1330,20 @@ self:NotifyCredits( Client, "This heavyily breaks balance and I have no idea how
 return
 end
 */
-if Player:isa("Exo") and Player.modelsize >= 2.5 then
-self:NotifyCredits( Player, "Cannot go above 250% as an exo")
-return
-elseif Player.modelsize >= 3 then 
-self:NotifyCredits( Player, "Cannot go above 300%")
+if Player.modelsize >= 3 then 
+self:NotifyCredits( Player, "Cannot go above 200%")
 return
 end
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
-self:NotifyCredits( Client, "Warning: Your size will reset when you die, and/or when you change class. Such as gestation, or changing from marine to jetpack, or exo to marine, etc.", true)
+self:NotifyCredits( Client, "Warning: Your size will reset when you die, and/or when you change class. Such as changing from marine to jetpack, or exo to marine, etc.", true)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
-if Player:isa("Exo") then
-Player.modelsize = Player.modelsize + .25
-else
- Player.modelsize = Player.modelsize + .25
-end
+Player.modelsize = Player.modelsize + .50
 self:NotifyCredits( Client, "Current size = %s percent", true, math.round(Player.modelsize * 100, 1))
 //local defaulthealth = LookupTechData(Player:GetTechId(), kTechDataMaxHealth, 1)
 //Player:AdjustMaxHealth(defaulthealth * Player.modelsize)
 //Player:AdjustMaxArmor(90 * Player.modelsize)
           
-self.BuyUsersTimer[Client] = Shared.GetTime() + 10
+//self.BuyUsersTimer[Client] = Shared.GetTime() + 1
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
 self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
 self.MarineTotalSpent = self.MarineTotalSpent + CreditCost
@@ -1537,7 +1478,7 @@ self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase in
  return
 end
 
-if self:HasHarvester(Player) then
+if self:HasLimitOf(Player, string.format("Harvester"), 2, 1) then
 self:NotifyCredits(Client, "One credit Harvester per player at the moment.", true)
 return
 end
@@ -1564,7 +1505,7 @@ if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then CreateEntity(Clo
 local harv = CreateEntity(Harvester.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
 harv:SetConstructionComplete()
 //harv:SetIsCreditStructure()
-harv.ParentId = Player:GetId()
+harv:SetOwner(Player)
 //harv.isGhostStructure = false
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
    Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -1714,6 +1655,9 @@ if self:GetPlayerCreditsInfo(Client) < CreditCost then
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
  return
 end
+if self:HasLimitOf(Player, string.format("Drifter"), 2, 2) then
+self:NotifyCredits(Client, "Two Credit Drifters Detected. Deleting 1 to spawn a new one.", true)
+end
 if not Player:GetIsOnGround() then
  self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
  return
@@ -1726,6 +1670,7 @@ self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
 local drifter = Player:GiveItem(Drifter.kMapName)
 drifter:SetIsCreditStructure()
+drifter:SetOwner(Player)
 Player:GetTeam():RemoveSupplyUsed(kDrifterSupply)
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
    self.BuyUsersTimer[Client] = Shared.GetTime() + 5
@@ -1745,6 +1690,9 @@ end
 self:NotifyCredits( Client, "Aliens Cannot Build Credit Structures In Siege.", true)
 return 
 end
+if self:HasLimitOf(Player, string.format("Shade"), 1, 3) then 
+self:NotifyCredits(Client, "Three Credit Macs Max. Destroy the others to continue", true)
+end
 /*
 if not Player:GetIsOnGround() then
  self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
@@ -1761,6 +1709,7 @@ if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then CreateEntity(Clo
 local shade = CreateEntity(Shade.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
 shade:SetConstructionComplete()
 shade:SetIsCreditStructure()
+shade:SetOwner(Player)
 //shade.isGhostStructure = false
 Player:GetTeam():RemoveSupplyUsed(kShadeSupply)
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
@@ -1781,7 +1730,7 @@ end
 self:NotifyCredits( Client, "Aliens Cannot Build Credit Structures In Siege.", true)
 return 
 end
-if self:HasThreeCrags(Player) then
+if self:HasLimitOf(Player, string.format("Crag"), 2, 3) then
 self:NotifyCredits(Client, "Three Credit Crags Detected. Deleting 1 to spawn a new one.", true)
 end
 /*
@@ -1816,6 +1765,9 @@ CreditCost = 10
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
+end
+if self:HasLimitOf(Player, string.format("Whip"), 2, 3) then
+self:NotifyCredits(Client, "Three Credit Whip Detected. Deleting 1 to spawn a new one.", true)
 end
  if GetIsAlienInSiege(Player) then
 self:NotifyCredits( Client, "Aliens Cannot Build Credit Structures In Siege.", true)
@@ -1864,6 +1816,9 @@ end
 self:NotifyCredits( Client, "Aliens Cannot Build Credit Structures In Siege.", true)
 return 
 end
+if self:HasLimitOf(Player, string.format("Shift"), 1, 3) then 
+self:NotifyCredits(Client, "Three Credit Macs Max. Destroy the others to continue", true)
+end
 /*
 if not Player:GetIsOnGround() then
  self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
@@ -1880,6 +1835,7 @@ if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then CreateEntity(Clo
 local shift = CreateEntity(Shift.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
 shift:SetConstructionComplete()
 shift:SetIsCreditStructure()
+shift:SetOwner(Player)
 //shift.isGhostStructure = false
 Player:GetTeam():RemoveSupplyUsed(kShiftSupply)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
@@ -1900,7 +1856,7 @@ end
 self:NotifyCredits( Client, "Aliens Cannot Build Credit Structures In Siege.", true)
 return 
 end
-if self:HasThreeHydras(Player) then
+if self:HasLimitOf(Player, string.format("Hydra"), 2, 3) then
 self:NotifyCredits(Client, "Three Credit Hydras Detected. Deleting 1 to spawn a new one.", true)
 end
 /*
@@ -2160,7 +2116,7 @@ self:NotifyCredits( Client, "Current size = %s percent", true, math.round(Player
 //Player:AdjustMaxHealth(defaulthealth * Player.modelsize)
 //Player:AdjustMaxArmor(90 * Player.modelsize)
           
-self.BuyUsersTimer[Client] = Shared.GetTime() + 10
+//self.BuyUsersTimer[Client] = Shared.GetTime() + 1
 return
 end
           if String == "TaxiDrifter" then 

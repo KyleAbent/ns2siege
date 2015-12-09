@@ -224,7 +224,7 @@ function HeavyMachineGun:GetRange()
 end
 
 function HeavyMachineGun:GetWeight()
-    return kHeavyMachineGunWeight
+ return kHeavyMachineGunWeight
 end
 
 function HeavyMachineGun:GetDamageType()
@@ -242,11 +242,19 @@ local base = 1
 		base = 0.45
     end
     
-	if self.reloading then
-	   base = 0.38
+	if self.reloading then //30% chance for random duration from slow*1.10 to slow*1.3
+	  local fiveseconds = 0.38
+	     local roll = math.random(1,100)
+	     if roll <= 30 then        //10 to 30 percent faster
+	     base = math.random(fiveseconds*1.10, fiveseconds*1.3)
+	     else
+	     base = fiveseconds
+	     end
+	     //10% chance to have a multiplier to 25% (so max is best case scenario 55% faster or roughly less than 2.5 seconds (2.3?)
+	     if math.random(1,100) <= 10 then base = base * 1.25 end 
 	end
 	
-	return base
+	return Clamp(base, 0.38, 1)
 end
 
 function HeavyMachineGun:OnSecondaryAttack(player)
@@ -326,7 +334,7 @@ if Client then
 		//Shared.PlaySound(self, kLoopingSound)
         
         local player = self:GetParent()
-        
+       //  self:SetCameraShake(1, 1, 1)
         if not self.muzzleCinematic then            
             CreateMuzzleEffect(self)                
         elseif player then

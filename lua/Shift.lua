@@ -504,6 +504,7 @@ if Server then
                 
                     teleportAble:TriggerTeleport(5, self:GetId(), position, teleportCost)
                     teleportAble:AddTimedCallback(function()  teleportAble:InfestationNeedsUpdate() end, 2)
+                    teleportAble:AddTimedCallback(function()  teleportAble:InfestationNeedsUpdate() end, 7)
                     
                         
                     if HasMixin(teleportAble, "Orders") then

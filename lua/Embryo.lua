@@ -162,6 +162,7 @@ local function UpdateGestation(self)
            if GetHasRebirthUpgrade(newPlayer) then
           newPlayer:TriggerRebirthCountDown(newPlayer:GetClient():GetControllingPlayer())
           newPlayer.lastredeemorrebirthtime = Shared.GetTime()
+              if newPlayer:isa("Onos") then newPlayer:SetHealth(self:GetHealth() * .7) end
            end
           
             
