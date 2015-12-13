@@ -54,7 +54,7 @@ local function GetRelativImpactPoint(origin, hitEntity)
         return Vector(0,0.2,0), targetOrigin
     end
     
-    local trace = Shared.TraceRay(origin, targetOrigin, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOnly(hitEntity))
+    local trace = Shared.TraceRay(origin, targetOrigin, CollisionRep.Damage, PhysicsMask.Bile, EntityFilterOnly(hitEntity))
 
     if trace.entity == hitEntity then
     
@@ -68,7 +68,7 @@ local function GetRelativImpactPoint(origin, hitEntity)
 
     else
     
-        local trace = Shared.TraceRay(origin, targetOrigin, CollisionRep.LOS, PhysicsMask.Bullets, EntityFilterAll())
+        local trace = Shared.TraceRay(origin, targetOrigin, CollisionRep.LOS, PhysicsMask.Bile, EntityFilterAll())
         if trace.fraction > 0.9 then
         
             impactPoint = Vector(0,0.2,0)

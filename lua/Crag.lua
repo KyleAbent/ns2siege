@@ -274,6 +274,11 @@ end
     unitName = string.format(Locale.ResolveString("Crag (%s Stacking) (%s)"), self:GetCragsInRange(),  Clamp(time, 0, kHealWaveCooldown) )
 return unitName
 end
+function Crag:IsInRangeOfHive()
+      local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)
+   if #hives >=1 then return true end
+   return false
+end
 function Crag:TryHeal(target)
 
     local unclampedHeal = target:GetMaxHealth() * Crag.kHealPercentage
@@ -285,8 +290,8 @@ function Crag:TryHeal(target)
     
     heal = heal * self:GetCragsInRange()/3 + heal
     
-    if self:GetIsSiege() and target:isa("Hive") or target:isa("Crag") then
-       heal = heal * 1.3
+    if self:GetIsSiege() and self:IsInRangeOfHive() and target:isa("Hive") or target:isa("Crag") then
+       heal = heal * kCragSiegeBonus
     end
     
     if target:GetHealthScalar() ~= 1 and (not target.timeLastCragHeal or target.timeLastCragHeal + Crag.kHealInterval <= Shared.GetTime()) then

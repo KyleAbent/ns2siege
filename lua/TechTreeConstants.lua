@@ -83,7 +83,7 @@ kTechId = createTechIdEnum({
     'FlamethrowerAlt',
     
     // Research 
-    'PhaseTech', 'MACSpeedTech', 'MACEMPTech', 'ARCArmorTech', 'ARCSplashTech', 'JetpackTech', 'JumpPack', 'FireBullets', 'Resupply', 'ExosuitTech',
+    'PhaseTech', 'MACSpeedTech', 'MACEMPTech', 'ARCArmorTech', 'ARCSplashTech', 'JetpackTech', 'JumpPack', 'FireBullets', 'Resupply', 'HeavyArmor', 'ExosuitTech',
     'DualMinigunTech', 'DualMinigunExosuit', 'UpgradeToDualMinigun',
     'ClawRailgunTech', 'ClawRailgunExosuit',
     'DualRailgunTech', 'DualRailgunExosuit', 'UpgradeToDualRailgun',

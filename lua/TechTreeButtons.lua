@@ -287,6 +287,7 @@ kTechIdToMaterialOffset[kTechId.Umbra] = 75
 kTechIdToMaterialOffset[kTechId.CragUmbra] = 75
 kTechIdToMaterialOffset[kTechId.ShadeCloak] = 76
 kTechIdToMaterialOffset[kTechId.Armor1] = 77
+kTechIdToMaterialOffset[kTechId.HeavyArmor] = 77
 kTechIdToMaterialOffset[kTechId.ThickenedSkin] = 77
 kTechIdToMaterialOffset[kTechId.ArmoryArmor] = 77
 kTechIdToMaterialOffset[kTechId.Armor2] = 78

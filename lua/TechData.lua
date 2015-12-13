@@ -630,6 +630,11 @@ function BuildTechData()
      [kTechDataCostKey] = kHeavyRifleCost, },
         [kTechDataModel] = HeavyRifle.kModelName, 
         
+                             { [kTechDataId] = kTechId.HeavyArmor,   
+       [kTechDataTooltipInfo] = "Heavy Armor", 
+          [kTechDataDisplayName] = "Heavy Armor",  
+     [kTechDataCostKey] = 8, },
+        
              { [kTechDataId] = kTechId.HeavyMachineGun,   
        [kTechDataMaxHealth] = kMarineWeaponHealth,
        [kTechDataTooltipInfo] = "Heavy Machine Gun", 
@@ -639,6 +644,8 @@ function BuildTechData()
        [kTechDataDamageType] = kHeavyMachineGunDamageType, 
      [kTechDataCostKey] = kHeavyMachineGunCost, },
         [kTechDataModel] = HeavyRifle.kModelName, 
+        
+
         
               
        { [kTechDataId] = kTechId.ExoNanoArmor,

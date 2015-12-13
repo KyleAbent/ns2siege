@@ -75,8 +75,8 @@ ARC.kMaxPitch               = 45
 ARC.kMaxYaw                 = 180
 ARC.kCapsuleHeight = .05
 ARC.kCapsuleRadius = .5
-ARC.MaxLevel = 15
-ARC.GainXP = .85
+ARC.MaxLevel = 100
+ARC.GainXP = 1
 ARC.ScaleSize = 1.3
 
 ARC.kMode = enum( {'Stationary', 'Moving', 'Targeting', 'Destroyed'} )
@@ -301,6 +301,7 @@ function ARC:OnAdjustModelCoords(modelCoords)
     end
     return coords
 end
+
 function ARC:AddXP(amount)
 
     local xpReward = 0

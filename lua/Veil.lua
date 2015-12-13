@@ -194,6 +194,7 @@ if Server then
                   and not structure:isa("Drifter") and not structure:isa("DrifterEgg") and not ( structure.GetIsMoving and structure:GetIsMoving() ) then
                        if structure:GetLocationName() == self:GetLocationName() and self:GetDistance(structure) >= 7 or
                         structure:GetLocationName() ~= self:GetLocationName() and self:GetDistance(structure) <= 25 then 
+                        structure:ClearOrders()
                        structure:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
                        else
                        if structure:GetIsBuilt() and not structure:GetIsTeleporting() and structure:GetCanTeleport() then table.insert(eligable,structure) end
@@ -204,13 +205,36 @@ if Server then
            if #eligable == 0 then return end
            for i = 1, Clamp(#eligable * 0.25, 1, 4) do
                 local entity = eligable[i]
-                entity:TriggerTeleport(4, self:GetId(), self:GetOrigin(), 0, true)
+                entity:TriggerTeleport(4, self:GetId(), self:FindFreeSpace(), 0, true)
+                entity:ClearOrders()
                 entity:AddTimedCallback(function()  entity:InfestationNeedsUpdate() end, 4.5)
                 entity:AddTimedCallback(function()  entity:Check() end, 4.5)
             end  //
             
             return false
     end //
+    function Veil:FindFreeSpace()
+    
+        for index = 1, 10 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 8, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then
+           return spawnPoint
+           end
+       end
+ 
+           return self:GetOrigin()
+    end
     function Veil:OnKill(attacker, doer, point, direction)
 
         ScriptActor.OnKill(self, attacker, doer, point, direction)

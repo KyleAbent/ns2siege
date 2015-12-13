@@ -212,9 +212,9 @@ self.CreditData = CreditsFile
      //   local date = os.date("*t", Shared.GetSystemTime())
      //   local day = date.day
      //   if string.find(day, "Friday") or string.find(day, "Saturday") or day == string.find(day, "Sunday") then
-       // kCreditMultiplier = 2 
+        kCreditMultiplier = 2 
      //   else
-        kCreditMultiplier = 1
+        //kCreditMultiplier = 1
       //  end
         
 

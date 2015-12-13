@@ -160,6 +160,7 @@ local networkVars =
        lastjump  = "time",
    hasfirebullets = "boolean",
    hasreupply = "boolean",
+      heavyarmor = "boolean",
    lastsupply = "time",
    suppliesleft = "float (0 to 5 by 1)",
    
@@ -255,6 +256,7 @@ function Marine:OnCreate()
    self.lastjump = 0
    self.hasfirebullets = false
    self.hasreupply = false
+   self.heavyarmor = false
    self.lastsupply = 0
    self.suppliesleft = 5
 end
@@ -392,16 +394,16 @@ end
 function Marine:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
 	local scale = self.modelsize
-	local hmgscale = self:GetHasHMG() and 1.3 or 1
+	local hmgscale = self.heavyarmor and 1.3 or 1
         coords.xAxis = (coords.xAxis * scale) * hmgscale
         coords.yAxis = (coords.yAxis * scale) 
         coords.zAxis = (coords.zAxis * scale) * hmgscale
     return coords
 end
 function Marine:SetArmorAmount()
-    local newMaxArmor = (Marine.kBaseArmor + self:GetArmorLevel() * Marine.kArmorPerUpgradeLevel) + ConditionalValue(self:GetHasHMG(), 30, 0)
+    local newMaxArmor = (Marine.kBaseArmor + self:GetArmorLevel() * Marine.kArmorPerUpgradeLevel) + ConditionalValue(self.heavyarmor, 30, 0)
     self:AdjustMaxArmor(newMaxArmor)
-    Print("armor is %s", newMaxArmor)
+   // Print("armor is %s", newMaxArmor)
 end
 function Marine:GetArmorLevel()
 
@@ -523,7 +525,7 @@ function Marine:GetArmorAmount(armorLevels)
     end
 
     
-    return (Marine.kBaseArmor + armorLevels * Marine.kArmorPerUpgradeLevel) + ConditionalValue(self:GetHasHMG(), 30, 0)
+    return (Marine.kBaseArmor + armorLevels * Marine.kArmorPerUpgradeLevel) + ConditionalValue(self.heavyarmor, 30, 0)
     
 end
 function Marine:GetHasHMG()
@@ -679,12 +681,14 @@ function Marine:ModifyGravityForce(gravityTable)
 end
 */
 function Marine:GetMaxSpeed(possible)
-
+  // Marine.kRunMaxSpeed = Marine.kRunMaxSpeed * ConditionalValue(self.heavyarmor, Marine.kRunMaxSpeed * 1.3, 1)
+  // Marine.kWalkMaxSpeed = Marine.kWalkMaxSpeed * ConditionalValue(self.heavyarmor, Marine.kWalkMaxSpeed * 1.3, 1)
+  local heavyarmor = self.heavyarmor and 1.3 or 1
     if possible then
-        return Marine.kRunMaxSpeed
+        return Marine.kRunMaxSpeed * heavyarmor
     end
 
-    local sprintingScalar = self:GetSprintingScalar()
+    local sprintingScalar = self:GetSprintingScalar() * heavyarmor
     local maxSprintSpeed = Marine.kWalkMaxSpeed + (Marine.kRunMaxSpeed - Marine.kWalkMaxSpeed)*sprintingScalar
     local maxSpeed = ConditionalValue(self:GetIsSprinting(), maxSprintSpeed, Marine.kWalkMaxSpeed)
     

@@ -1,3 +1,4 @@
+kCragSiegeBonus = 1.3
 kEtherealGateCoolDown = 20
 kOnosEggCost = 150
 
@@ -29,7 +30,7 @@ kExosuitDropCost = 50
 kHeavyMachineGunDamage = 7
 kHeavyMachineGunDamageType = kDamageType.Puncture	
 kHeavyMachineGunClipSize = 125	
-kHeavyMachineGunWeight = 0.55		 
+kHeavyMachineGunWeight = 0.165		 
 kHeavyMachineGunCost = 20			
 kHeavyMachineGunDropCost = 25		
 kHeavyMachineGunPointValue = 7		

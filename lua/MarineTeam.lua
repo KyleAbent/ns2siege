@@ -496,6 +496,7 @@ function MarineTeam:InitTechTree()
     
         self.techTree:AddResearchNode(kTechId.HeavyRifleTech,           kTechId.None,              kTechId.None)
     self.techTree:AddTargetedBuyNode(kTechId.HeavyRifle,            kTechId.HeavyRifleTech,         kTechId.None)
+        self.techTree:AddTargetedBuyNode(kTechId.HeavyArmor,            kTechId.None,         kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.DropHeavyRifle,     kTechId.HeavyRifleTech,         kTechId.None)
     
         self.techTree:AddTargetedBuyNode(kTechId.ExoNanoArmor,            kTechId.Armor1,         kTechId.None)

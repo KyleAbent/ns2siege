@@ -772,7 +772,8 @@ end
 function Alien:QualifiesForFocus()   //Funny this method doesnt allow healspray effected on slots 2-4 :P owell for now
       local weapon = self:GetActiveWeapon()
       local stomping = weapon and HasMixin(weapon, "Stomp") and weapon:GetIsStomping()
-return ( self:GetActiveWeapon():isa("SpitSpray") ) or ( not stomping ) or  ( self:GetActiveWeapon():GetHUDSlot() == 1 and ( self:GetActiveWeapon().primaryAttacking and not self:GetActiveWeapon().secondaryAttacking ) )
+      if stomping then return false end
+return ( self:GetActiveWeapon():isa("SpitSpray") ) or  ( self:GetActiveWeapon():GetHUDSlot() == 1 and ( self:GetActiveWeapon().primaryAttacking and not self:GetActiveWeapon().secondaryAttacking ) )
 end
 function Alien:GetFocousLevel()
            local teamInfo = GetTeamInfoEntity(2)

@@ -184,7 +184,7 @@ function RoboticsFactory:OnStun()
                // bonewall.modelsize = 0.5
             //    bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
             //    bonewall.targetid = self:GetId()
-                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThrough)
+                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThroughHit)
                 self.stunned = true
                 self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
 end

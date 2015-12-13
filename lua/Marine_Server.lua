@@ -348,6 +348,9 @@ function Marine:AttemptToBuy(techIds)
               elseif techId == kTechId.Resupply then
                 self.hasreupply = true
                 return true
+              elseif techId == kTechId.HeavyArmor then
+               self.heavyarmor = true
+                return true
                end
                 
     local hostStructure = GetHostStructureFor(self, techId)
