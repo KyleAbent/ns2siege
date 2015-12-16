@@ -1201,7 +1201,7 @@ function BuildTechData()
        [kTechDataCostKey] = kVeilCost,  
        [kTechDataRequiresInfestation] = true, 
       [kTechDataHotkey] = Move.C,    
-       [kTechDataCooldown] = 30,
+       [kTechDataCooldown] = kSBCooldown,
         [kTechDataBuildTime] = 4, 
       [kTechDataModel] = Veil.kModelName,    
          [kTechDataMaxHealth] = kVeilHealth,
@@ -1391,7 +1391,7 @@ function BuildTechData()
         [kTechDataDisplayName] = "Redemption", 
       [kTechDataSponitorCode] = "B",  
       [kTechDataCostKey] = kRedemptionCost, 
-     [kTechDataTooltipInfo] = "Will automatically return you to the hive when below 35% HP (if 45 sec cooldown is 0).", },
+     [kTechDataTooltipInfo] = "Will return you to a random hive egg spawn when dead if cooldown is not active.", },
      
              { [kTechDataId] = kTechId.Rebirth, 
        [kTechDataCategory] = kTechId.CragHive,  

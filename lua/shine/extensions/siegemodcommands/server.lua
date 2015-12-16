@@ -71,7 +71,9 @@ end
 function Plugin:NotifyGeneric( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[Admin Abuse]",  255, 0, 0, String, Format, ... )
 end
-
+function Plugin:NotifySiege( Player, String, Format, ... )
+Shine:NotifyDualColour( Player, 255, 165, 0,  "[NS2Siege]",  255, 0, 0, String, Format, ... )
+end
 function Plugin:NotifyGiveRes( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[GiveRes]",  255, 0, 0, String, Format, ... )
 end
@@ -308,23 +310,17 @@ SlapBombCommand:AddParam{ Type = "clients" }
 SlapBombCommand:AddParam{ Type = "number" }
 
 
-/*
+
 local function DiscoLights( Client )
-for _, light in ientitylist(Shared.GetEntitiesWithClassname("light_spot")) do
-            light:SetColor( math.random(0, 255), math.random(0, 255), math.random(0,255) )
-            light:SetIntensity( math.random(1,5) )
-end
-for _, lighty in ientitylist(Shared.GetEntitiesWithClassname("light_point")) do
-            lighty:SetColor( math.random(0, 255), math.random(0, 255), math.random(0,255) )
-            lighty:SetIntensity( math.random(1,5) )
-end
+ local Player = Client:GetControllingPlayer()
+DiscoLights(Player:GetLocationName())
 end
 
     
-local DiscoLightsCommand = self:BindCommand( "sh_discolights", "discolights", DiscoLights, true )
+local DiscoLightsCommand = self:BindCommand( "sh_discolights", "discolights", DiscoLights )
 DiscoLightsCommand:Help ("sh_discolights")
 
-*/
+
 local function Construct( Client )
         local Player = Client:GetControllingPlayer()
         for index, constructable in ipairs(GetEntitiesWithMixinWithinRangeAreVisible("Construct", Player:GetEyePos(), 3, true )) do       
@@ -386,6 +382,16 @@ local PlayerGravityCommand = self:BindCommand( "sh_playergravity", "playergravit
 PlayerGravityCommand:AddParam{ Type = "clients" }
 PlayerGravityCommand:AddParam{ Type = "number" }
 PlayerGravityCommand:Help( "sh_playergravity <player> <number> works differently than ns1. kinda glitchy. respawn to reset." )
+
+local function MarineBuildSpeed( Client, Number )
+
+kMarineBuildSpeed = Number
+//self:NotifySiege( nil, "Adjusted Marine Construct Speed to %s percent (1 - (marineplayercount/12) + 1)", true, Number * 100)
+end
+
+local MarineBuildSpeedCommand = self:BindCommand( "sh_marinebuildspeed", "marinebuildspeed", MarineBuildSpeed )
+MarineBuildSpeedCommand:AddParam{ Type = "number" }
+MarineBuildSpeedCommand:Help( "sh_marinebuildspeed adjust marine construct speed on demand." )
 
 
 local function ModelSize( Client, Targets, Number )

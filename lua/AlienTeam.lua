@@ -72,7 +72,16 @@ end
 function AlienTeam:GetTeamInfoMapName()
     return AlienTeamInfo.kMapName
 end
+function AlienTeam:GetCommander()
+    for _, player in ipairs(GetEntitiesForTeam("Player", 2)) do
+        if player:isa("Commander") then
+        
+           return player
+        end
 
+    end
+    return nil
+end
 function AlienTeam:GetEggCount()
     return self.eggCount or 0
 end

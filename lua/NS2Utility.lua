@@ -1432,7 +1432,11 @@ function ClearLights()
     end
 
 end
+function DiscoLights(location)
+   local lights = GetLightsForLocation(location)
+    SetLight(lights, 10, Color(1, .7, .2))
 
+end
 local function SetLight(renderLight, intensity, color)
 
     if intensity then

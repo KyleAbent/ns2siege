@@ -1,3 +1,5 @@
+kSBCooldown = 30
+kMarineBuildSpeed = 1
 kCragSiegeBonus = 1.3
 kEtherealGateCoolDown = 20
 kOnosEggCost = 150

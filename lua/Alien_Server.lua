@@ -64,15 +64,7 @@ function Alien:OnProcessMove(input)
     // In rare cases, Player.OnProcessMove() above may cause this entity to be destroyed.
     // The below code assumes the player is not destroyed.
     if not self:GetIsDestroyed() then
-    
-           self.canredeemorrebirth = Shared.GetTime() > self.lastredeemorrebirthtime  + kRedemptionCooldown 
- 
-        if  (GetHasRedemptionUpgrade(self) and self:GetHealthScalar() <= kRedemptionEHPThreshold ) then
-                 if self.canredeemorrebirth then
-                 self.canredeemorrebirth = false
-                 self:RedemAlienToHive()
-                 end         
-           end
+   
            
         // Calculate two and three hives so abilities for abilities      
                  
@@ -168,11 +160,9 @@ self:AddScore(1, 0, false)
    
 end
 function Alien:RedemAlienToHive()
-    if self:GetIsAlive() and self:GetHealthScalar() <= kRedemptionEHPThreshold then
         self:TeleportToHive()
          self:OnRedeem(self:GetClient():GetControllingPlayer())
         self.lastredeemorrebirthtime = Shared:GetTime()
-    end
 end
 function Alien:TriggerRebirthCountDown(player)
 

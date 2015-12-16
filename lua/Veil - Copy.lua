@@ -191,38 +191,24 @@ if Server then
         
             for _, structure in ipairs(GetEntitiesWithMixinForTeam("Supply", 2)) do
                  if not structure.iscreditstructure and not ( structure.IsInRangeOfHive and structure:IsInRangeOfHive() )
-                  and not structure:isa("Drifter") and not structure:isa("DrifterEgg") and not 
-                     ( structure.GetIsMoving and structure:GetIsMoving() ) then
-                       if structure:GetLocationName() == self:GetLocationName() and self:GetDistance(structure) >= 12 or
+                  and not structure:isa("Drifter") and not structure:isa("DrifterEgg") and not ( structure.GetIsMoving and structure:GetIsMoving() ) then
+                       if structure:GetLocationName() == self:GetLocationName() and self:GetDistance(structure) >= 7 or
                         structure:GetLocationName() ~= self:GetLocationName() and self:GetDistance(structure) <= 25 then 
-                          if structure:GetEligableForBeacon() then
-                         structure:ClearOrders()
-                         structure:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
-                         structure.lastbeacontime = Shared.GetTime()
-                         end//
-                       end//
-                       if self:GetDistance(structure) >= 26 and structure:GetIsBuilt() and structure:GetEligableForBeacon()  then
-                         table.insert(eligable,structure)
+                        structure:ClearOrders()
+                       structure:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
+                       else
+                       if structure:GetIsBuilt() and not structure:GetIsTeleporting() and structure:GetCanTeleport() then table.insert(eligable,structure) end
                        end //
                   end //
             end //
                              ///so it takes 4 to get 100%
            if #eligable == 0 then return end
-           for i = 1, Clamp(#eligable * 0.25, 1, 12) do
+           for i = 1, Clamp(#eligable * 0.25, 1, 4) do
                 local entity = eligable[i]
-                
-                    if HasMixin(entity, "Obstacle") then
-                    entity:RemoveFromMesh()
-                    end
-                    
-                entity:AddTimedCallback(function() entity:SetOrigin(self:FindFreeSpace()) entity.lastbeacontime = Shared.GetTime() end, 4)
                 entity:ClearOrders()
+                entity:TriggerTeleport(4, self:GetId(), self:FindFreeSpace(), 0) 
                 entity:AddTimedCallback(function()  entity:InfestationNeedsUpdate() end, 4.5)
                 entity:AddTimedCallback(function()  entity:Check() end, 4.5)
-                 if HasMixin(entity, "Obstacle") then
-                entity:AddTimedCallback(function()  if entity.obstacleId == -1 then entity:AddToMesh() end  end, 8)
-                end
-            
             end  //
             
             return false
@@ -241,13 +227,13 @@ if Server then
            local location = spawnPoint and GetLocationForPoint(spawnPoint)
            local locationName = location and location:GetName() or ""
            local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation and GetIsPointOnInfestation(spawnPoint) then
+           local onInfesation = GetInfestationRequirementsMet(self:GetTechId(), spawnPoint)
+           if spawnPoint ~= nil and sameLocation and onInfestation then
            return spawnPoint
            end
        end
-           Print("No valid spot found for structure beacon echo!")
-           return self:GetOrigin()
+ 
+           return nil
     end
     function Veil:OnKill(attacker, doer, point, direction)
 

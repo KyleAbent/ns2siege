@@ -581,7 +581,12 @@ function GetShiftIsBuilt(techId, origin, normal, commander)
     return false
     
 end
-
+function Shift:OnConstructionComplete()
+         local commander = self:GetTeam():GetCommander()
+       if commander ~= nil then
+       commander:AddScore(1) 
+       end
+end
 function GetShiftHatchGhostGuides(commander)
 
     local shifts = GetEntitiesForTeam("Shift", commander:GetTeamNumber())

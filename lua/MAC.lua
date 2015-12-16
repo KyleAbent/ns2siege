@@ -309,7 +309,7 @@ local function GetAutomaticOrder(self)
         else
 
             // If there's a friendly entity nearby that needs constructing, constuct it.
-            local constructables = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), ConditionalValue(not self:GetFrontDoorsOpen(), 9999, MAC.kOrderScanRadius))
+            local constructables = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), MAC.kOrderScanRadius)
             for c = 1, #constructables do
             
                 local constructable = constructables[c]
@@ -1172,9 +1172,11 @@ end
     end
         return success, true
 end
+/*
 function MAC:OnKill(attacker, doer, point, direction)
 self:TriggerEMP()
 end
+*/
 function MAC:OnOverrideDoorInteraction(inEntity)
     // MACs will not open the door if they are currently
     // welding it shut

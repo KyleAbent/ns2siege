@@ -279,6 +279,10 @@ end
 if Server then
 
     function Shade:OnConstructionComplete()    
+             local commander = self:GetTeam():GetCommander()
+       if commander ~= nil then
+       commander:AddScore(1) 
+       end
         self:AddTimedCallback(Shade.UpdateCloaking, Shade.kCloakUpdateRate)    
      //   self:AddTimedCallback(Shade.UpdatePassive, self:GetCoolDown())
     end

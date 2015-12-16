@@ -29,7 +29,8 @@ TeleportMixin.optionalCallbacks = {
 TeleportMixin.networkVars = {
  
     isTeleporting = "boolean",
-    teleportDelay = "float"
+    teleportDelay = "float",
+    lastbeacontime = "time",
     
 }
 
@@ -47,6 +48,7 @@ function TeleportMixin:__initmixin()
         self.destinationEntityId = Entity.invalidId
         self.timeUntilPort = 0
         self.teleportDelay = 0
+        self.lastbeacontime = Shared.GetTime()
         
     end
     
@@ -65,7 +67,9 @@ function TeleportMixin:GetTeleportSinkIn()
     return TeleportMixin.kDefaultSinkin
     
 end   
-
+function TeleportMixin:GetEligableForBeacon()
+return Shared.GetTime() > self.lastbeacontime  + kSBCooldown 
+end
 function TeleportMixin:GetIsTeleporting()
     return self.isTeleporting
 end
@@ -270,18 +274,14 @@ function TeleportMixin:OnUpdate(deltaTime)
     SharedUpdate(self, deltaTime)
 end
 
-function TeleportMixin:TriggerTeleport(delay, destinationEntityId, destinationPos, cost,isbeacon)
+function TeleportMixin:TriggerTeleport(delay, destinationEntityId, destinationPos, cost)
 
     if Server then
     
         self.teleportDelay = ConditionalValue(delay, delay, TeleportMixin.kDefaultDelay)
         self.timeUntilPort = ConditionalValue(delay, delay, TeleportMixin.kDefaultDelay)
         self.destinationEntityId = destinationEntityId
-        if not isbeacon then
         self.destinationPos = destinationPos
-        else
-        self.destinationPos = GetRandomSpawn(destinationEntityId,destinationEntityId)
-        end
         self.isTeleporting = true
         self.teleportCost = cost
         

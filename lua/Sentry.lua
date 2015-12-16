@@ -443,9 +443,11 @@ end
 function Sentry:GetLevel()
         return Round(self.level, 2)
 end
+/*
 function Sentry:OnKill(attacker, doer, point, direction)
 self:TriggerEMP()
 end
+*/
 function Sentry:TriggerEMP()
     CreateEntity(EMPBlast.kMapName,  self:GetOrigin(), self:GetTeamNumber())
     return true

@@ -757,6 +757,8 @@ function Alien:OnUpdateAnimationInput(modelMixin)
             attackSpeed = attackSpeed * 1.15 
         end 
      end
+     
+
    
     if self.ModifyAttackSpeed then
     
@@ -773,7 +775,15 @@ function Alien:QualifiesForFocus()   //Funny this method doesnt allow healspray 
       local weapon = self:GetActiveWeapon()
       local stomping = weapon and HasMixin(weapon, "Stomp") and weapon:GetIsStomping()
       if stomping then return false end
-return ( self:GetActiveWeapon():isa("SpitSpray") ) or  ( self:GetActiveWeapon():GetHUDSlot() == 1 and ( self:GetActiveWeapon().primaryAttacking and not self:GetActiveWeapon().secondaryAttacking ) )
+           if self:isa("Gorge") then
+       if
+       ( self:GetActiveWeapon():isa("SpitSpray") ) or 
+       self:GetActiveWeapon().secondaryAttacking then
+        return true
+        end
+     end
+     
+return ( self:GetActiveWeapon():GetHUDSlot() == 1 and ( self:GetActiveWeapon().primaryAttacking and not self:GetActiveWeapon().secondaryAttacking ) )
 end
 function Alien:GetFocousLevel()
            local teamInfo = GetTeamInfoEntity(2)

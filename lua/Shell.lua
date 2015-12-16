@@ -178,6 +178,10 @@ if Server then
         ScriptActor.OnDestroy(self)
     end
 function Shell:OnConstructionComplete()
+              local commander = self:GetTeam():GetCommander()
+       if commander ~= nil then
+       commander:AddScore(5) 
+       end
         self:AddTimedCallback(TimeUp, kLifeSpan + 0.5)  
         self:GenerateRandomNumberofEggsNearbyDerpHead()
         self:AddTimedCallback(function()  self:GenerateRandomNumberofEggsNearbyDerpHead() end, 5)

@@ -306,7 +306,7 @@ local function PerformAttack(self)
         end
       // if not self:GetIsaCreditStructure() then self:AddXP(ARC.GainXP) end
 
-        if self:GetIsInSiege() then self:AddXP(ARC.GainXP) end
+      //  if self:GetIsInSiege() then self:AddXP(ARC.GainXP) end
     end
     
     // reset target position and acquire new target

@@ -901,6 +901,19 @@ local kVoteEjectCastMessage =
 
 
 
+function BuildRookieMessage(isRookie)
+
+    local t = {}
+
+    t.isRookie = isRookie
+    
+    return t
+    
+end
+
+function ParseRookieMessage(t)
+    return t.isRookie
+end
 
 
 local kGameEndMessage =

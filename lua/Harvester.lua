@@ -91,7 +91,12 @@ end
 function Harvester:GetBioMassLevel()
     return kHarvesterBiomass
 end
-
+function Harvester:OnConstructionComplete()
+      local commander = self:GetTeam():GetCommander()
+       if commander ~= nil then
+       commander:AddScore(1) 
+       end
+end
 function Harvester:GetTechButtons(techId)
 
     local techButtons = nil

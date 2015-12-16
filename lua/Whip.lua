@@ -1000,11 +1000,14 @@ function Whip:OnUse(player, elapsedTime, useSuccessTable)
         weapon:SetActiveStructure(6)
         end
 end
-/*
+
 function Whip:OnConstructionComplete()
-if self:GetOwner() ~= nil and self:GetOwner():isa("Gorge") then  self:GiveOrder(kTechId.Follow, self:GetOwner():GetId(), self:GetOwner():GetOrigin(), nil, false, false)  end
+       local commander = self:GetTeam():GetCommander()
+       if commander ~= nil then
+       commander:AddScore(1) 
+       end
 end
-*/
+
 // --- End attack animation
 end //end of whip_server.lua
 

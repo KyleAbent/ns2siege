@@ -45,7 +45,7 @@ function RepositioningMixin:Check()
     
 
     if inrange >= 1 then 
-
+      for i = 1, 4 do
         local extents = Vector(1.3, 1, 1.3)
         local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
         local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), 1.5, 4, EntityFilterAll())
@@ -54,11 +54,16 @@ function RepositioningMixin:Check()
             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
         end
  
-        if spawnPoint then
-       // Print("Order Given to unstuck")
-        self:AddTimedCallback(function () self:GiveOrder(kTechId.Move, nil, spawnPoint) end, 1)
-        end
-    
+            local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation and ( self:GetTeamNumber() == 2 and GetIsPointOnInfestation(spawnPoint) or self:GetTeamNumber() == 1 ) then
+                  self:AddTimedCallback(function () self:GiveOrder(kTechId.Move, nil, spawnPoint) end, 1)
+                  return
+                  // Print("Order Given to unstuck")
+           end
+       end
     end
 end
 function RepositioningMixin:CheckArc()

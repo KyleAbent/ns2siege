@@ -261,6 +261,12 @@ function Crag:GetCragStackLevel()
            local bioMass = (teamInfo and teamInfo.GetBioMassLevel) and teamInfo:GetBioMassLevel() or 0
            return math.round(bioMass / 4, 1, 3)
 end
+    function Crag:OnConstructionComplete()    
+      local commander = self:GetTeam():GetCommander()
+       if commander ~= nil then
+       commander:AddScore(1) 
+       end
+    end
 function Crag:GetArcsInRange()
       local arc= GetEntitiesWithinRange("ARC", self:GetOrigin(), Crag.kHealRadius)
            return Clamp(#arc, 0, 4)

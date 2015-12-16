@@ -299,9 +299,10 @@ function ConstructMixin:Construct(elapsedTime, builder)
 
             local modifier = (self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and kInfestationBuildModifier or 1
             local gameRules = GetGamerules()
-                 if self:GetTeamNumber() == 1 and not gameRules:GetFrontDoorsOpen() then modifier = modifier * kMarineTeamSetupBuildMultiplier 
-                 elseif self:GetTeamNumber() == 2 and not gameRules:GetFrontDoorsOpen() then modifier = modifier *  kAlienTeamSetupBuildMultiplier 
-                 end
+            //     if self:GetTeamNumber() == 1 and not gameRules:GetFrontDoorsOpen() then modifier = modifier * kMarineTeamSetupBuildMultiplier 
+            //     elseif self:GetTeamNumber() == 2 and not gameRules:GetFrontDoorsOpen() then modifier = modifier *  kAlienTeamSetupBuildMultiplier 
+            //     end
+                             if self:GetTeamNumber() == 1 then modifier = modifier * kMarineBuildSpeed  end
             local startBuildFraction = self.buildFraction
             local newBuildTime = self.buildTime + elapsedTime * modifier
             local timeToComplete = self:GetTotalConstructionTime()            

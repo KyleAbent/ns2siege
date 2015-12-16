@@ -482,12 +482,17 @@ function LiveMixin:Kill(attacker, doer, point, direction)
         if self.PreOnKill then
             self:PreOnKill(attacker, doer, point, direction)
         end
-                if self:isa("Alien") then
-               if GetHasRebirthUpgrade(self) and self:GetEligableForRebirth() then
-                self:TriggerRebirth()
-                return
-                end
-            end
+              if self:isa("Alien") then
+                if self:GetEligableForRebirth() then
+                   if GetHasRebirthUpgrade(self) then
+                    self:TriggerRebirth()
+                    return
+                     elseif GetHasRedemptionUpgrade(self) then
+                     self:RedemAlienToHive()
+                      return
+                   end //
+               end //
+            end //
        
         self.health = 0
         self.armor = 0

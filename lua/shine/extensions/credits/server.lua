@@ -45,6 +45,15 @@ self.PlayerSpentAmount = {}
 return true
 end
 
+function Plugin:GenereateTotalCreditAmount()
+local credits = 0
+Print("%s users", table.Count(self.CreditData.Users))
+for i = 1, table.Count(self.CreditData.Users) do
+    local table = self.CreditData.Users.credits
+    credits = credits + table
+end
+Print("%s credits",credits)
+end
 
 function Plugin:BuyMed(player)
  local client = player:GetClient()
@@ -212,7 +221,7 @@ self.CreditData = CreditsFile
      //   local date = os.date("*t", Shared.GetSystemTime())
      //   local day = date.day
      //   if string.find(day, "Friday") or string.find(day, "Saturday") or day == string.find(day, "Sunday") then
-        kCreditMultiplier = 2 
+        kCreditMultiplier = 1
      //   else
         //kCreditMultiplier = 1
       //  end
@@ -233,34 +242,34 @@ self.CreditData = CreditsFile
         self.BadgeFile = BadgeFiley
         HTTPRequest( self.BadgeFile.LinkToBadges, "GET", UsersResponse)
         */
-end
-/*
+//end
+
         if not Shine.Timer.Exists("SeedTimer") then
-        	Shine.Timer.Create( "SeedTimer", 300, -1, function() self:SeedCredits() end )
+        	Shine.Timer.Create( "SeedTimer", 600, -1, function() self:SeedCredits() end )
       end
 
 end
  function Plugin:SeedCredits()
              
-if Shine.GetHumanPlayerCount() <= 10 then self:GiveSeedCredits() end
+ self:GiveSeedCredits() 
  
  end
  function Plugin:GiveSeedCredits()
- local randomcredits = math.random(1,5)
- self:NotifyCredits( nil, "Playercount is less than or equal to 10. Therefore, as a thank you for seeding the server, here's %s credit(s) to everyone on the server. Thanks!", true, randomcredits)
+ local credits = 10 * kCreditMultiplier
+ self:NotifyCredits( nil, "%s Credits", true, credits)
  
   local Players = Shine.GetAllPlayers()
    for i = 1, #Players do
     local player = Players[ i ]
      if player then
-      self.CreditUsers[ player:GetClient() ] = self:GetPlayerCreditsInfo(player:GetClient()) + randomcredits
+      self.CreditUsers[ player:GetClient() ] = self:GetPlayerCreditsInfo(player:GetClient()) + credits
           if self.GameStarted then
           Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(player:GetClient()) ), player:GetClient()) 
           end
       end
    end
  end
- */
+ 
 function Plugin:SaveCredits(Client)
        local Data = self:GetCreditData( Client )
        if Data and Data.credits then 
@@ -273,72 +282,19 @@ function Plugin:SaveCredits(Client)
        end
      Shine.SaveJSONFile( self.CreditData, CreditsPath  )
 end
-function Plugin:CalculateEndofRoundCredits()
-
-       self.marinebonus = Clamp(self.marinecredits / GetGamerules():GetTeam(kTeam1Index):GetNumPlayers(), 5*kCreditMultiplier, 100*kCreditMultiplier )
-       self.alienbonus = Clamp( self.aliencredits / GetGamerules():GetTeam(kTeam2Index):GetNumPlayers(), 5*kCreditMultiplier, 100*kCreditMultiplier )
-       local mtotal = math.round(self.marinebonus, 2)
-       local atotal = math.round(self.alienbonus, 2)
-       self:NotifyCredits( nil, "Marines: + %s credits", true, mtotal, mtotal2 )
-       self:NotifyCredits( nil, "Aliens: + %s credits", true, atotal, atotal2)
-       self.marinecredits = self.marinecredits + self.marinebonus
-       self.aliencredits = self.aliencredits + self.alienbonus
-       
-        if kCreditMultiplier == 2 then
-        self:NotifyCredits( nil, "Double Credit Weekend is ACTIVE. Credit Gain is set to 2x the normal amount.", true)
-        end
-end
-function Plugin:DistributeEndofRoundCredits()
-
-      local Players = Shine.GetAllPlayers()
-  for i = 1, #Players do
-      local player = Players[ i ]
-      if player then
-          if player:GetTeamNumber() == 1 then
-             self.CreditUsers[ player:GetClient() ] = self:GetPlayerCreditsInfo(player:GetClient()) + self.marinebonus
-             Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(player:GetClient()) ), player:GetClient()) 
-          elseif player:GetTeamNumber() == 2 then
-             self.CreditUsers[ player:GetClient() ] = self:GetPlayerCreditsInfo(player:GetClient()) + self.alienbonus
-             Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(player:GetClient()) ), player:GetClient()) 
-        end
-        self:SimpleTimer(4, function ()
-        self:SaveCredits(player:GetClient())
-        end)
-      end 
-    end
-            self:SimpleTimer( 15, function() 
-       local LinkFiley = Shine.LoadJSONFile( URLPath )
-        self.LinkFile = LinkFiley
-            HTTPRequest( self.LinkFile.LinkToUpload, "POST", {data = json.encode(self.CreditData)}, function() 
-            self:NotifyCredits( nil, "http://credits.ns2siege.com - credit ranking updated", true)
-            end)
-            end)
-            
-            
-           //   local Time = Shared.GetTime()
-          //   if not Time > kMaxServerAgeBeforeMapChange then
-                 self:SimpleTimer( 25, function() 
-                 self:LoadBadges()
-                 end)
-           // end
-           
-            
-          /*  
-      self:SimpleTimer( 25, function() 
-       local LinkFiley = Shine.LoadJSONFile( URLPath )
-        self.LinkFile = LinkFiley
-            HTTPRequest( self.LinkFile.LinkToUpload, "POST", {data = json.encode(self.UserData)}, function() 
-            self:NotifyCredits( nil, "http://credits.ns2siege.com - badge ranking updated", true)
-            end)
-            end)
-            */
-
-
-end
 function Plugin:ClientDisconnect(Client)
 self:SaveCredits(Client)
+ //self:AdjustMarineBuildSpeed()
 end
+function Plugin:AdjustMarineBuildSpeed()
 
+              local marines = #Shine.GetTeamClients(1)
+              local speed = 1 - (marines/12) + 1
+              if speed ~= kMarineBuildSpeed then
+             Shared.ConsoleCommand(string.format("sh_marinebuildspeed %s", math.round(speed,1))) 
+              end
+
+end
 function Plugin:GetPlayerCreditsInfo(Client)
    local Credits = 0
        if self.CreditUsers[ Client ] then
@@ -380,6 +336,7 @@ end
  
  if Client:GetIsVirtual() then return end
  
+ //self:AdjustMarineBuildSpeed()
  /*
   if Client then
   Sabot.SendChatMessage("/help")
@@ -441,11 +398,24 @@ function Plugin:SetGameState( Gamerules, State, OldState )
      
       self.GameStarted = false
           
-      self:CalculateEndofRoundCredits()
       
-        self:SimpleTimer(2.5, function ()
-       self:DistributeEndofRoundCredits()
+        self:SimpleTimer(4, function ()
+        self:SaveCredits(player:GetClient())
         end)
+            self:SimpleTimer( 15, function() 
+       local LinkFiley = Shine.LoadJSONFile( URLPath )
+        self.LinkFile = LinkFiley
+            HTTPRequest( self.LinkFile.LinkToUpload, "POST", {data = json.encode(self.CreditData)}, function() 
+            self:NotifyCredits( nil, "http://credits.ns2siege.com - credit ranking updated", true)
+            end)
+            end)
+            
+            
+           //   local Time = Shared.GetTime()
+          //   if not Time > kMaxServerAgeBeforeMapChange then
+                 self:SimpleTimer( 25, function() 
+                 self:LoadBadges()
+                 end)
        
        self:SimpleTimer(3, function ()
        
@@ -461,15 +431,15 @@ function Plugin:SetGameState( Gamerules, State, OldState )
                   end
              end
       end)
-      self:SimpleTimer(3, function ()    
+    //  self:SimpleTimer(3, function ()    
     //  Shine.ScreenText.Add( 82, {X = 0.40, Y = 0.10,Text = "End of round Stats:",Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
     // Shine.ScreenText.Add( 83, {X = 0.40, Y = 0.25,Text = "(Server Wide)Total Credits Earned:".. math.round((self.marinecredits + self.aliencredits), 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
     //  Shine.ScreenText.Add( 84, {X = 0.40, Y = 0.25,Text = "(Marine)Total Credits Earned:".. math.round(self.marinecredits, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
     //  Shine.ScreenText.Add( 85, {X = 0.40, Y = 0.30,Text = "(Alien)Total Credits Earned:".. math.round(self.aliencredits, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
     //  Shine.ScreenText.Add( 86, {X = 0.40, Y = 0.35,Text = "(Marine)Total Credits Spent:".. math.round(self.MarineTotalSpent, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
     //  Shine.ScreenText.Add( 87, {X = 0.40, Y = 0.40,Text = "(Alien)Total Credits Spent:".. math.round(self.AlienTotalSpent, 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
-      end)
-   end
+  //    end)
+  end
      
 end
 
@@ -2225,4 +2195,13 @@ AddCreditsCommand:Help("sh_addcredits <player> <number>")
 AddCreditsCommand:AddParam{ Type = "clients" }
 AddCreditsCommand:AddParam{ Type = "number" }
 AddCreditsCommand:AddParam{ Type = "boolean", Optional = true, Default = true }
+
+local function GenerateCredits(Client)
+  // self:NotifyGeneric( nil, "Current # of credits is: %s", true, self:GenereateTotalCreditAmount())
+   self:GenereateTotalCreditAmount()
+end
+
+local GenerateCreditsCommand = self:BindCommand("sh_generatecredits", "generatecredits", GenerateCredits)
+GenerateCreditsCommand:Help("sh_generatecredits - gets # of all credits active")
+
 end
