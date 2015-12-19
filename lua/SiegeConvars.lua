@@ -1,5 +1,6 @@
+kCreditMultiplier = 2
 kSBCooldown = 30
-kMarineBuildSpeed = 1
+kDynamicSetupMult = 1
 kCragSiegeBonus = 1.3
 kEtherealGateCoolDown = 20
 kOnosEggCost = 150
@@ -28,12 +29,14 @@ kShellBuildTime = 4
 
 kExosuitDropCost = 50
 
+kShotgunCost = 15
+
 //compmod remix
 kHeavyMachineGunDamage = 7
 kHeavyMachineGunDamageType = kDamageType.Puncture	
 kHeavyMachineGunClipSize = 125	
 kHeavyMachineGunWeight = 0.165		 
-kHeavyMachineGunCost = 20			
+kHeavyMachineGunCost = 15			
 kHeavyMachineGunDropCost = 25		
 kHeavyMachineGunPointValue = 7		
 kHeavyMachineGunSpread = Math.Radians(3.8)
@@ -193,14 +196,12 @@ kWallWalkEnergyCost = 0
 kSentriesPerBattery = 6
 
 kSentryBuildTime = 6
-kObservatorySupply = 1
-kPhaseGateSupply = 0
+kObservatorySupply = 2
+kPhaseGateSupply = 1
 kARCSupply = 8
 kRoboticsFactorySupply = 3
 kSentrySupply = 5
-kPhaseGateSupply = 1
 //kMACSupply = 7
-kObservastorySupply = 2
 
 kXenocideDamageType = kDamageType.Xenocide
 

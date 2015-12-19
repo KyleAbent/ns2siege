@@ -200,12 +200,14 @@ if Server then
         
         if destructionAllowedTable.allowed then
             self:TriggerEffects("death")
+            ClearRenderModel(self)
             DestroyEntity(self)
         end
     end
     function Clog:OnKill()
 
         self:TriggerEffects("death")
+        ClearRenderModel(self)
         DestroyEntity(self)
         
     end

@@ -208,15 +208,14 @@ if Server then
             end //
                              ///so it takes 4 to get 100%
            if #eligable == 0 then return end
-           for i = 1, Clamp(#eligable * 0.25, 1, 12) do
+           for i = 1, Clamp(#eligable * 0.25, 1, 4) do
                 local entity = eligable[i]
                 
                     if HasMixin(entity, "Obstacle") then
                     entity:RemoveFromMesh()
                     end
-                    
-                entity:AddTimedCallback(function() entity:SetOrigin(self:FindFreeSpace()) entity.lastbeacontime = Shared.GetTime() end, 4)
-                entity:ClearOrders()
+                    entity:ClearOrders()
+                    entity:TriggerBeacon(self:FindFreeSpace())
                 entity:AddTimedCallback(function()  entity:InfestationNeedsUpdate() end, 4.5)
                 entity:AddTimedCallback(function()  entity:Check() end, 4.5)
                  if HasMixin(entity, "Obstacle") then
@@ -229,10 +228,10 @@ if Server then
     end //
     function Veil:FindFreeSpace()
     
-        for index = 1, 16 do
+        for index = 1, 20 do
            local extents = Vector(1,1,1)
            local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 12, EntityFilterAll())
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 17, EntityFilterAll())
         
            if spawnPoint ~= nil then
              spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)

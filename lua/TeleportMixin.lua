@@ -273,7 +273,11 @@ function TeleportMixin:OnUpdate(deltaTime)
     PROFILE("TeleportMixin:OnUpdate")
     SharedUpdate(self, deltaTime)
 end
+function TeleportMixin:TriggerBeacon(location)
+ local locationto = location
+ self:AddTimedCallback(function() self:SetOrigin(locationto) self.lastbeacontime = Shared.GetTime() end, 4)
 
+end
 function TeleportMixin:TriggerTeleport(delay, destinationEntityId, destinationPos, cost)
 
     if Server then

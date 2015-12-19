@@ -10,6 +10,8 @@ Plugin.Version = "1.0"
 Shine.Hook.SetupClassHook( "Alien", "OnRedeem", "OnRedemedHook", "PassivePre" )
 Shine.Hook.SetupClassHook( "Alien", "TriggerRebirthCountDown", "TriggerRebirthCountDown", "PassivePre" )
 Shine.Hook.SetupClassHook( "Player", "CopyPlayerDataFrom", "HookModelSize", "PassivePost" )
+Shine.Hook.SetupClassHook( "Alien", "TunnelFailed", "FailMessage", "Replace" )
+Shine.Hook.SetupClassHook( "Alien", "TunnelGood", "GoodMessage", "Replace" )
 
 
 function Plugin:Initialise()
@@ -21,7 +23,19 @@ self.GlowClientsTime = {}
 self.GlowClientsColor = {}
 return true
 end
-		
+function Plugin:TunnelFailed(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+self:NotifySiege( Client, "Tunnel entrance failed to spawn. Try creating another. An entrance will spawn in the hive room location on infestation if theres room.", true)
+end
+
+function Plugin:GoodMessage(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+self:NotifySiege( Client, "Tunnel Entrnace placed at Hive.", true)
+end
 function Plugin:HookModelSize(player, origin, angles, mapName)
 //if not self.playersize{Player:GetClient()} then return end
  local client = player:GetClient()
@@ -383,15 +397,15 @@ PlayerGravityCommand:AddParam{ Type = "clients" }
 PlayerGravityCommand:AddParam{ Type = "number" }
 PlayerGravityCommand:Help( "sh_playergravity <player> <number> works differently than ns1. kinda glitchy. respawn to reset." )
 
-local function MarineBuildSpeed( Client, Number )
+local function BuildSpeed( Client, Number )
 
-kMarineBuildSpeed = Number
+kDynamicSetupMult = Number
 //self:NotifySiege( nil, "Adjusted Marine Construct Speed to %s percent (1 - (marineplayercount/12) + 1)", true, Number * 100)
 end
 
-local MarineBuildSpeedCommand = self:BindCommand( "sh_marinebuildspeed", "marinebuildspeed", MarineBuildSpeed )
-MarineBuildSpeedCommand:AddParam{ Type = "number" }
-MarineBuildSpeedCommand:Help( "sh_marinebuildspeed adjust marine construct speed on demand." )
+local BuildSpeedCommand = self:BindCommand( "sh_buildspeed", "buildspeed", BuildSpeed )
+BuildSpeedCommand:AddParam{ Type = "number" }
+BuildSpeedCommand:Help( "sh_buildspeed adjust construct speed on demand." )
 
 
 local function ModelSize( Client, Targets, Number )

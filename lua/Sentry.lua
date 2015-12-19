@@ -262,7 +262,7 @@ function Sentry:OnDestroy()
     end
     
 end
-
+/*
 function Sentry:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
 local damage = 1
     if doer:isa("SwipeBlink") then
@@ -272,6 +272,7 @@ local damage = 1
     end
   damageTable.damage = damageTable.damage * damage 
 end
+*/
 function Sentry:GetCanSleep()
     return self.attacking == false
 end

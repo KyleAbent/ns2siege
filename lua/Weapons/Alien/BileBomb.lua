@@ -68,7 +68,13 @@ local function CreateBombProjectile( self, player )
         
        // if not ( Shared.GetMapName() == "ns_fortsiege" and GetIsSiegeEnabled() ) then
         local startPointTrace = Shared.TraceRay(player:GetEyePos(), startPoint, CollisionRep.Damage, PhysicsMask.Bile, EntityFilterOneAndIsa(player, "Babbler"))
-        startPoint = startPointTrace.endPoint
+        
+        
+              //if startPointTrace.surface == "bile_allowed" or startPointTrace.surface == "powered_decal" and GetIsSiegeEnabled() then
+              // else
+              // startPoint = startPointTrace.endPoint
+              //  end
+                
        // end
         local startVelocity = viewCoords.zAxis * kBombVelocity
         

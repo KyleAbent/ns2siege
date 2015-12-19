@@ -152,7 +152,11 @@ function TeleportTrigger:TeleportEntity(entity)
                             antiStuckVector.x = math.sin(destAnlges.yaw)
                             antiStuckVector.y = 0.5
                         end
+                            if HasMixin(self, "SmoothedRelevancy") then
+                         self:StartSmoothedRelevancy(destOrigin + antiStuckVector)
+                         else
                         entity:SetOrigin(destOrigin + antiStuckVector)
+                        end
                     end
                     
                 else

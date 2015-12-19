@@ -175,12 +175,12 @@ function CombatMixin:InsideMainRoom()
              //Disabled because crashing error relating to particle effects etc not knowing what to do with the enzyme or something?
        */
                                                       //flicker marine lights
-       for _, powerpoint in ipairs(GetEntitiesWithinRange("PowerPoint", self:GetOrigin(), 999)) do
-        if powerpoint:GetIsAlive() and self:GetLocationName() == powerpoint:GetLocationName() then
-           powerpoint:SetMainRoom()
-        end
+    //   for _, powerpoint in ipairs(GetEntitiesWithinRange("PowerPoint", self:GetOrigin(), 999)) do
+    //    if powerpoint:GetIsAlive() and self:GetLocationName() == powerpoint:GetLocationName() then
+    //       powerpoint:SetMainRoom()
+    //    end
               
-    end
+   // end
 
 
 end

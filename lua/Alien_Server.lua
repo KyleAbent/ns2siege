@@ -46,7 +46,12 @@ function Alien:Reset()
     end
     
 end
+function Alien:TunnelFailed(player)
 
+end
+function Alien:TunnelGood(player)
+
+end
 function Alien:HiveCompleteSoRefreshTechsManually()
    UpdateAbilityAvailability(self, self:GetTierOneTechId(), self:GetTierTwoTechId(), self:GetTierThreeTechId())
 end
@@ -64,6 +69,17 @@ function Alien:OnProcessMove(input)
     // In rare cases, Player.OnProcessMove() above may cause this entity to be destroyed.
     // The below code assumes the player is not destroyed.
     if not self:GetIsDestroyed() then
+    
+       
+           self.canredeemorrebirth = Shared.GetTime() > self.lastredeemorrebirthtime  + kRedemptionCooldown 
+ 
+        if  (GetHasRedemptionUpgrade(self) and self:GetHealthScalar() <= kRedemptionEHPThreshold ) then
+                 if self.canredeemorrebirth then
+                 self.canredeemorrebirth = false
+                 self:RedemAlienToHive()
+                 end         
+           end
+           
    
            
         // Calculate two and three hives so abilities for abilities      

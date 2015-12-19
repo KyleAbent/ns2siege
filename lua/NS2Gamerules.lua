@@ -1825,6 +1825,7 @@ function NS2Gamerules:GetCombatEntitiesCount()
             for _, entity in ipairs(GetEntitiesWithMixin("Combat")) do
              local inCombat = (entity.timeLastDamageDealt + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime()) or (entity.lastTakenDamageTime + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime())
                   if inCombat then combatentities = combatentities + 1 end
+                  if entity.mainbattle == true then entity.mainbattle = false end
              end
             return combatentities
 end
@@ -1845,6 +1846,23 @@ function NS2Gamerules:PickMainRoom()
   //Kyle Abent ns2siege 11.22 kyleabent@gmail.com
     if not self:GetGameStarted() then return end //pregame bug fix? because at start of round says self.mainrooms = shared.gettime //12.5
        if not self.doorsopened or (self.mainrooms + kMainRoomPickEveryXSeconds) > Shared.GetTime() then return true end 
+       
+                 if self:GetIsSuddenDeath() then
+                        for _, CC in ientitylist(Shared.GetEntitiesWithClassname("CommandStation")) do
+                             CreatePheromone(kTechId.ThreatMarker, CC:GetOrigin(), 2) 
+                             local powerpoint = GetPowerPointForLocation(CC:GetLocationName())
+                             if powerpoint ~= nil then powerpoint:InsideMainRoom() end
+                             break
+                        end
+                        for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
+                             hive:MarineOrders() 
+                             break
+                        end
+                              self.mainrooms = Shared.GetTime()
+                              self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds)
+                             return true
+                 end
+          
      local locations = EntityListToTable(Shared.GetEntitiesWithClassname("Location"))
      for i = 1, #locations do //
         local location = locations[i]
@@ -1863,11 +1881,22 @@ function NS2Gamerules:PickMainRoom()
                   self.mainrooms = Shared.GetTime() //Prevents 2 rooms being picked at once?
                    self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds) // Clears and says is ready for another
                       local entities = location:GetEntitiesInTrigger()
+                      local shouldbreak = 0
                   if entities then
+                  
+                             local powerpoint = GetPowerPointForLocation(location.name)
+                             if powerpoint ~= nil then
+                             powerpoint:SetMainRoom()
+                             Print("main room is %s", powerpoint:GetLocationName())
+                             powerpoint:InsideMainRoom()
+                              end
+                              
                     for _, entity in ipairs(entities) do
                       if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
-                      if HasMixin(entity, "Combat") then entity:InsideMainRoom() end
-                      if entity:isa("PowerPoint") then entity:SetMainRoom() end
+                    //  if entity.GetLocationName then Print("main room is %s", entity:GetLocationName()) end
+                      //if entity:isa("PowerPoint") then entity:SetMainRoom() end
+                      // if HasMixin(entity, "Combat") then entity:InsideMainRoom() end
+                      //break
                     end
                  self:TriggerZedTime()
                   end

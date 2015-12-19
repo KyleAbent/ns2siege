@@ -487,9 +487,9 @@ function LiveMixin:Kill(attacker, doer, point, direction)
                    if GetHasRebirthUpgrade(self) then
                     self:TriggerRebirth()
                     return
-                     elseif GetHasRedemptionUpgrade(self) then
-                     self:RedemAlienToHive()
-                      return
+                    // elseif GetHasRedemptionUpgrade(self) then
+                     //self:RedemAlienToHive()
+                     // return
                    end //
                end //
             end //
@@ -503,7 +503,7 @@ function LiveMixin:Kill(attacker, doer, point, direction)
         end
       if self:GetTeamNumber() == 1 and self:isa("Player") then 
         if attacker and attacker:isa("Alien") and GetHasHungerUpgrade(attacker) then
-          attacker.primaled = true
+          attacker:PrimalScream(8)
           attacker:TriggerEffects("primal_scream")
        //   attacker:TriggerEnzyme(4)
           attacker:AddEnergy(10)

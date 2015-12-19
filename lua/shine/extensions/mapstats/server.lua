@@ -31,7 +31,7 @@ self.MapStatsData = MapStatsFile
           if MarineWinAmount > AlienWinAmount then 
                if Shared.GetMapName() ~= "ns2_rockdownsiege2" and Shared.GetMapName() ~= "ns_realsiege" then     
                    local unclampedtime =  kFrontDoorTime - ( (MarineWinAmount - AlienWinAmount) * 10 )
-                   local clampedtime = Clamp(unclampedtime, 300, 360) 
+                   local clampedtime = Clamp(unclampedtime, 300, ConditionalValue(Shared.GetMapName() == "ns2_trainsiege2" or Shared.GetMapName() == "ns_siegeaholic_remade", 420, 360)) 
                    kFrontDoorTime = clampedtime
                end
                
@@ -89,7 +89,7 @@ self.MapStatsData = MapStatsFile
                end  
               if Shared.GetMapName() ~= "ns_realsiege" then           
                    local unclampedtimefront = kFrontDoorTime + ( (AlienWinAmount - MarineWinAmount) * 10 )
-                   local clampedtimefront = Clamp(unclampedtimefront, 300, 360) 
+                   local clampedtimefront = Clamp(unclampedtimefront, 300, ConditionalValue(Shared.GetMapName() == "ns2_trainsiege2" or Shared.GetMapName() == "ns_siegeaholic_remade", 420, 360)) 
                    kFrontDoorTime = clampedtimefront
               end  
                    

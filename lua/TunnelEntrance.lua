@@ -338,7 +338,62 @@ function TunnelEntrance:Interact()
 end
 
 if Server then
-
+ 
+    function TunnelEntrance:FindFreeSpace(hive)
+     if not hive then return nil end
+        for index = 1, 16 do
+           local extents = Vector(1.3,1.3,1.3)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, hive:GetOrigin(), .5, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == hive:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation and GetIsPointOnInfestation(spawnPoint) then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for gorge tunnel auto hive spawn!")
+           return nil
+    end
+    function TunnelEntrance:IsInRangeOfHive()
+      local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)
+   if #hives >=1 then return true end
+   return false
+end
+  
+    function TunnelEntrance:DestroyOther()
+    for _, tunnelent in ipairs( GetEntitiesForTeam("TunnelEntrance", 2)) do
+        if tunnelent:GetOwner() == self:GetOwner() and tunnelent ~= self then
+        DestroyEntity(tunnelent)
+        end
+    end
+    end
+    
+    function TunnelEntrance:OnCreatedByGorge(gorge)
+     
+      // if not self.connected and not self:IsInRangeOfHive() then
+      self:DestroyOther()
+             local origin = self:FindFreeSpace(self:GetTeam():GetHive())
+               if origin then
+                    local tunnelent = CreateEntity(TunnelEntrance.kMapName, origin, 2)   
+                    tunnelent:SetOwner(self:GetOwner())
+                    tunnelent:SetConstructionComplete()
+                    self:GetOwner():TunnelGood(self:GetOwner())
+                 return tunnelent
+               end
+           self:GetOwner():TunnelFailed(self:GetOwner())
+     //  end
+        
+    
+    end
+    
+    
     function TunnelEntrance:OnTeleportEnd()
     
         local tunnel = Shared.GetEntity(self.tunnelId)
@@ -445,7 +500,7 @@ if Server then
     end
     
     function TunnelEntrance:OnKill(attacker, doer, point, direction)
-
+       // self:DestroyOther()
         ScriptActor.OnKill(self, attacker, doer, point, direction)
         self:TriggerEffects("death")
         self:SetModel(nil)

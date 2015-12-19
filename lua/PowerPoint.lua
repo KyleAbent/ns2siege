@@ -453,6 +453,8 @@ function PowerPoint:GetTechAllowed(techId, techNode, player)
     return true, true
 end
 function PowerPoint:SetMainRoom()
+SendTeamMessage(self:GetTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
+SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
 self:Flicker() // off
 self:AddTimedCallback(function() self:Flicker() end, 5) //on
 self:AddTimedCallback(function() self:Flicker() end, 12) // off

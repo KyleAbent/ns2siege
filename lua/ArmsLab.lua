@@ -243,6 +243,7 @@ function ArmsLab:OnUpdate(deltaTime)
         end
    end
 end
+if Server then
 function ArmsLab:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
        if GetHasTech(self, kTechId.RifleClip) or not GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
@@ -281,6 +282,7 @@ function ArmsLab:UpdatePassive()
    commander.isBotRequestedAction = true
    commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
    
+end
 end
 if Server then
 function ArmsLab:UpdateResearch(deltaTime)

@@ -1290,7 +1290,7 @@ function BuildTechData()
          [kTechDataGhostModelClass] = "AlienGhostModel",  
         [kTechDataAllowConsumeDrop] = true,
        [kTechDataAllowStacking] = false,  
-       [kTechDataMaxAmount] = kNumGorgeTunnels,   
+       [kTechDataMaxAmount] = 1,   
         [kTechDataMapName] = TunnelEntrance.kMapName,  
         [kTechDataDisplayName] = "TUNNEL_ENTRANCE", 
        [kTechDataHint] = "TUNNEL_ENTRANCE_HINT", 
@@ -1391,7 +1391,7 @@ function BuildTechData()
         [kTechDataDisplayName] = "Redemption", 
       [kTechDataSponitorCode] = "B",  
       [kTechDataCostKey] = kRedemptionCost, 
-     [kTechDataTooltipInfo] = "Will return you to a random hive egg spawn when dead if cooldown is not active.", },
+     [kTechDataTooltipInfo] = "Will return you to a random hive egg spawn when 30% hp or lower", },
      
              { [kTechDataId] = kTechId.Rebirth, 
        [kTechDataCategory] = kTechId.CragHive,  

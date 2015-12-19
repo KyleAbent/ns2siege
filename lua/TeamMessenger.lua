@@ -13,7 +13,7 @@ kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject',
                            'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
                            'TeamsBalanced', 'GameStartCommanders', 'SideDoor', 'FrontDoor', 'SiegeDoor', 
                            'SuddenDeath', 'ZedTimeBegin', 'ZedTimeEnd', 'Weapons1Researching', 'Weapons2Researching', 
-                           'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', })
+                           'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', 'MainRoom', })
 
 local kTeamMessages = { }
 
@@ -24,6 +24,9 @@ local locationStringGen = function(locationId, messageString) return string.form
 
 // Thos function will generate the string to display based on a research Id.
 local researchStringGen = function(researchId, messageString) return string.format(Locale.ResolveString(messageString), GetDisplayNameForTechId(researchId)) end
+
+kTeamMessages[kTeamMessageTypes.MainRoom] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "%s is Main Room") end,
+                                                       [kAlienTeamType] = function(data) return locationStringGen(data, "%s is Main Room") end } }
 
 kTeamMessages[kTeamMessageTypes.PowerLost] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "POWER_LOST") end } }
 

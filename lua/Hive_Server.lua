@@ -122,7 +122,14 @@ function Hive:OnCommanderLogin( commanderPlayer, forced )
     end
     
 end
-
+function Hive:MarineOrders()
+    for _, player in ipairs(GetEntitiesWithinRange("Marine", self:GetOrigin(), 999)) do
+        if player:GetIsAlive() and not player:isa("Commander") then
+           player:GiveOrder(kTechId.Attack, self:GetId(), self:GetOrigin(), nil, true, true)
+        end
+              
+    end   // Create marine order
+end
 function Hive:OnDestroy()
 
     local team = self:GetTeam()
@@ -798,6 +805,10 @@ function Hive:OnConstructionComplete()
 
     self.bioMassLevel = 4
 
+         local commander = self:GetTeam():GetCommander()
+       if commander ~= nil then
+       commander:AddScore(8) 
+       end
                local team = self:GetTeam()
         if team then
          team:UpdateBioMassLevel()

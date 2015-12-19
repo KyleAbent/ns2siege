@@ -82,6 +82,19 @@ function AlienTeam:GetCommander()
     end
     return nil
 end
+function AlienTeam:GetHive()
+    for _, hive in ipairs(GetEntitiesForTeam("Hive", 2)) do
+        if hive:GetIsBuilt() then
+        
+           return hive
+        end
+
+    end
+    return nil
+end
+function AlienTeam:GetEggCount()
+    return self.eggCount or 0
+end
 function AlienTeam:GetEggCount()
     return self.eggCount or 0
 end

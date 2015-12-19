@@ -243,8 +243,7 @@ local base = 1
     end
     
 	if self.reloading then 
-	local fiveseconds = 0.38
-        base = fiveseconds
+        base = 0.38
 	end
 	
 	return base
