@@ -30,12 +30,7 @@ self.GameStarted = false
 self.CreditAmount = 0
 self.CreditUsers = {}
 self.BuyUsersTimer = {}
-self.marinecredits = 0
-self.aliencredits = 0
-self.marinebonus = 0
-self.alienbonus = 0
 
-self.UserStartOfRoundCredits = {}
 self.MarineTotalSpent = 0
 self.AlienTotalSpent = 0
 self.Refunded = false
@@ -63,7 +58,7 @@ local Client = controlling:GetClient()
         if player:GetResources() == 0 then
         self:NotifyBuy( Client, "Medpack costs 1 resource, you have %s resources. Purchase invalid.", true, player:GetResources())
         else
-        self:SimpleTimer(2, function () if not player then return else player:GiveItem(MedPack.kMapName) player:SetResources(player:GetResources() - 1) end end)
+        self:SimpleTimer(2, function () if not player or not player:GetIsAlive() then return else player:GiveItem(MedPack.kMapName) player:SetResources(player:GetResources() - 1) end end)
         end
 end
 function Plugin:BuyAmmo(player)
@@ -74,7 +69,7 @@ local Client = controlling:GetClient()
         if player:GetResources() < 1 then
         self:NotifyBuy( Client, "AmmoPack costs 1 resource, you have %s resources. Purchase invalid.", true, player:GetResources()) 
         else
-       self:SimpleTimer(2, function () if not player then return else player:GiveItem(AmmoPack.kMapName) player:SetResources(player:GetResources() - 1) end end)
+       self:SimpleTimer(2, function () if not player or not player:GetIsAlive() then return else player:GiveItem(AmmoPack.kMapName) player:SetResources(player:GetResources() - 1) end end)
         end
 end
 local function GetPathingRequirementsMet(position, extents)
@@ -162,12 +157,6 @@ if Points ~= nil and Points ~= 0 and Player and GetGamerules():GetGameStarted() 
     local addamount = Points/(10/kCreditMultiplier)      
  local controlling = client:GetControllingPlayer()
  
-         if Player:GetTeamNumber() == 1 then
-         self.marinecredits = self.marinecredits + addamount
-        elseif Player:GetTeamNumber() == 2 then
-         self.aliencredits = self.aliencredits + addamount
-         end
-         
 self.CreditUsers[ controlling:GetClient() ] = self:GetPlayerCreditsInfo(controlling:GetClient()) + addamount
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(controlling:GetClient()) ), controlling:GetClient()) 
 end
@@ -192,10 +181,6 @@ function Plugin:OnReset()
               Shine.ScreenText.End(85)  
               Shine.ScreenText.End(86)   
               Shine.ScreenText.End(87)  
-              self.marinecredits = 0
-              self.aliencredits = 0
-              self.marinebonus = 0
-              self.alienbonus = 0
               self.MarineTotalSpent = 0 
               self.AlienTotalSpent = 0
               self.CreditUsers = {}
@@ -279,12 +264,27 @@ function Plugin:SaveCredits(Client)
        if Data and Data.credits then 
          if not Data.name or Data.name ~= Client:GetControllingPlayer():GetName() then
            Data.name = Client:GetControllingPlayer():GetName()
-           end        
-       Data.credits = self:GetPlayerCreditsInfo(Client) 
-       else 
+           end  //      
+
+       
+              local cap = kCreditsPerRoundCap 
+          local creditstosave = self:GetPlayerCreditsInfo(Client)
+          local earnedamount = creditstosave - Data.credits
+          if earnedamount > cap then 
+          creditstosave = Data.credits + cap
+             if notify then
+             self:NotifyCredits( Client, "%s Credit cap per round exceeded. You earned %s credits this round. Only %s are saved. So your new total is %s", true, kCreditsPerRoundCap, earnedamount, kCreditsPerRoundCap, creditstosave )
+             Shine.ScreenText.SetText("Credits", string.format( "%s Credits", creditstosave ), Client) 
+            end
+           end
+           
+            Data.credits = creditstosave 
+            
+            Data.credits = self:GetPlayerCreditsInfo(Client)
+       else
       self.CreditData.Users[Client:GetUserId() ] = {credits = self:GetPlayerCreditsInfo(Client), name = Client:GetControllingPlayer():GetName() }
-       end
-     Shine.SaveJSONFile( self.CreditData, CreditsPath  )
+       end//
+         //Shine.SaveJSONFile( self.CreditData, CreditsPath  ) 
 end
 function Plugin:ClientDisconnect(Client)
 self:SaveCredits(Client)
@@ -382,6 +382,34 @@ end
                   self:SaveCredits(Player:GetClient())
                   end
              end
+                     
+            local LinkFiley = Shine.LoadJSONFile( URLPath )
+            self.LinkFile = LinkFiley
+
+            
+                            
+                             
+                 self:SimpleTimer( 2, function() 
+                 Shine.SaveJSONFile( self.CreditData, CreditsPath  )
+                 end)
+                             
+                 self:SimpleTimer( 4, function() 
+                 HTTPRequest( self.LinkFile.LinkToUpload, "POST", {data = json.encode(self.CreditData)})
+                 end)
+                 
+             //    self:SimpleTimer( 8, function() 
+             //    HTTPRequest( self.LinkFile.LinkToUpload, "POST", {data = json.encode(self.UserData)})
+             //    end)
+                 
+                 self:SimpleTimer( 12, function() 
+                 self:LoadBadges()
+                 end)
+                 
+                 self:SimpleTimer( 14, function() 
+                 self:NotifyCredits( nil, "http://credits.ns2siege.com - credit ranking updated", true)
+                 end)        
+                 
+
  end
 function Plugin:SetGameState( Gamerules, State, OldState )
        if State == kGameState.Countdown then
@@ -391,17 +419,13 @@ function Plugin:SetGameState( Gamerules, State, OldState )
         self.Refunded = false
               Shine.ScreenText.End(80)
               Shine.ScreenText.End(81)  
-              Shine.ScreenText.End(82)  
-              Shine.ScreenText.End(83)  
-              Shine.ScreenText.End(84)  
-              Shine.ScreenText.End(85)  
-              Shine.ScreenText.End(86)
-              Shine.ScreenText.End(87)  
+            //  Shine.ScreenText.End(82)  
+            //  Shine.ScreenText.End(83)  
+            //  Shine.ScreenText.End(84)  
+            //  Shine.ScreenText.End(85)  
+            //  Shine.ScreenText.End(86)
+            //  Shine.ScreenText.End(87)  
           Shine.ScreenText.End("Credits")    
-              self.marinecredits = 0
-              self.aliencredits = 0
-              self.marinebonus = 0
-              self.alienbonus = 0
               self.MarineTotalSpent = 0
               self.AlienTotalSpent = 0
               self.PlayerSpentAmount = {}
@@ -428,31 +452,36 @@ function Plugin:SetGameState( Gamerules, State, OldState )
               for i = 1, #Players do
               local Player = Players[ i ]
                   if Player then
-                 // self:SaveCredits(Player:GetClient())
-                     if Player:GetTeamNumber() == 1 or Player:GetTeamNumber() == 2 then
                     Shine.ScreenText.Add( 80, {X = 0.40, Y = 0.15,Text = "Total Credits Earned:".. math.round((Player:GetScore() / 10 + ConditionalValue(Player:GetTeamNumber() == 1, self.marinebonus, self.alienbonus)), 2), Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
                     Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.20,Text = "Total Credits Spent:".. self.PlayerSpentAmount[Player:GetClient()], Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
-                     end
                   end
              end
       end)
       
+             self:SimpleTimer(8, function ()
+              local Players = Shine.GetAllPlayers()
+              for i = 1, #Players do
+              local Player = Players[ i ]
+                  if Player then
+                    local creditstosave = self:GetPlayerCreditsInfo(Player:GetClient())
+                    local earnedamount = creditstosave - Data.credits
+                    local addamount = creditstosave
+                    addamount = math.round(addamount, 2)
+                    Shine.ScreenText.Add( 80, {X = 0.40, Y = 0.15,Text = "Total Credits Earned:"..addamount, Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
+                    Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.20,Text = "Total Credits Spent:".. self.PlayerSpentAmount[Player:GetClient()], Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
+                  end
+             end
+      end)
       
-            self:SimpleTimer( 16, function() 
-       local LinkFiley = Shine.LoadJSONFile( URLPath )
-        self.LinkFile = LinkFiley
-            HTTPRequest( self.LinkFile.LinkToUpload, "POST", {data = json.encode(self.CreditData)}, function() 
-            self:SaveAllCredits()
-            self:NotifyCredits( nil, "http://credits.ns2siege.com - credit ranking updated", true)
-            end)
-            end)
+        self:SimpleTimer(16, function ()
+        self:SaveAllCredits()
+        end)
+        
+
             
             
            //   local Time = Shared.GetTime()
           //   if not Time > kMaxServerAgeBeforeMapChange then
-                 self:SimpleTimer( 25, function() 
-                 self:LoadBadges()
-                 end)
        
 
     //  self:SimpleTimer(3, function ()    
@@ -2222,6 +2251,13 @@ AddCreditsCommand:Help("sh_addcredits <player> <number>")
 AddCreditsCommand:AddParam{ Type = "clients" }
 AddCreditsCommand:AddParam{ Type = "number" }
 AddCreditsCommand:AddParam{ Type = "boolean", Optional = true, Default = true }
+
+local function SaveCreditsCmd(Client)
+self:SaveAllCredits()
+end
+
+local SaveCreditsCommand = self:BindCommand("sh_savecredits", "savecredits", SaveCreditsCmd)
+SaveCreditsCommand:Help("sh_savecredits saves all credits online")
 
 local function GenerateCredits(Client)
   // self:NotifyGeneric( nil, "Current # of credits is: %s", true, self:GenereateTotalCreditAmount())

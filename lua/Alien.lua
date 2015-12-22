@@ -754,7 +754,7 @@ function Alien:OnUpdateAnimationInput(modelMixin)
       local weapon = self:GetActiveWeapon()
       local stomping = weapon and HasMixin(weapon, "Stomp") and weapon:GetIsStomping()
        if stomping then 
-            attackSpeed = attackSpeed * 1.15 
+            attackSpeed = Clamp(attackSpeed * 1.15, 1.15, 1.3)
         end 
      end
      

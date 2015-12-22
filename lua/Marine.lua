@@ -879,6 +879,7 @@ function Marine:OnStun()
                 bonewall.modelsize = 0.25 * self.modelsize
                 bonewall:AdjustMaxHealth(160)
                 StartSoundEffectForPlayer(AlienCommander.kBoneWallSpawnSound, self)
+                bonewall:SetLifeSpan(4)
         end
 end
 /*

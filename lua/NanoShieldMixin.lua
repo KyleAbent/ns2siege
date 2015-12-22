@@ -88,7 +88,7 @@ function NanoShieldMixin:OnTakeDamage(damage, attacker, doer, point)
     
 end
 
-function NanoShieldMixin:ActivateNanoShield()
+function NanoShieldMixin:ActivateNanoShield(duration)
 
     if self:GetCanBeNanoShielded() then
     
@@ -96,7 +96,11 @@ function NanoShieldMixin:ActivateNanoShield()
         self.nanoShielded = true
         
         if Server then
-        
+            local durationy = duration or 0
+            if durationy ~= 0 then
+            local hackedmod = Shared.GetTime() + (durationy - kNanoShieldDuration)
+            self.timeNanoShieldInit = hackedmod
+            end
             assert(self.shieldLoopSound == nil)
             self.shieldLoopSound = Server.CreateEntity(SoundEffect.kMapName)
             self.shieldLoopSound:SetAsset(kNanoLoopSound)
@@ -182,7 +186,11 @@ end
 function NanoShieldMixin:ComputeDamageOverrideMixin(attacker, damage, damageType, time)
 
     if self.nanoShielded == true then
+        if self:isa("FuncDoor") then 
+        return damage * .5, damageType
+        else
         return damage * kNanoShieldDamageReductionDamage, damageType
+        end
     end
     
     return damage

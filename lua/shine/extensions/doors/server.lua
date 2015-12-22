@@ -88,15 +88,6 @@ end
                end
                end
                
-                      if Shared.GetMapName() == "ns2_tram_siege" then
-             
-               if ( Shared.GetTime() - GetGamerules():GetGameStartTime() ) < 1200 then
-               local NowToNine = 1200 - (Shared.GetTime() - GetGamerules():GetGameStartTime())
-               local NineLength =  math.ceil( Shared.GetTime() + NowToNine - Shared.GetTime() )
-              Shine.ScreenText.Add( 97, {X = 0.80, Y = 0.50,Text = "Hub opens in %s",Duration = NineLength,R = 255, G = 255, B = 0,Alignment = 0,Size = 1,FadeIn = 0,} )
-               end
-
-         end      
      
 
 end
@@ -176,17 +167,7 @@ function Plugin:SetGameState( Gamerules, State, OldState )
 	      Shine.ScreenText.Add( 100, {X = 0.80, Y = 0.60,Text = "Bamboo opens in %s",Duration = twentyminlength,R = 255, G = 255, B = 0,Alignment = 0,Size = 1,FadeIn = 0,} )
          end
         */
-                  if Shared.GetMapName() == "ns2_tram_siege" then
-          local tenminlength = math.ceil( Shared.GetTime() + 1200 - Shared.GetTime() )
-    //      local fiteenminlength = math.ceil( Shared.GetTime() + 1200 - Shared.GetTime() )
-    //      local twentyminlength = math.ceil( Shared.GetTime() + 1200 - Shared.GetTime() )
-         // local twentyfiveminlength = math.ceil( Shared.GetTime() + 1500 - Shared.GetTime() )
-          Shine.ScreenText.Add( 98, {X = 0.80, Y = 0.50,Text = "Hub opens in %s",Duration = tenminlength,R = 255, G = 255, B = 0,Alignment = 0,Size = 1,FadeIn = 0,} )
-	  //    Shine.ScreenText.Add( 99, {X = 0.80, Y = 0.55,Text = "South Tunnels opens in %s",Duration = fiteenminlength,R = 255, G = 255, B = 0,Alignment = 0,Size = 1,FadeIn = 0,} )
-	  //    Shine.ScreenText.Add( 100, {X = 0.80, Y = 0.60,Text = "Repair Room opens in %s",Duration = twentyminlength,R = 255, G = 255, B = 0,Alignment = 0,Size = 1,FadeIn = 0,} )
-	  //    Shine.ScreenText.Add( 97, {X = 0.80, Y = 0.65,Text = "Ore Processing opens in %s",Duration = twentyminlength,R = 255, G = 255, B = 0,Alignment = 0,Size = 1,FadeIn = 0,} )
-         end
-           
+
               
       end        
               

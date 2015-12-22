@@ -236,6 +236,7 @@ function PhaseGate:OnStun()
                 local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
                 bonewall.modelsize = 0.5
                 bonewall:AdjustMaxHealth(bonewall:GetMaxHealth() / 2)
+                bonewall:SetLifeSpan(1)
 end
 function PhaseGate:GetTechButtons(techId)
 

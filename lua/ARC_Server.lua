@@ -292,9 +292,9 @@ local function PerformAttack(self)
         GetEffectManager():TriggerEffects("arc_hit_primary", {effecthostcoords = Coords.GetTranslation(self.targetPosition)})
         
         local hitEntities = GetEntitiesWithMixinWithinRange("Live", self.targetPosition, ARC.kSplashRadius)
-        local damage = ARC.kAttackDamage * (self.level/100) + ARC.kAttackDamage
+       // local damage = ARC.kAttackDamage * (self.level/100) + ARC.kAttackDamage
         // Do damage to every target in range
-        RadiusDamage(hitEntities, self.targetPosition, ARC.kSplashRadius, damage, self, true)
+        RadiusDamage(hitEntities, self.targetPosition, ARC.kSplashRadius, ARC.kAttackDamage, self, true)
 
         // Play hit effect on each
         for index, target in ipairs(hitEntities) do
@@ -307,6 +307,7 @@ local function PerformAttack(self)
       // if not self:GetIsaCreditStructure() then self:AddXP(ARC.GainXP) end
 
       //  if self:GetIsInSiege() then self:AddXP(ARC.GainXP) end
+      self:AddXP(ARC.GainXP)
     end
     
     // reset target position and acquire new target

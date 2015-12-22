@@ -20,6 +20,7 @@ Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
+Script.Load("lua/NanoShieldMixin.lua")
 
 class 'FuncDoor' (ScriptActor)
 
@@ -69,6 +70,7 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(LogicMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(NanoShieldMixin, networkVars)
 
 //AddMixinNetworkVars(ObstacleMixin, networkVars)
 networkVars.health = string.format("float (0 to %f by 1)", kMaxBreakableHealth)
@@ -126,6 +128,7 @@ local function UpdateAutoOpen(self, timePassed)
                //if self.amountoftimesbroken ~= 0 then self.amountoftimesbroken = self.amountoftimesbroken + .1 end
                 self:HandoutPoints()
                 end
+                self:SetPhysicsGroup(PhysicsGroup.OpenDoor)
       self:SetState(FuncDoor.kState.Open) 
        return true 
         end
@@ -159,8 +162,9 @@ local function UpdateAutoOpen(self, timePassed)
         end
         
    //end
-    if not self.canbewelded then self.canbewelded = true end
+    if not self.canbewelded then self.canbewelded = true  self:ActivateNanoShield(16) end
     if not self.isvisible then self.isvisible = true end
+    if self:GetPhysicsGroup() ~= PhysicsGroup.FuncMoveable then self:SetPhysicsGroup(PhysicsGroup.FuncMoveable) end
     return true
 
 end
@@ -203,6 +207,7 @@ function FuncDoor:OnInitialized()
     self:SetModel(kModelNameDefault, kDoorAnimationGraph)  
 //    InitMixin(self, ScaledModelMixin)
         InitMixin(self, WeldableMixin)
+        InitMixin(self, NanoShieldMixin)
     
    
     

@@ -133,7 +133,7 @@ local function Stalemate( Client )
 local Gamerules = GetGamerules()
 if not Gamerules then return end
 Gamerules:DrawGame()
-Shine:Notify( Client, "end the game." )
+//Shine:Notify( Client, "end the game." )
 end 
 
 local StalemateCommand = self:BindCommand( "sh_stalemate", "stalemate", Stalemate )

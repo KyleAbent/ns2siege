@@ -456,7 +456,7 @@ local function MultiplyFlameAble(target, attacker, doer, damage, armorFractionUs
         damage = damage * 1.10
     end
     
-    if HasMixin(target, "Fire") then target:SetOnFire(attacker, doer) end
+    if HasMixin(target, "Fire") then target:SetOnFire(attacker, doer, 4) end
     
               //  if target.GetEnergy and target.SetEnergy then
               //   target:SetEnergy(target:GetEnergy() - 0.1 * 10) // too much lol

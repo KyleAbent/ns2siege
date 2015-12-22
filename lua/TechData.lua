@@ -905,17 +905,6 @@ function BuildTechData()
       [kTechDataTooltipInfo] = "Allows Macs to weld eachother."},
       
       
-                            { [kTechDataId] = kTechId.MoveThroughLockedDoorOn,    
-          [kTechDataCooldown] = 5,    
-          [kTechDataDisplayName] = "Open locked doors",       
-         [kTechDataCostKey] = 0, 
-         [kTechDataTooltipInfo] = "ENABLE walking through locked doors and temporarily opening them to get through"},
-         
-                                     { [kTechDataId] = kTechId.MoveThroughLockedDoorOff,    
-          [kTechDataCooldown] = 5,    
-          [kTechDataDisplayName] = "DO NOT open locked doors",       
-         [kTechDataCostKey] = 0, 
-         [kTechDataTooltipInfo] = "Disable the ability to move through locked doors by not opening them"},
          
                
                 { [kTechDataId] = kTechId.MacSpawnOn,    
@@ -1412,7 +1401,7 @@ function BuildTechData()
         [kTechDataDisplayName] = "Hunger", 
       [kTechDataSponitorCode] = "B",  
       [kTechDataCostKey] = 2, 
-     [kTechDataTooltipInfo] = "+10% HP, +10 energy and effects of Primal Scream on enemy kill (player only)", },
+     [kTechDataTooltipInfo] = "On Player Kill: +10% HP heal and effects of Primal Scream for 8 seconds or unntil on fire", },
    
 
              { [kTechDataId] = kTechId.Focus, 

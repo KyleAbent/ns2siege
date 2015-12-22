@@ -203,7 +203,7 @@ function PathingMixin:CheckTarget(endPoint)
            ( tracey.entity:isa("FuncDoor") 
           and ( tracey.entity:GetState() == FuncDoor.kState.Welded or 
                tracey.entity:GetState() == FuncDoor.kState.Locked ) ) and not
-      ( ( self:isa("MAC") or self:isa("ARC") ) and self.MoveThroughlockedoors) then
+       ( self:isa("MAC") or self:isa("ARC") ) then
         return false
       end
       

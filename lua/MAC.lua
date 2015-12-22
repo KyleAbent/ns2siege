@@ -116,7 +116,6 @@ local networkVars =
     constructing = "boolean",
     moving = "boolean",
     level = "float (0 to " .. MAC.MaxLevel .. " by .1)",
-    MoveThroughlockedoors = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -217,7 +216,6 @@ function MAC:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)
    self.level = .1
-   self.MoveThroughlockedoors = true
 end
 
 function MAC:OnInitialized()
@@ -1144,28 +1142,11 @@ function MAC:GetTechButtons(techId)
 
     local techButtons ={ kTechId.Move, kTechId.Stop, kTechId.Attack, kTechId.Welding,
              kTechId.None, kTechId.None, kTechId.None, kTechId.Recycle }
-             
-             if self:GetMapHasFuncDoor() then
-                         if self.MoveThroughlockedoors then
-                             techButtons[6] = kTechId.MoveThroughLockedDoorOff
-                         else
-                              techButtons[6] = kTechId.MoveThroughLockedDoorOn
-                         end
-             end
     return techButtons
-end
-function MAC:GetMapHasFuncDoor()
-      local frontdoor = GetEntitiesWithinRange("FuncDoor", self:GetOrigin(), 9999)
-   if #frontdoor >=1 then return true end
-   return false
 end
  function MAC:PerformActivation(techId, position, normal, commander)
      local success = false
-    if techId == kTechId.MoveThroughLockedDoorOff then
-    self.MoveThroughlockedoors = false
-    elseif techId == kTechId.MoveThroughLockedDoorOn then
-    self.MoveThroughlockedoors = true
-    elseif  techId == kTechId.MACEMP then
+    if  techId == kTechId.MACEMP then
     
         success = self:TriggerEMP()
     
@@ -1190,7 +1171,7 @@ function MAC:OnOverrideDoorInteraction(inEntity)
             end
         end
     end
-    return self.MoveThroughlockedoors and self.moving and not inEntity:GetIsInCombat(), 4
+    return self.moving and not inEntity:GetIsInCombat(), 4
 end
 function MAC:OnDamageDone(doer, target)
 if doer == self then

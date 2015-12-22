@@ -75,7 +75,7 @@ ARC.kMaxPitch               = 45
 ARC.kMaxYaw                 = 180
 ARC.kCapsuleHeight = .05
 ARC.kCapsuleRadius = .5
-ARC.MaxLevel = 100
+ARC.MaxLevel = 10
 ARC.GainXP = 1
 ARC.ScaleSize = 1.3
 
@@ -107,7 +107,6 @@ local networkVars =
     // So we can update angles and pose parameters smoothly on client
     targetDirection = "vector",
     level = "float (0 to " .. ARC.MaxLevel .. " by .1)",
-        MoveThroughlockedoors = "boolean",
             ignorelimit = "boolean",
 }
 
@@ -178,7 +177,6 @@ function ARC:OnCreate()
     
     self:SetLagCompensated(true)
     self.level = 0
-    self.MoveThroughlockedoors = true 
     self.ignorelimit = false
 end
 
@@ -291,6 +289,7 @@ end
 function ARC:GetMaxLevel()
 return ARC.MaxLevel
 end
+/*
 function ARC:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
 	local scale = self:GetLevelPercentage()
@@ -301,7 +300,7 @@ function ARC:OnAdjustModelCoords(modelCoords)
     end
     return coords
 end
-
+*/
 function ARC:AddXP(amount)
 
     local xpReward = 0
@@ -371,12 +370,6 @@ function ARC:PerformActivation(techId, position, normal, commander)
         self:TriggerEffects("arc_undeploying")
         
         return true, true
-      elseif techId == kTechId.MoveThroughLockedDoorOff then
-         self.MoveThroughlockedoors = false
-                 return true, true
-       elseif techId == kTechId.MoveThroughLockedDoorOn then
-         self.MoveThroughlockedoors = true
-                 return true, true
       end      
     
     self.targetPosition = nil
@@ -417,27 +410,15 @@ function ARC:GetTechButtons(techId)
 
     local techButtons = { kTechId.Stop, kTechId.Attack, kTechId.None, kTechId.None,
               kTechId.ARCDeploy, kTechId.ARCUndeploy, kTechId.None, kTechId.Recycle }
-                           if self:GetMapHasFuncDoor() then
-                         if self.MoveThroughlockedoors then
-                             techButtons[7] = kTechId.MoveThroughLockedDoorOff
-                         else
-                              techButtons[7] = kTechId.MoveThroughLockedDoorOn
-                         end
-             end
               return techButtons
               
-end
-function ARC:GetMapHasFuncDoor()
-      local frontdoor = GetEntitiesWithinRange("FuncDoor", self:GetOrigin(), 9999)
-   if #frontdoor >=1 then return true end
-   return false
 end
 function ARC:GetInAttackMode()
     return self.deployMode == ARC.kDeployMode.Deployed
 end
 
 function ARC:GetCanGiveDamageOverride()
-    return true
+    return not self:GetIsVortexed()
 end
 
 function ARC:GetFov()
@@ -445,7 +426,7 @@ function ARC:GetFov()
 end
 
 function ARC:OnOverrideDoorInteraction(inEntity)
-    return self.MoveThroughlockedoors and self.moving, 4
+    return self.moving, 4
 end
 
 function ARC:GetEffectParams(tableParams)
@@ -486,15 +467,12 @@ function ARC:GetCanFireAtTarget(target, targetPoint)
     end
     
     // don't target eggs (they take only splash damage)
-    if target:isa("Egg") then
+    if target:isa("Egg") or target:isa("Cyst") then
         return false
     end
-    if target:isa("Cyst") then
-       return kShouldArcsFireAtCysts
-    end
         local gameRules = GetGamerules()
-       if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then return false end
-    return self:GetCanFireAtTargetActual(target, targetPoint) and not self:GetIsVortexed()
+       if (gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen()) or  self:GetIsVortexed() then return false end
+    return self:GetCanFireAtTargetActual(target, targetPoint) 
     
 end
 
@@ -512,14 +490,11 @@ function ARC:GetCanFireAtTargetActual(target, targetPoint)
         return false
     end
     local gameRules = GetGamerules()
-    if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then return false end
+    if ( gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() ) or  self:GetIsVortexed() then return false end
     
     // don't target eggs (they take only splash damage)
-    if target:isa("Egg")  then
+    if target:isa("Egg") or target:isa("Cyst") then
         return false
-    end
-    if target:isa("Cyst") then
-       return kShouldArcsFireAtCysts
     end
     if not target:GetIsSighted() and not GetIsTargetDetected(target) then
         return false
@@ -536,7 +511,7 @@ end
 
 function ARC:UpdateAngles(deltaTime)
 
-    if not self:GetInAttackMode() or not self:GetIsAlive() then
+    if not self:GetInAttackMode() or not self:GetIsAlive() or self:GetIsVortexed() then
         return
     end
     

@@ -36,7 +36,7 @@ self.MapStatsData = MapStatsFile
                end
                
                    if Shared.GetMapName() ~= "ns_realsiege" then
-                   local unclampedsiegetime = kSiegeDoorTime + ( (MarineWinAmount - AlienWinAmount) * 30 )
+                   local unclampedsiegetime = kSiegeDoorTime + ( (MarineWinAmount - AlienWinAmount) * 15 )
                    local clampedsiegetime = Clamp(unclampedsiegetime, 900, 1080)
                    kSiegeDoorTime = clampedsiegetime
                    end
@@ -83,7 +83,7 @@ self.MapStatsData = MapStatsFile
                    
          elseif AlienWinAmount > MarineWinAmount then
               if Shared.GetMapName() ~= "ns2_rockdownsiege2" and Shared.GetMapName() ~= "ns_realsiege" and Shared.GetMapName() ~= "ns2_tram_siege" then   
-                   local unclampedtime = kSiegeDoorTime - ( (AlienWinAmount - MarineWinAmount) * 30 )
+                   local unclampedtime = kSiegeDoorTime - ( (AlienWinAmount - MarineWinAmount) * 15 )
                    local clampedtime = Clamp(unclampedtime, 900, 1080) 
                    kSiegeDoorTime = clampedtime
                end  

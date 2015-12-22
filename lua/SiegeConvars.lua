@@ -1,4 +1,5 @@
-kCreditMultiplier = 2
+kCreditsPerRoundCap = 200
+kCreditMultiplier = 1
 kSBCooldown = 30
 kDynamicSetupMult = 1
 kCragSiegeBonus = 1.3
@@ -139,7 +140,6 @@ kShellHealth = 400
 kFuncDoorHealth = 100
 kFuncDoorWeldRate = 1
 kAddAmountofFuncDoorBroken = .1
-kShouldArcsFireAtCysts = false
 //kAlienTeamPresBonusMult = 1
 kSideDoorTime = 300 
 kMarineRespawnProtection = 5.06

@@ -305,6 +305,7 @@ function Exo:OnStun()
                 bonewall.modelsize = 0.5 * self.modelsize
                 bonewall:AdjustMaxHealth(bonewall:GetMaxHealth() / 2)
                 StartSoundEffectForPlayer(AlienCommander.kBoneWallSpawnSound, self)
+                bonewall:SetLifeSpan(4)
         end
 end
 function Exo:GetCanDoorInteract(inEntity)

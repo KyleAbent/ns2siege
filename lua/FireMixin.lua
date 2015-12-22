@@ -90,7 +90,7 @@ function FireMixin:OnDestroy()
     
 end
 
-function FireMixin:SetOnFire(attacker, doer)
+function FireMixin:SetOnFire(attacker, doer, duration)
 
     if Server and not self:GetIsDestroyed() then
     
@@ -110,8 +110,10 @@ function FireMixin:SetOnFire(attacker, doer)
         if self:isa("Player") then
            self.enzymed = false
            self.primaled = false
-        end
-        self.timeBurnInit = Shared.GetTime()
+        end                             
+        local durationy = duration or 0
+        local hackedmod = Shared.GetTime() + (durationy - kFlamethrowerBurnDuration)
+        self.timeBurnInit = duration and hackedmod or Shared.GetTime()
         self.isOnFire = true
         
     end

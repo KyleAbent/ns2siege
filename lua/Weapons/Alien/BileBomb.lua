@@ -72,7 +72,7 @@ local function CreateBombProjectile( self, player )
         
               //if startPointTrace.surface == "bile_allowed" or startPointTrace.surface == "powered_decal" and GetIsSiegeEnabled() then
               // else
-              // startPoint = startPointTrace.endPoint
+               startPoint = startPointTrace.endPoint
               //  end
                 
        // end

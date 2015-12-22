@@ -23,12 +23,12 @@ AddMixinNetworkVars(LogicMixin, networkVars)
 
 local function PushEntity(self, entity)
     
-    if self.enabled and entity:isa("Player") then
+    if self.enabled and entity:isa("Alien") or entity:isa("Marine") then
         local force = self.pushForce
         if self.pushDirection then      
             
             // get him in the air a bit
-            if entity:GetIsOnGround() then
+            if entity.GetIsOnGround and entity:GetIsOnGround() then
                 local extents = GetExtents(entity:GetTechId())            
                 if GetHasRoomForCapsule(extents, entity:GetOrigin() + Vector(0, extents.y + 0.2, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, nil, EntityFilterTwo(self, entity)) then                
                     entity:SetOrigin(entity:GetOrigin() + Vector(0,0.2,0)) 
