@@ -16,7 +16,16 @@ local function UpdateUnitStatusPercentage(self, target)
     end
 
 end
-
+function Marine:TriggerBeacon(location)
+     local locationto = location
+         self:AddTimedCallback(function()        
+            if HasMixin(player, "SmoothedRelevancy") then
+            player:StartSmoothedRelevancy(locationto)
+             end      
+           self:SetOrigin(locationto)
+          // self.lastbeacontime = Shared.GetTime()
+           end, 4)
+end
 function Marine:OnConstructTarget(target)
     UpdateUnitStatusPercentage(self, target)
 end

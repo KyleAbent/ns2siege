@@ -48,13 +48,9 @@ Observatory.kMapName = "observatory"
 Observatory.kModelName = PrecacheAsset("models/marine/observatory/observatory.model")
 Observatory.kCommanderScanSound = PrecacheAsset("sound/NS2.fev/marine/commander/scan_com")
 
-local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_marine")
+local kObservatoryTechButtons = { kTechId.Scan, kTechId.None, kTechId.Detector, kTechId.None,
+                                   kTechId.None, kTechId.None, kTechId.None, kTechId.None }
 
-local kObservatoryTechButtons = { kTechId.Scan, kTechId.DistressBeacon, kTechId.Detector, kTechId.None,
-                                   kTechId.None, kTechId.AdvancedBeacon, kTechId.None, kTechId.None }
-
-Observatory.kDistressBeaconTime = kDistressBeaconTime
-Observatory.kDistressBeaconRange = kDistressBeaconRange
 Observatory.kDetectionRange = 22 // From NS1 
 
 ///Siege Random Automatic Passive Time Researches
@@ -95,11 +91,8 @@ function Observatory:OnCreate()
     
     if Server then
     
-        self.distressBeaconSound = Server.CreateEntity(SoundEffect.kMapName)
-        self.distressBeaconSound:SetAsset(kDistressBeaconSoundMarine)
-        self.distressBeaconSound:SetRelevancyDistance(Math.infinity)
         
-        self:AddTimedCallback(Observatory.RevealCysts, 0.4)
+        self:AddTimedCallback(Observatory.RevealCysts, 4)
 
     end
     
@@ -221,343 +214,6 @@ function Observatory:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
 end
 
-function Observatory:GetDistressOrigin()
-
-    // Respawn at nearest built command station
-    local origin = nil
-    
-    local nearest = GetNearest(self:GetOrigin(), "CommandStation", self:GetTeamNumber(), function(ent) return ent:GetIsBuilt() and ent:GetIsAlive() end)
-    if nearest then
-        origin = nearest:GetModelOrigin()
-    end
-    
-    return origin
-    
-end
-
-local function TriggerMarineBeaconEffects(self)
-
-    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
-    
-        if player:GetIsAlive() and (player:isa("Marine") or player:isa("Exo")) then
-            player:TriggerEffects("player_beacon")
-        end
-    
-    end
-
-end
-function Observatory:TriggerAdvancedBeacon()
-
-    local success = false
-    
-    if not self:GetIsBeaconing() then
-
-        self.distressBeaconSound:Start()
-
-        local origin = self:GetDistressOrigin()
-        
-        if origin then
-        
-            self.distressBeaconSound:SetOrigin(origin)
-
-            // Beam all faraway players back in a few seconds!
-           // self.distressBeaconTime = Shared.GetTime() + Observatory.kDistressBeaconTime
-              self.advancedBeaconTime = Shared.GetTime() + Observatory.kDistressBeaconTime
-            if Server then
-            
-                TriggerMarineBeaconEffects(self)
-                
-                local location = GetLocationForPoint(self:GetDistressOrigin())
-                local locationName = location and location:GetName() or ""
-                local locationId = Shared.GetStringIndex(locationName)
-                SendTeamMessage(self:GetTeam(), kTeamMessageTypes.Beacon, locationId)
-                
-            end
-            
-            success = true
-        
-        end
-    
-    end
-    
-    return success, not success
-    
-end
-function Observatory:TriggerDistressBeacon()
-
-    local success = false
-    
-    if not self:GetIsBeaconing() then
-
-        self.distressBeaconSound:Start()
-
-        local origin = self:GetDistressOrigin()
-        
-        if origin then
-        
-            self.distressBeaconSound:SetOrigin(origin)
-
-            // Beam all faraway players back in a few seconds!
-            self.distressBeaconTime = Shared.GetTime() + Observatory.kDistressBeaconTime
-            
-            if Server then
-            
-                TriggerMarineBeaconEffects(self)
-                
-                local location = GetLocationForPoint(self:GetDistressOrigin())
-                local locationName = location and location:GetName() or ""
-                local locationId = Shared.GetStringIndex(locationName)
-                SendTeamMessage(self:GetTeam(), kTeamMessageTypes.Beacon, locationId)
-                
-            end
-            
-            success = true
-        
-        end
-    
-    end
-    
-    return success, not success
-    
-end
-
-function Observatory:CancelDistressBeacon()
-
-    self.distressBeaconTime = nil
-    self.distressBeaconSound:Stop()
-
-end
-function Observatory:CancelAdvancedBeacon()
-
-    self.advancedBeaconTime = nil
-    self.distressBeaconSound:Stop()
-
-end
-function Observatory:OnVortex()
-
-    if self:GetIsBeaconing() then
-        self:CancelDistressBeacon()
-    elseif self:GetIsAdvancedBeaconing() then
-       self:CancelAdvancedBeacon()
-      
-    end
-    
-end
-
-local function GetIsPlayerNearby(self, player, toOrigin)
-    return (player:GetOrigin() - toOrigin):GetLength() < Observatory.kDistressBeaconRange
-end
-
-local function GetPlayersToBeacon(self, toOrigin)
-
-    local players = { }
-    
-    for index, player in ipairs(self:GetTeam():GetPlayers()) do
-    
-        // Don't affect Commanders or Heavies
-        if player:isa("Marine") or player:isa("Exo") then
-        
-            // Don't respawn players that are already nearby.
-            if not GetIsPlayerNearby(self, player, toOrigin) then
-            
-                if player:isa("Exo") then
-                    table.insert(players, 1, player)
-                else
-                    table.insert(players, player)
-                end
-                
-            end
-            
-        end
-        
-    end
-
-    return players
-    
-end
-
-// Spawn players at nearest Command Station to Observatory - not initial marine start like in NS1. Allows relocations and more versatile tactics.
-local function RespawnPlayer(self, player, distressOrigin)
-
-    // Always marine capsule (player could be dead/spectator)
-    local extents = HasMixin(player, "Extents") and player:GetExtents() or LookupTechData(kTechId.Marine, kTechDataMaxExtents)
-    local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
-    local range = Observatory.kDistressBeaconRange
-    local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, distressOrigin, 2, range, EntityFilterAll())
-    
-    if spawnPoint then
-    
-        if HasMixin(player, "SmoothedRelevancy") then
-            player:StartSmoothedRelevancy(spawnPoint)
-        end
-        
-        player:SetOrigin(spawnPoint)
-        if player.TriggerBeaconEffects then
-            player:TriggerBeaconEffects()
-        end
-
-    end
-    
-    return spawnPoint ~= nil, spawnPoint
-    
-end
-
-function Observatory:PerformDistressBeacon()
-
-    self.distressBeaconSound:Stop()
-    
-    local anyPlayerWasBeaconed = false
-    local successfullPositions = {}
-    local successfullExoPositions = {}
-    local failedPlayers = {}
-    
-    local distressOrigin = self:GetDistressOrigin()
-    if distressOrigin then
-    
-        for index, player in ipairs(GetPlayersToBeacon(self, distressOrigin)) do
-        
-            local success, respawnPoint = RespawnPlayer(self, player, distressOrigin)
-            if success then
-            
-                anyPlayerWasBeaconed = true
-                if player:isa("Exo") then
-                    table.insert(successfullExoPositions, respawnPoint)
-                end
-                    
-                table.insert(successfullPositions, respawnPoint)
-                
-            else
-                table.insert(failedPlayers, player)
-            end
-            
-        end
-        
-        // Also respawn players that are spawning in at infantry portals near command station (use a little extra range to account for vertical difference)
-        for index, ip in ipairs(GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), distressOrigin, kInfantryPortalAttachRange + 1)) do
-        
-            ip:FinishSpawn()
-            local spawnPoint = ip:GetAttachPointOrigin("spawn_point")
-            table.insert(successfullPositions, spawnPoint)
-            
-        end
-        
-    end
-    
-    local usePositionIndex = 1
-    local numPosition = #successfullPositions
-
-    for i = 1, #failedPlayers do
-    
-        local player = failedPlayers[i]  
-    
-        if player:isa("Exo") then        
-            player:SetOrigin(successfullExoPositions[math.random(1, #successfullExoPositions)])        
-        else
-              
-            player:SetOrigin(successfullPositions[usePositionIndex])
-            if player.TriggerBeaconEffects then
-                player:TriggerBeaconEffects()
-            end
-            
-            usePositionIndex = Math.Wrap(usePositionIndex + 1, 1, numPosition)
-            
-        end    
-    
-    end
-
-    if anyPlayerWasBeaconed then
-        self:TriggerEffects("distress_beacon_complete")
-    end
-    
-end
-function Observatory:PerformAdvancedBeacon()
-
-    self.distressBeaconSound:Stop()
-    
-    local anyPlayerWasBeaconed = false
-    local successfullPositions = {}
-    local successfullExoPositions = {}
-    local failedPlayers = {}
-    
-    local distressOrigin = self:GetDistressOrigin()
-    if distressOrigin then
-    
-        for index, player in ipairs(GetPlayersToBeacon(self, distressOrigin)) do
-        
-            local success, respawnPoint = RespawnPlayer(self, player, distressOrigin)
-            if success then
-            
-                anyPlayerWasBeaconed = true
-                if player:isa("Exo") then
-                    table.insert(successfullExoPositions, respawnPoint)
-                end
-                    
-                table.insert(successfullPositions, respawnPoint)
-                
-            else
-                table.insert(failedPlayers, player)
-            end
-            
-        end
-        
-        // Respawn DeadPlayers
-     //   if Server then
-       //     local gameRules = GetGamerules()
-         //   if gameRules then
-           //    if gameRules:GetGameStarted() and not gameRules:GetIsSuddenDeath() then 
-                        for _, entity in ientitylist(Shared.GetEntitiesWithClassname("MarineSpectator")) do
-                          if entity:GetTeamNumber() == 1 and not entity:GetIsAlive() then
-                          entity:SetCameraDistance(0)
-                          entity:GetTeam():ReplaceRespawnPlayer(entity)
-                          end
-                        end
-             //  end
-           // end
-         // end
-            
-        
-    end
-    
-    local usePositionIndex = 1
-    local numPosition = #successfullPositions
-
-    for i = 1, #failedPlayers do
-    
-        local player = failedPlayers[i]  
-    
-        if player:isa("Exo") then        
-            player:SetOrigin(successfullExoPositions[math.random(1, #successfullExoPositions)])  
-            player:SetCameraDistance(0)      
-        else
-              
-            player:SetOrigin(successfullPositions[usePositionIndex])
-            player:SetCameraDistance(0) 
-            if player.TriggerBeaconEffects then
-                player:TriggerBeaconEffects()
-                player:SetCameraDistance(0)  
-            end
-            
-            usePositionIndex = Math.Wrap(usePositionIndex + 1, 1, numPosition)
-            
-        end    
-    
-    end
-
-    if anyPlayerWasBeaconed then
-        self:TriggerEffects("distress_beacon_complete")
-    end
-    
-end
-function Observatory:SetPowerOff()    
-    
-    // Cancel distress beacon on power down
-    if self:GetIsBeaconing() then    
-        self:CancelDistressBeacon()  
-        self:CancelAdvancedBeacon()   
-    end
-
-end
-
 function Observatory:RevealCysts()
 
     for _, cyst in ipairs(GetEntitiesForTeamWithinRange("Cyst", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Observatory.kDetectionRange)) do
@@ -578,18 +234,6 @@ function Observatory:OnUpdate(deltaTime)
          end
     end
     ScriptActor.OnUpdate(self, deltaTime)
-
-    if self:GetIsBeaconing() and (Shared.GetTime() >= self.distressBeaconTime) then
-    
-        self:PerformDistressBeacon()
-        
-        self.distressBeaconTime = nil
-            
-    elseif self:GetIsAdvancedBeaconing() and (Shared.GetTime() >= self.advancedBeaconTime) then
-            self:PerformAdvancedBeacon()
-        
-        self.advancedBeaconTime = nil
-    end
  
 end
 function GetCheckObsyLimit(techId, origin, normal, commander)
@@ -704,55 +348,12 @@ function Observatory:GetIsInSiege()
 if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
 return false
 end
-function Observatory:PerformActivation(techId, position, normal, commander)
-
-    local success = false
-    
-    if GetIsUnitActive(self) then
-    
-        if techId == kTechId.DistressBeacon then
-            return self:TriggerDistressBeacon()
-        end
-        if techId == kTechId.AdvancedBeacon then
-                  if not self:GetIsPowered() then
-                   self:SetPowerSurgeDuration(5)
-                   end
-           return self:TriggerAdvancedBeacon()
-         end
-        
-    end
-    
-    return ScriptActor.PerformActivation(self, techId, position, normal, commander)
-    
-end
-
-function Observatory:GetIsBeaconing()
-    return self.distressBeaconTime ~= nil
-end
-function Observatory:GetIsAdvancedBeaconing()
-    return self.advancedBeaconTime ~= nil
-end
-
-if Server then
-
-    function Observatory:OnKill(killer, doer, point, direction)
-
-        if self:GetIsBeaconing() then
-            self:CancelDistressBeacon()
-        elseif self:GetIsAdvancedBeaconing() then
-           self:CancelAdvancedBeacon()
-        end
-        
-        ScriptActor.OnKill(self, killer, doer, point, direction)
-        
-    end
-    
-end
 
 function Observatory:OverrideVisionRadius()
     return Observatory.kDetectionRange
 end
 
+/*
 if Server then
 
     function OnConsoleDistress()
@@ -769,7 +370,7 @@ if Server then
     Event.Hook("Console_distress", OnConsoleDistress)
     
 end
-
+*/
 if Server then
 
     function Observatory:OnConstructionComplete()

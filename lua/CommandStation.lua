@@ -38,9 +38,11 @@ PrecacheAsset("models/marine/command_station/command_station_display.surface_sha
 local kLoginAttachPoint = "login"
 CommandStation.kCommandStationKillConstant = 1.05
 
+
 //Siege
 CommandStation.UnlockCatPatTime = 0
 CommandStation.UnlockNanoTime = 0
+local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_marine")
 
 if Server then
     Script.Load("lua/CommandStation_Server.lua")
@@ -67,6 +69,7 @@ function CommandStation:OnCreate()
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, ParasiteMixin)
 
+
 end
 
 function CommandStation:OnInitialized()
@@ -87,7 +90,9 @@ function CommandStation:OnInitialized()
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
-        
+         self.distressBeaconSound = Server.CreateEntity(SoundEffect.kMapName)
+         self.distressBeaconSound:SetAsset(kDistressBeaconSoundMarine)
+         self.distressBeaconSound:SetRelevancyDistance(Math.infinity)
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
     
@@ -158,7 +163,15 @@ function CommandStation:GetUsablePoints()
 end
 
 function CommandStation:GetTechButtons()
-    return { kTechId.None, kTechId.None } //kTechId.BluePrintTech }
+    return { kTechId.DistressBeacon, kTechId.None } //kTechId.BluePrintTech }
+end
+function CommandStation:ModifyDamageTaken(damageTable, attacker, doer, damageType)
+
+      if self:GetHealthScalar() <= 0.10 then 
+      damageTable.damage = damageTable.damage * .5
+      end
+ 
+    
 end
 function CommandStation:GetCCAmount()
 local amount = 0
@@ -212,10 +225,122 @@ end
 function CommandStation:OnUpdate(deltaTime)
    if Server then 
       if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
+      if not self:GetIsVortexed() and self:GetIsBuilt() then self:UpdateBeacons() end
     self:UpdatePassive() 
      self.timeLastUpdatePassiveCheck = Shared.GetTime()
       end
     end
+end
+function CommandStation:UpdateBeacons()
+ if not self:GetTeam() then return end
+  local beacons = self:GetTeam():GetBeacons()
+  
+    if beacons > 1 then
+          local healthscalar = self:GetHealthScalar()
+          if healthscalar <= .75 then
+             self:UseBeacon()
+          end
+    
+    end
+    
+end
+
+local function GetIsPlayerNearby(self, player, toOrigin)
+    return (player:GetOrigin() - toOrigin):GetLength() < 17
+end
+function CommandStation:UseBeacon()
+   if self:GetIsVortexed() then return end
+                
+                
+                local eligable = {}
+                
+               for _, entity in ientitylist(Shared.GetEntitiesWithClassname("MarineSpectator")) do
+                          if entity:GetTeamNumber() == 1 and not entity:GetIsAlive() then
+                         // entity:SetCameraDistance(0)
+                         // entity:GetTeam():ReplaceRespawnPlayer(entity)
+                         table.insert(eligable,entity)
+                          end
+               end
+                        
+                        
+               for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Marine")) do
+                 if entity:GetIsAlive() and not GetIsPlayerNearby(self, entity, self:GetOrigin()) then table.insert(eligable,entity)  end
+             end
+ 
+                
+            if #eligable == 0 then return end
+            
+             self.distressBeaconSound:Start()
+             self:AddTimedCallback(function()  self.distressBeaconSound:Stop() end,4 ) 
+              self.distressBeaconSound:SetOrigin(self:GetOrigin())
+               local location = GetLocationForPoint(self:GetOrigin())
+                local locationName = location and location:GetName() or ""
+                local locationId = Shared.GetStringIndex(locationName)
+                SendTeamMessage(self:GetTeam(), kTeamMessageTypes.Beacon, locationId)
+                self:GetTeam():DeductBeacon()
+                
+                
+            local onteam = self:GetNumPlayers()
+            local scalar =  onteam - (self:GetHealthScalar()/1) * onteam
+            scalar = math.round(scalar, 0)
+            local beaconed = 0
+           for i = 1, Clamp(#eligable, 1, scalar ) do
+                local player = eligable[i]
+                
+                if player:GetIsAlive() then
+                player:TriggerBeacon(self:FindFreeSpace())
+                beaconed = beaconed + 1
+                else
+                player:SetCameraDistance(0)
+                player:GetTeam():ReplaceRespawnPlayer(player) 
+                beaconed = beaconed + 1
+                end
+           end  
+                Print("CommandStation HP: %s, Players on team: %s, Eligable for beacon: %s, MarineTeamBeacons Left: %s, ", 
+                     self:GetHealthScalar(), onteam, scalar, beaconed, self:GetTeam():GetBeacons())
+                    // local value = self:GetTeam():GetBeacons()
+                //self:ExperimentalBeacon(value)       
+end
+    function CommandStation:FindFreeSpace()
+    
+        for index = 1, 20 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 17, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation  then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for CC beacon!")
+           return self:GetOrigin()
+    end
+ /*
+   function CommandStation:GetUnitNameOverride(viewer)
+    local unitName = GetDisplayName(self)   
+    unitName = string.format(Locale.ResolveString("Command Station (%s)"), self:GetTeam():GetBeacons())
+return unitName
+end 
+*/
+function CommandStation:ExperimentalBeacon(anotheramt)
+end
+function CommandStation:GetNumPlayers()
+local marines = 0
+
+               for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+                          if entity:GetTeamNumber() == 1 and not entity:isa("Commander") then
+                            marines = marines +1
+                          end
+               end
+               return marines
 end
 function CommandStation:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent

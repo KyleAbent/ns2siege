@@ -606,7 +606,6 @@ function Marine:HandleButtons(input)
                             if toReplace then
                             
                                 self:RemoveWeapon(toReplace)
-                                self:SetArmorAmount()
                                 DestroyEntity(toReplace)
                                 
                             end
@@ -615,7 +614,6 @@ function Marine:HandleButtons(input)
                         
 						local active = nearbyDroppedWeapon:GetHUDSlot() == 1 or bit.band(input.commands, Move.Drop) ~= 0
                         self:AddWeapon(nearbyDroppedWeapon, active)
-                        self:SetArmorAmount()
                         StartSoundEffectAtOrigin(Marine.kGunPickupSound, self:GetOrigin())
 						
 						// Fixes problem where if a marine drops all weapons and picks a welder the axe remains active
@@ -635,8 +633,7 @@ function Marine:HandleButtons(input)
 					local activeWeapon = self:GetActiveWeapon()
 					
 					// No nearby weapon, drop our current weapon.
-                    if self:Drop() then			
-                        self:SetArmorAmount()			
+                    if self:Drop() then						
 						self.lastDroppedWeapon = activeWeapon                    
 						self.timeOfLastPickUpWeapon = Shared.GetTime()
 					end

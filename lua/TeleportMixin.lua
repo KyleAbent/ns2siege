@@ -275,7 +275,7 @@ function TeleportMixin:OnUpdate(deltaTime)
 end
 function TeleportMixin:TriggerBeacon(location)
  local locationto = location
- self:AddTimedCallback(function() self:SetOrigin(locationto) self.lastbeacontime = Shared.GetTime() end, 4)
+ self:AddTimedCallback(function() self:SetOrigin(locationto) end, 4)
 
 end
 function TeleportMixin:TriggerTeleport(delay, destinationEntityId, destinationPos, cost)

@@ -21,7 +21,7 @@ local kBurnMedCinematic = PrecacheAsset("cinematics/marine/flamethrower/burn_med
 local kBurnSmallCinematic = PrecacheAsset("cinematics/marine/flamethrower/burn_small.cinematic")
 local kBurn1PCinematic = PrecacheAsset("cinematics/marine/flamethrower/burn_1p.cinematic")
 
-local kBurnUpdateRate = 0.5
+local kBurnUpdateRate = 1
 
 local kFireCinematicTable = { }
 kFireCinematicTable["Hive"] = kBurnHugeCinematic

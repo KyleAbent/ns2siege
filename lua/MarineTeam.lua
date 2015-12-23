@@ -16,6 +16,7 @@ class 'MarineTeam' (PlayingTeam)
 
 MarineTeam.gSandboxMode =  true
 
+
 // How often to send the "No IPs" message to the Marine team in seconds.
 local kSendNoIPsMessageRate = 20
 
@@ -50,7 +51,7 @@ function MarineTeam:OnResetComplete()
         end
         
     end
-    
+    self.beacons = 12
 end
 
 function MarineTeam:GetTeamType()
@@ -71,8 +72,15 @@ function MarineTeam:Initialize(teamName, teamNumber)
     
     self.lastTimeNoIPsMessageSent = Shared.GetTime()
     
+    self.beacons = 12
+    
 end
-
+function MarineTeam:DeductBeacon()
+self.beacons = Clamp(self.beacons - 1, 0, 12)
+end
+function MarineTeam:GetBeacons()
+return self.beacons
+end
 function MarineTeam:GetHasAbilityToRespawn()
 /*
           if Server then
@@ -150,36 +158,6 @@ function MarineTeam:GetTotalInRespawnQueue()
     
 end
 
-
-// Clear distress flag for all players on team, unless affected by distress beaconing Observatory. 
-// This function is here to make sure case with multiple observatories and distress beacons is
-// handled properly.
-function MarineTeam:UpdateGameMasks(timePassed)
-
-    PROFILE("MarineTeam:UpdateGameMasks")
-
-    local beaconState = false
-    
-    for obsIndex, obs in ipairs(GetEntitiesForTeam("Observatory", self:GetTeamNumber())) do
-    
-        if obs:GetIsBeaconing() then
-        
-            beaconState = true
-            break
-            
-        end
-        
-    end
-    
-    for playerIndex, player in ipairs(self:GetPlayers()) do
-    
-        if player:GetGameEffectMask(kGameEffect.Beacon) ~= beaconState then
-            player:SetGameEffectMask(kGameEffect.Beacon, beaconState)
-        end
-        
-    end
-    
-end
 
 local function CheckForNoIPs(self)
 
@@ -337,26 +315,6 @@ local function SpawnArmory(self, techPoint)
     end
     
 end
-local function GetArmorLevel(self)
-
-    local armorLevels = 0
-    
-    local techTree = self:GetTechTree()
-    if techTree then
-    
-        if techTree:GetHasTech(kTechId.Armor3) then
-            armorLevels = 3
-        elseif techTree:GetHasTech(kTechId.Armor2) then
-            armorLevels = 2
-        elseif techTree:GetHasTech(kTechId.Armor1) then
-            armorLevels = 1
-        end
-    
-    end
-    
-    return armorLevels
-
-end
 
 function MarineTeam:Update(timePassed)
 
@@ -364,17 +322,11 @@ function MarineTeam:Update(timePassed)
 
     PlayingTeam.Update(self, timePassed)
     
-    // Update distress beacon mask
-    self:UpdateGameMasks(timePassed)    
 
     if GetGamerules():GetGameStarted() then
         CheckForNoIPs(self)
     end
-    
-    local armorLevel = GetArmorLevel(self)
-    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
-        player:UpdateArmorAmount(armorLevel)
-    end
+   
     
 end
 

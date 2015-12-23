@@ -1844,15 +1844,14 @@ function NS2Gamerules:GetCombatEntitiesCountInRoom(location)
 end
 function NS2Gamerules:PickMainRoom()
   //Kyle Abent ns2siege 11.22 kyleabent@gmail.com
-    if not self:GetGameStarted() then return end //pregame bug fix? because at start of round says self.mainrooms = shared.gettime //12.5
+    if not self:GetGameStarted() then return  end //pregame bug fix? because at start of round says self.mainrooms = shared.gettime //12.5
        if not self.doorsopened or (self.mainrooms + kMainRoomPickEveryXSeconds) > Shared.GetTime() then return true end 
        
                  if self:GetIsSuddenDeath() then
                         for _, CC in ientitylist(Shared.GetEntitiesWithClassname("CommandStation")) do
                              CreatePheromone(kTechId.ThreatMarker, CC:GetOrigin(), 2) 
                              local powerpoint = GetPowerPointForLocation(CC:GetLocationName())
-                             if powerpoint ~= nil then powerpoint:InsideMainRoom() end
-                             break
+                            if powerpoint ~= nil then powerpoint:SetMainRoom() end
                         end
                         for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
                              hive:MarineOrders() 

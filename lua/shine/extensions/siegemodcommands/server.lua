@@ -6,7 +6,7 @@ local Plugin = Plugin
 
 
 Plugin.Version = "1.0"
-
+Shine.Hook.SetupClassHook( "CommandStation", "ExperimentalBeacon", "PrintInfo", "Replace" )
 Shine.Hook.SetupClassHook( "Alien", "OnRedeem", "OnRedemedHook", "PassivePre" )
 Shine.Hook.SetupClassHook( "Alien", "TriggerRebirthCountDown", "TriggerRebirthCountDown", "PassivePre" )
 Shine.Hook.SetupClassHook( "Player", "CopyPlayerDataFrom", "HookModelSize", "PassivePost" )
@@ -22,6 +22,9 @@ self.playersize = {}
 self.GlowClientsTime = {}
 self.GlowClientsColor = {}
 return true
+end
+function Plugin:PrintInfo(anotheramt)
+self:NotifySiege( nil, "MarineTeamBeacons Left: %s", true, anotheramt)
 end
 function Plugin:TunnelFailed(player)
  local client = player:GetClient()
@@ -176,6 +179,14 @@ end
 
 local FirstPersonCommand = self:BindCommand( "sh_firstperson", { "firstperson", "1stperson" }, FirstPerson, true)
 FirstPersonCommand:Help( "Triggers first person view" )
+
+local function MainRoom( Client )
+local Gamerules = GetGamerules()
+Gamerules:PickMainRoom(true)
+end
+
+local MainRoomCommand = self:BindCommand( "sh_mainroom","mainroom", MainRoom)
+MainRoomCommand:Help( "selects main room" )
 
 local function GiveRes( Client, TargetClient, Number )
 local Giver = Client:GetControllingPlayer()

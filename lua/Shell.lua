@@ -196,10 +196,16 @@ function Shell:OnConstructionComplete()
         local locationName = location and location:GetName() or ""
         return locationName
 end
+function Shell:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
 function Shell:GenerateRandomNumberofEggsNearbyDerpHead()
     self.shellSpawnPoints = { }
     local minNeighbourDistance = .5
     local maxEggSpawns = math.random(3,6)
+    maxEggSpawns = string.find(self:GetLocationName(), "Siege") or string.find(self:GetLocationName(), "siege") and maxEggSpawns * .5 or maxEggSpawns
     local maxAttempts = maxEggSpawns * 10
     for index = 1, maxAttempts do
     

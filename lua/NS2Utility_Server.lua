@@ -56,6 +56,7 @@ function GetAreFrontDoorsOpen()
             end
             return true
  end
+
  function GetAreSideDoorsOpen()
 
             local gameRules = GetGamerules()

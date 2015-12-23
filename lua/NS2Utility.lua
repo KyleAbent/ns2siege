@@ -1322,7 +1322,32 @@ function GetPowerPointForLocation(locationName)
     return nil
     
 end
-
+function GetCombatPlayersCountInLocation(locationName)
+local count = 0
+    if locationName == nil or locationName == "" then
+        return nil
+    end
+    
+    local locationId = Shared.GetStringIndex(locationName)
+    
+    local combatentities = Shared.GetEntitiesWithClassname("Combat")
+    for p = 1, combatentities:GetSize() do
+    
+        local combatent = combatentities:GetEntityAtIndex(p - 1)
+        if combatent then
+           
+            if combatent:GetLocationId() == locationId  then
+            local inCombat = (combatent.timeLastDamageDealt + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime()) or (combatent.lastTakenDamageTime + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime())
+               if inCombat then count = count + 1 end
+            end
+            
+        end
+        
+    end
+    
+    return count
+    
+end
 // for performance, cache the lights for each locationName
 local lightLocationCache = {}
 
