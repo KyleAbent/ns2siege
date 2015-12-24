@@ -57,8 +57,10 @@ LiveMixin.networkVars =
     alive = "boolean",
     healthIgnored = "boolean",
     
-    health = string.format("float (0 to %f by 1)", LiveMixin.kMaxHealth),
-    maxHealth = string.format("float (0 to %f by 1)", LiveMixin.kMaxHealth),
+    -- Note: health and armor must have exact integer representations so they can exactly match maxHealth and maxArmor
+    -- otherwise aliens will never stop healing. 0.625 is 1/16th
+    health = string.format("float (0 to %f by 0.0625)", LiveMixin.kMaxHealth),
+    maxHealth = string.format("integer (0 to %f)", LiveMixin.kMaxHealth),
     
     armor = string.format("float (0 to %f by 1)", LiveMixin.kMaxArmor),
     maxArmor = string.format("float (0 to %f by 1)", LiveMixin.kMaxArmor),
@@ -70,27 +72,25 @@ LiveMixin.networkVars =
 
 
 function LiveMixin:__initmixin()
-
-    self.alive = true
-    self.healthIgnored = false
-    
-    self.health = LookupTechData(self:GetTechId(), kTechDataMaxHealth, 100)
-    assert(self.health ~= nil)
-    self:SetMaxHealth(self.health)
-    assert(self.maxHealth < LiveMixin.kMaxHealth)
-
-    self.armor = LookupTechData(self:GetTechId(), kTechDataMaxArmor, 0)
-    assert(self.armor ~= nil)
-    self.maxArmor = self.armor
-    assert(self.maxArmor < LiveMixin.kMaxArmor)
-    
+    self.lastDamageAttackerId = Entity.invalidId
+    self.timeLastCombatAction = 0
     self.timeOfLastDamage = nil
-    
+
     if Server then
+        
+        self.health = LookupTechData(self:GetTechId(), kTechDataMaxHealth, 100)
+        self:SetMaxHealth(self.health)
+        assert(self.health ~= nil)
+        assert(self.maxHealth < LiveMixin.kMaxHealth)
     
-        self.lastDamageAttackerId = Entity.invalidId
-        self.timeLastCombatAction = 0
         self.timeLastHealed = 0
+        self.alive = true
+        self.healthIgnored = false
+
+        self.armor = LookupTechData(self:GetTechId(), kTechDataMaxArmor, 0)
+        assert(self.armor ~= nil)
+        self.maxArmor = self.armor
+        assert(self.maxArmor < LiveMixin.kMaxArmor)
         
     elseif Client then
 

@@ -37,7 +37,7 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
-Script.Load("lua/ResearchMixin.lua")
+
 
 local kDefaultUpdateRange = 100
 
@@ -153,46 +153,7 @@ AddMixinNetworkVars(PowerSourceMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
-AddMixinNetworkVars(ResearchMixin, networkVars)
 
-function PowerPoint:OnCreate()
-
-    ScriptActor.OnCreate(self)
-    
-    InitMixin(self, BaseModelMixin)
-    InitMixin(self, ClientModelMixin)
-    InitMixin(self, LiveMixin)
-    InitMixin(self, GameEffectsMixin)
-    InitMixin(self, FlinchMixin)
-    InitMixin(self, TeamMixin)
-    InitMixin(self, PointGiverMixin)
-    InitMixin(self, SelectableMixin)
-    InitMixin(self, EntityChangeMixin)
-    InitMixin(self, LOSMixin)
-    InitMixin(self, CorrodeMixin)
-    InitMixin(self, ConstructMixin)
-    InitMixin(self, CombatMixin)
-    InitMixin(self, PowerSourceMixin)
-    InitMixin(self, NanoShieldMixin)
-    InitMixin(self, WeldableMixin)
-    InitMixin(self, ParasiteMixin)
-    InitMixin(self, ResearchMixin)
-    
-    if Client then
-        InitMixin(self, CommanderGlowMixin)
-    end
-    
-    self:SetLagCompensated(false)
-    self:SetPhysicsType(PhysicsType.Kinematic)
-    self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
-    
-    self.lightMode = kLightMode.Normal
-    self.powerState = PowerPoint.kPowerState.unsocketed
-    
-    if Client then 
-        self:AddTimedCallback(PowerPoint.OnTimedUpdate, kUpdateIntervalLow)
-    end
-end
 
 local function SetupWithInitialSettings(self)
 
@@ -227,11 +188,50 @@ local function SetupWithInitialSettings(self)
     
 end
 
+function PowerPoint:OnCreate()
+
+    ScriptActor.OnCreate(self)
+    
+    InitMixin(self, BaseModelMixin)
+    InitMixin(self, ClientModelMixin)
+    InitMixin(self, LiveMixin)
+    InitMixin(self, GameEffectsMixin)
+    InitMixin(self, FlinchMixin)
+    InitMixin(self, TeamMixin)
+    InitMixin(self, PointGiverMixin)
+    InitMixin(self, SelectableMixin)
+    InitMixin(self, EntityChangeMixin)
+    InitMixin(self, LOSMixin)
+    InitMixin(self, CorrodeMixin)
+    InitMixin(self, ConstructMixin)
+    InitMixin(self, CombatMixin)
+    InitMixin(self, PowerSourceMixin)
+    InitMixin(self, NanoShieldMixin)
+    InitMixin(self, WeldableMixin)
+    InitMixin(self, ParasiteMixin)
+    
+    if Client then
+        InitMixin(self, CommanderGlowMixin)
+    end
+    
+    self:SetLagCompensated(false)
+    self:SetPhysicsType(PhysicsType.Kinematic)
+    self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
+    
+    self.lightMode = kLightMode.Normal
+    self.powerState = PowerPoint.kPowerState.unsocketed
+    
+    if Client then 
+        self:AddTimedCallback(PowerPoint.OnTimedUpdate, kUpdateIntervalLow)
+    end
+    
+    SetupWithInitialSettings(self)
+    
+end
+
 function PowerPoint:OnInitialized()
 
     ScriptActor.OnInitialized(self)
-    
-    SetupWithInitialSettings(self)
     
     if Server then
     

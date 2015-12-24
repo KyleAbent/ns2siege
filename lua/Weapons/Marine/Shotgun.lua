@@ -12,6 +12,7 @@ Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/Hitreg.lua") 
 
 class 'Shotgun' (ClipWeapon)
 
@@ -239,13 +240,7 @@ function Shotgun:FirePrimary(player)
         
         local damage = 0
 
-        /*
-        // Check prediction
-        local values = GetPredictionValues(startPoint, endPoint, trace)
-        if not CheckPredictionData( string.format("attack%d", bullet), true, values ) then
-            Server.PlayPrivateSound(player, "sound/NS2.fev/marine/voiceovers/game_start", player, 1.0, Vector(0, 0, 0))
-        end
-        */
+        HandleHitregAnalysis(player, startPoint, endPoint, trace)        
             
         local direction = (trace.endPoint - startPoint):GetUnit()
         local hitOffset = direction * kHitEffectOffset

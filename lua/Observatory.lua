@@ -168,19 +168,7 @@ Observatory.kRandomnlyGeneratedTimeToUnlock = math.random(kSecondMarkToUnlockPha
 Print("Phasetech: %s",Observatory.kRandomnlyGeneratedTimeToUnlock)
 end
 
-function Observatory:OnDestroy()
 
-    ScriptActor.OnDestroy(self)
-    
-    if Server then
-    
-        DestroyEntity(self.distressBeaconSound)
-        self.distressBeaconSound = nil
-
-        
-    end
-    
-end
 
 function Observatory:GetTechButtons(techId)
 

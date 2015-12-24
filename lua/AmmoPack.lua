@@ -13,11 +13,13 @@ class 'AmmoPack' (DropPack)
 
 AmmoPack.kMapName = "ammopack"
 
-//if GetSeason() == "Fall" then
-    AmmoPack.kModelName = PrecacheAsset("seasonal/holiday2012/models/gift_ammopack_01.model")
-//else
-//    AmmoPack.kModelName = PrecacheAsset("models/marine/ammopack/ammopack.model")
-//end
+
+AmmoPack.kModelNameWinter = PrecacheAsset("seasonal/holiday2012/models/gift_ammopack_01.model")
+AmmoPack.kModelName = PrecacheAsset("models/marine/ammopack/ammopack.model")
+
+local function GetModelName()
+    return GetSeason() == Seasons.kWinter and AmmoPack.kModelNameWinter or AmmoPack.kModelName
+end
 
 AmmoPack.kPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_ammo")
 

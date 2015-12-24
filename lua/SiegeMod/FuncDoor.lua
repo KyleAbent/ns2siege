@@ -59,7 +59,6 @@ local networkVars =
      damageFrontPose = "float (0 to 100 by 0.1)",
      timeOfDestruction  = "time",
      canbewelded = "boolean",
-     amountoftimesbroken = "float (0 to 1 by 0.1)", //so 10x = broken forever
      isvisible = "boolean",
 
 }
@@ -125,7 +124,6 @@ local function UpdateAutoOpen(self, timePassed)
                 self.canbewelded = false
                 self.timeOfDestruction = Shared.GetTime() 
                 self.isvisible = false
-               //if self.amountoftimesbroken ~= 0 then self.amountoftimesbroken = self.amountoftimesbroken + .1 end
                 self:HandoutPoints()
                 end
                 self:SetPhysicsGroup(PhysicsGroup.OpenDoor)
@@ -194,7 +192,6 @@ function FuncDoor:OnCreate()
    self.team = 1
    self.timeOfDestruction = 0
    self.canbewelded = true
-   self.amountoftimesbroken = 0
    self.isvisible = true
 
 end
@@ -304,14 +301,14 @@ function FuncDoor:GetCanTakeDamageOverride()
 end
 function FuncDoor:OnWeldOverride(doer, elapsedTime, player)
 
-    if self:GetCanBeWelded(doer) and not GetPowerFuncDoorRecentlyDestroyed(self) and self.amountoftimesbroken ~= 1 then
+    if self:GetCanBeWelded(doer) and not GetPowerFuncDoorRecentlyDestroyed(self) then
     
         if doer:isa("MAC") then
-            self:AddHealth( (MAC.kRepairHealthPerSecond *  (kFuncDoorWeldRate) )* elapsedTime)
+            self:AddHealth(MAC.kRepairHealthPerSecond * elapsedTime)
         elseif doer:isa("Welder") then
-            self:AddHealth( (doer:GetRepairRate(self) * (kFuncDoorWeldRate) ) * elapsedTime)
+            self:AddHealth(doer:GetRepairRate(self)  * elapsedTime)
        elseif doer:isa("ExoWelder") then
-            self:AddHealth( (kExoPlayerWeldRate * (kFuncDoorWeldRate) ) * elapsedTime)
+            self:AddHealth( kExoPlayerWeldRate  * elapsedTime)
         end
         
         if player and player.OnWeldTarget then
@@ -322,7 +319,7 @@ function FuncDoor:OnWeldOverride(doer, elapsedTime, player)
     
 end
 function FuncDoor:GetCanBeWeldedOverride()
-    return not GetPowerFuncDoorRecentlyDestroyed(self) and self.amountoftimesbroken ~= 1
+    return not GetPowerFuncDoorRecentlyDestroyed(self)
 end
 function GetPowerFuncDoorRecentlyDestroyed(self)
     return (self.timeOfDestruction + kWeldDelay) > Shared.GetTime()
@@ -361,7 +358,6 @@ function FuncDoor:Reset()
 	//self.AddedToMesh = false
         self.health = self.maxHealth
     self:RecalculateHealth()
-       self.amountoftimesbroken = 0
 end
 function FuncDoor:GetCanTakeDamageOverride()
     return true

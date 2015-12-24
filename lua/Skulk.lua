@@ -125,9 +125,13 @@ function Skulk:OnCreate()
         InitMixin(self, RailgunTargetMixin)
         self.timeDashChanged = 0
     end
+   
        self.modelsize = 1 
        self.gravity = 0
        self.sneakOffset = 0
+       
+        self.leaping = false
+        self.timeLastWallJump = 0
 end
 
 function Skulk:OnInitialized()
@@ -272,8 +276,8 @@ function Skulk:OnAdjustModelCoords(modelCoords)
         coords.yAxis = coords.yAxis * scale
         coords.zAxis = coords.zAxis * scale
        
-
-    return coords
+    modelCoords.origin = modelCoords.origin - modelCoords.zAxis * self.sneakOffset
+    return coords, modelCoords
 end
 function Skulk:GetViewModelName()
     return self:GetVariantViewModel(self:GetVariant())
@@ -301,7 +305,7 @@ local function PredictGoal(self, velocity)
     PROFILE("Skulk:PredictGoal")
 
     local goal = self.wallWalkingNormalGoal
-    if velocity:GetLength() > 1 and not self:GetIsOnSurface() then
+    if velocity:GetLength() > 1 and not self:GetIsGround() then
 
         local movementDir = GetNormalizedVector(velocity)
         local trace = Shared.TraceCapsule(self:GetOrigin(), movementDir * 2.5, Skulk.kXExtents, 0, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
@@ -425,7 +429,8 @@ end
 function Skulk:GetHeadAngles()
 
     if self:GetIsWallWalking() then
-        return self.currentWallWalkingAngles
+        // When wallwalking, the angle of the body and the angle of the head is very different
+        return self:GetViewAngles()
     else
         return self:GetViewAngles()
     end

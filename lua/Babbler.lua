@@ -287,9 +287,13 @@ local function UpdateBabbler(self, deltaTime)
 
 end
 
-function Babbler:OnUpdatePhysics()
+local function UpdatePhysics(self)
     CreateHitBox(self)
     self.hitBox:SetCoords(self:GetCoords())
+end
+
+function Babbler:OnUpdatePhysics()
+    UpdatePhysics(self)
 end
 
 function Babbler:OnUpdate(deltaTime)

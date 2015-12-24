@@ -147,10 +147,12 @@ function Door:OnInitialized()
 
     ScriptActor.OnInitialized(self)
     
-    InitModel(self)
+
     
     if Server then
     
+        InitModel(self)
+        
         self:SetPhysicsType(PhysicsType.Kinematic)
         
         self:SetPhysicsGroup(PhysicsGroup.CommanderUnitGroup)

@@ -307,7 +307,8 @@ local function GetAutomaticOrder(self)
         else
 
             // If there's a friendly entity nearby that needs constructing, constuct it.
-            local constructables = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), MAC.kOrderScanRadius)
+            local range = self:GetIsFront() and 9999 or MAC.kOrderScanRadius
+            local constructables = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), range)
             for c = 1, #constructables do
             
                 local constructable = constructables[c]
@@ -391,7 +392,7 @@ function MAC:GetIsFront()
             return false
 end
 function MAC:GetCanBeUsed(player, useSuccessTable)
-  useSuccessTable.useSuccess = true 
+  useSuccessTable.useSuccess = not self:GetIsFront() 
 end
 function MAC:OnUse(player, elapsedTime, useSuccessTable)
 

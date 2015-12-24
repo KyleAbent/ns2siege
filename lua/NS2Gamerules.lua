@@ -870,6 +870,7 @@ if Server then
         
         // Check if auto-team balance should be enabled or disabled.
         local autoTeamBalance = Server.GetConfigSetting("auto_team_balance")
+        local autoTeamBalance = not Shared.GetCheatsEnabled() and Server.GetConfigSetting("auto_team_balance")
         if autoTeamBalance and autoTeamBalance.enabled then
         
             local enabledOnUnbalanceAmount = autoTeamBalance.enabled_on_unbalance_amount or 2
@@ -1750,7 +1751,7 @@ function NS2Gamerules:OnUpdate(timePassed)
     end
 
     // Function for allowing teams to hear each other's voice chat
-    function NS2Gamerules:GetCanPlayerHearPlayer(listenerPlayer, speakerPlayer)
+    function NS2Gamerules:GetCanPlayerHearPlayer(listenerPlayer, speakerPlayer, channelType)
 
         local canHear = false
         
@@ -1821,7 +1822,7 @@ function NS2Gamerules:ClearLocations()
          self.mainrooms = Shared.GetTime()
 end
 function NS2Gamerules:GetCombatEntitiesCount()
-            local combatentities = 0
+            local combatentities = 1
             for _, entity in ipairs(GetEntitiesWithMixin("Combat")) do
              local inCombat = (entity.timeLastDamageDealt + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime()) or (entity.lastTakenDamageTime + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime())
                   if inCombat then combatentities = combatentities + 1 end
@@ -1831,7 +1832,7 @@ function NS2Gamerules:GetCombatEntitiesCount()
 end
 function NS2Gamerules:GetCombatEntitiesCountInRoom(location)
        local entities = location:GetEntitiesInTrigger()
-       local eligable = 0
+       local eligable = 1
              for _, entity in ipairs(entities) do
              if HasMixin(entity, "Combat") then
                 local inCombat = (entity.timeLastDamageDealt + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime()) or (entity.lastTakenDamageTime + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime())
@@ -1842,12 +1843,7 @@ function NS2Gamerules:GetCombatEntitiesCountInRoom(location)
             end
         return eligable
 end
-function NS2Gamerules:PickMainRoom()
-  //Kyle Abent ns2siege 11.22 kyleabent@gmail.com
-    if not self:GetGameStarted() then return  end //pregame bug fix? because at start of round says self.mainrooms = shared.gettime //12.5
-       if not self.doorsopened or (self.mainrooms + kMainRoomPickEveryXSeconds) > Shared.GetTime() then return true end 
-       
-                 if self:GetIsSuddenDeath() then
+function NS2Gamerules:MainRoomSD()
                         for _, CC in ientitylist(Shared.GetEntitiesWithClassname("CommandStation")) do
                              CreatePheromone(kTechId.ThreatMarker, CC:GetOrigin(), 2) 
                              local powerpoint = GetPowerPointForLocation(CC:GetLocationName())
@@ -1860,6 +1856,16 @@ function NS2Gamerules:PickMainRoom()
                               self.mainrooms = Shared.GetTime()
                               self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds)
                              return true
+end
+
+function NS2Gamerules:PickMainRoom()
+  //Kyle Abent ns2siege 11.22 kyleabent@gmail.com
+    if not self:GetGameStarted() then return  end //pregame bug fix? because at start of round says self.mainrooms = shared.gettime //12.5
+       if not self.doorsopened or (self.mainrooms + kMainRoomPickEveryXSeconds) > Shared.GetTime() then return true end 
+       
+                 if self:GetIsSuddenDeath() then
+                     self:MainRoomSD()
+                     return true
                  end
           
      local locations = EntityListToTable(Shared.GetEntitiesWithClassname("Location"))

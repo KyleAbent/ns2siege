@@ -185,6 +185,7 @@ function Cyst:OnCreate()
     self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)
     
     self:SetLagCompensated(false)
+    self.parentId = Entity.invalidId
 end
 
 function Cyst:OnDestroy()
@@ -247,7 +248,7 @@ function Cyst:OnInitialized()
     
     ScriptActor.OnInitialized(self)
     
-    self.parentId = Entity.invalidId
+
 
     if Server then
     

@@ -355,7 +355,7 @@ function Marine:OnInitialized()
         
     end
     
-    self.weaponDropTime = 0
+
     
     local viewAngles = self:GetViewAngles()
     self.lastYaw = viewAngles.yaw
@@ -365,16 +365,7 @@ function Marine:OnInitialized()
     self.horizontalSwing = 0
     // -1 = up, +1 = down
     
-    self.timeLastSpitHit = 0
-    self.lastSpitDirection = Vector(0, 0, 0)
-    self.timeOfLastDrop = 0
-    self.timeOfLastPickUpWeapon = 0
-    self.ruptured = false
-    self.interruptAim = false
-    self.catpackboost = false
-    self.timeCatpackboost = 0
-    
-    self.flashlightLastFrame = false
+
     
 end
 

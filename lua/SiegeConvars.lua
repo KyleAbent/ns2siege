@@ -1,3 +1,4 @@
+kBeaconDelay = 15
 kCreditsPerRoundCap = 200
 kCreditMultiplier = 1
 kSBCooldown = 30

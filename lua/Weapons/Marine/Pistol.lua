@@ -236,14 +236,7 @@ function Pistol:GetIdleAnimations(index)
     return animations[index]
 end
 
-function Pistol:OnProcessMove(input)
-    ClipWeapon.OnProcessMove(self, input)
-    if self.clip ~= 0 then
-        self.emptyPoseParam = 0
-    else
-        self.emptyPoseParam = Clamp(Slerp(self.emptyPoseParam, 1, input.time * 5), 0, 1)
-    end
-end
+
 
 function Pistol:UpdateViewModelPoseParameters(viewModel)
     viewModel:SetPoseParam("empty", self.emptyPoseParam)
@@ -317,6 +310,18 @@ function Pistol:OnReload(player)
 
     self.queuedShots = 0
 
+end
+
+function Pistol:OnSecondaryAttack(player)
+
+    ClipWeapon.OnSecondaryAttack(self, player)
+
+    player.slowTimeStart = Shared.GetTime()
+    player.slowTimeEnd = Shared.GetTime() + 1
+    player.slowTimeOffset = 0
+    player.slowTimeFactor = 0.67
+    player.slowTimeRecoveryFactor = 1.33
+    
 end
 
 function Pistol:OnProcessMove(input)

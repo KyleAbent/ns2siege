@@ -247,18 +247,31 @@ function Lerk:GetDesiredAngles()
 
     local desiredAngles = Alien.GetDesiredAngles(self)
 
-    if not self:GetIsOnGround() and self.gliding then
-        desiredAngles.pitch = self.viewPitch
-    end 
-   
-    if not self:GetIsOnSurface() then    
-        desiredAngles.roll = Clamp( RadianDiff( self:GetAngles().yaw, self.viewYaw ), -kMaxGlideRoll, kMaxGlideRoll)    
+    if not self:GetIsOnGround() and not self:GetIsWallGripping() then   
+        if self.gliding then
+            desiredAngles.pitch = self.viewPitch
+        end 
+        local diff = RadianDiff( self:GetAngles().yaw, self.viewYaw )
+        if math.abs(diff) < 0.001 then
+            diff = 0
+        end
+        desiredAngles.roll = Clamp( diff, -kMaxGlideRoll, kMaxGlideRoll)   
+        -- Log("%s: yaw %s, viewYaw %s, diff %s, roll %s", self, self:GetAngles().yaw, self.viewYaw , diff, desiredAngles.roll)
     end
     
     return desiredAngles
 
 end
+function Lerk:OverrideGetMoveSpeed(speed)
 
+    if self:GetIsOnGround() then
+        return kMaxWalkSpeed
+    end
+    // move_speed determines how often we flap. We fiddle some to 
+    // flap more at minimum flying speed
+    return Clamp((speed - kMaxWalkSpeed) / kMaxSpeed, 0, 1) 
+           
+end
 function Lerk:OverrideGetMoveYaw()
 
     if not self:GetIsOnGround() then
@@ -382,23 +395,21 @@ function Lerk:OnGroundChanged(onGround, impactForce, normal, velocity)
     end
 
 end
+--uh oh someone dropped the f bomb :P -kyle
 
+-- but always use walk speed fucks up the move_speed variable; it is set with possible=true.
+-- gliding animation goes up to max at 2.8m/s rather than 13m/s...
 // always use walk speed. flying is handled in modify velocity
 function Lerk:GetMaxSpeed(possible)
-/*
-    local size = self.modelsize
-    if size > 3 then
-    size = 1 
-    end
-    */
+
     if possible then
-        return kMaxWalkSpeed //* size
+        return kMaxWalkSpeed
     end
     
     if self:GetIsOnGround() then
-        return kMaxWalkSpeed //* size
+        return kMaxWalkSpeed
     else
-        return kMaxSpeed //* size
+        return kMaxSpeed
     end    
     
 end
@@ -410,9 +421,7 @@ end
 function Lerk:GetHasMovementSpecial()
     return true
 end
-function Lerk:GetMaxShieldAmount()
-    return self:GetBaseHealth() * 0.6  
-end
+
 
 function Lerk:GetMass()
     return kMass
@@ -690,8 +699,8 @@ function Lerk:GetIsSiege()
             return false
 end
 function Lerk:GetCanBeUsed(player, useSuccessTable)
-if not  self:GetIsSiege() or not player:isa("Gorge")  then useSuccessTable.useSuccess = false return end
- if ( self.isoccupied and player.gorgeusingLerkID == self:GetId() ) or not self.isoccupied then useSuccessTable.useSuccess = true end
+if not player:isa("Gorge")  then useSuccessTable.useSuccess = false return end
+if ( self.isoccupied and player.gorgeusingLerkID == self:GetId() ) or not self.isoccupied then useSuccessTable.useSuccess = true end
 end
 function Lerk:OnUse(player, elapsedTime, useSuccessTable)
       if not self.isoccupied then

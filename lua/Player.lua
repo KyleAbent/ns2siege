@@ -250,9 +250,7 @@ local networkVars =
     primaryAttackLastFrame = "boolean",
     secondaryAttackLastFrame = "boolean",
     
-    -- Used to smooth out the eye movement when going up steps.
-    stepStartTime = "compensated time",
-    stepAmount = "compensated float(-2.1 to 2.1 by 0.001)", -- limits must be just slightly bigger than kMaxStepAmount
+
     
     isUsing = "boolean",
     
@@ -362,8 +360,7 @@ function Player:OnCreate()
     
     self.resources = 0
     
-    self.stepStartTime = 0
-    self.stepAmount = 0
+
     
     self.isMoveBlocked = false
     self.isRookie = false
@@ -588,20 +585,7 @@ function Player:GetViewOffset()
     return self.viewOffset
 end
 
---[[
-    Returns the view offset with the step smoothing factored in.
-]]
-function Player:GetSmoothedViewOffset()
 
-    local deltaTime = Shared.GetTime() - self.stepStartTime
-    
-    if deltaTime < Player.stepTotalTime then
-        return self.viewOffset + Vector( 0, -self.stepAmount * (1 - deltaTime / Player.stepTotalTime), 0 )
-    end
-    
-    return self.viewOffset
-    
-end
 
 --[[
     Stores the player's current view offset. Calculated from GetMaxViewOffset() and crouch state.
@@ -1051,30 +1035,9 @@ function Player:GetClampedMaxSpeed()
     return 30
 end
 
-local function UpdateStepAmount(self, stepAmount)
 
-    local deltaTime      = Shared.GetTime() - self.stepStartTime
-    local prevStepAmount = 0
-    
-    if deltaTime < Player.stepTotalTime then
-        prevStepAmount = self.stepAmount * (1 - deltaTime / Player.stepTotalTime)
-    end        
-    
-    self.stepStartTime = Shared.GetTime()
-    self.stepAmount    = Clamp(stepAmount + prevStepAmount, -Player.kMaxStepAmount, Player.kMaxStepAmount)
 
-end
 
--- Check to see if we moved up a step and need to smooth out the movement.
-function Player:OnPositionUpdated(moveVector, stepAllowed)
-
-    if not Shared.GetIsRunningPrediction() then
-        if moveVector.y ~= 0 and stepAllowed then
-            UpdateStepAmount(self, moveVector.y)
-        end
-    end
-
-end
 
 function Player:GetPerformsVerticalMove()
     return false
@@ -1254,20 +1217,10 @@ function Player:UpdateViewAngles(input)
     -- Update to the current view angles.    
     local viewAngles = Angles(input.pitch, input.yaw, 0)
     self:SetViewAngles(viewAngles)
-        
-    -- Update view offset from crouching
-
-    local viewY = self:GetMaxViewOffsetHeight()
-
-    -- Don't set new view offset height unless needed (avoids Vector churn).
-    local lastViewOffsetHeight = self:GetSmoothedViewOffset().y
-    if math.abs(viewY - lastViewOffsetHeight) > kEpsilon then
-        self:SetViewOffsetHeight(viewY)
-    end
-    
+            
     self:AdjustAngles(input.time)
     
-end   
+end    
 
 function Player:GetTriggerLandEffect()
     local xzSpeed = self:GetVelocity():GetLengthXZ()
@@ -1443,7 +1396,8 @@ end
 -- compensated fields are rolled back in time, so it needs to restore them once the processing
 -- is done. So it backs up, synchs to the old state, runs the OnProcessMove(), then restores them. 
 function Player:OnProcessMove(input)
-
+    self:SetOrigin(self.fullPrecisionOrigin)
+    SetMoveForHitregAnalysis(input) 
     local commands = input.commands
     if self:GetIsAlive() then
     
@@ -1649,6 +1603,8 @@ function Player:SetOrigin(origin)
 
     Entity.SetOrigin(self, origin)
     
+    self.fullPrecisionOrigin = Vector(origin)
+        
     self:UpdateControllerFromEntity()
     
 end
@@ -1666,8 +1622,6 @@ end
 -- Called by client/server UpdateMisc()
 function Player:UpdateSharedMisc(input)
 
-    -- Update the view offet with the smoothed value.
-    self:SetViewOffsetHeight(self:GetSmoothedViewOffset().y)
     
     self:UpdateMode()
     
@@ -2150,7 +2104,15 @@ function Player:GetHotkeyGroups()
     return hotKeyGroups
     
 end
-
+function Player:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
+function Player:GetIsInSiege()
+if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
+return false
+end
 function Player:GetVisibleWaypoint()
 
     local currentOrder = self:GetCurrentOrder()
@@ -2376,16 +2338,7 @@ function Player:OnCreateCollisionModel()
     
 end
 
-function Player:OnAdjustModelCoords(modelCoords)
-    
-    local deltaTime = Shared.GetTime() - self.stepStartTime
-    if deltaTime < Player.stepTotalTime then
-        modelCoords.origin = modelCoords.origin - self.stepAmount * (1 - deltaTime / Player.stepTotalTime) * self:GetCoords().yAxis
-    end
-      
-    return modelCoords
-    
-end
+
 
 function Player:GetWeaponUpgradeLevel()
 
@@ -2398,7 +2351,7 @@ function Player:GetWeaponUpgradeLevel()
 end
 
 function Player:GetIsRookie()
-    return self.isRookie
+    return false //self.isRookie
 end
 
 function Player:ModifyMaxSpeed(maxSpeedTable)

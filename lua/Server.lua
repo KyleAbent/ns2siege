@@ -426,8 +426,8 @@ end
  * Called by the engine to test if a player (represented by the entity they are
  * controlling) can hear another player for the purposes of voice chat.
  */
-local function OnCanPlayerHearPlayer(listener, channelType)
-    return GetGamerules():GetCanPlayerHearPlayer(listener, channelType)
+local function OnCanPlayerHearPlayer(listener, speaker, channelType)
+    return GetGamerules():GetCanPlayerHearPlayer(listener, speaker, channelType)
 end
 
 

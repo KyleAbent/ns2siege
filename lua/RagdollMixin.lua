@@ -134,9 +134,8 @@ function RagdollMixin:OnProcessMove(input)
     SharedUpdate(self, input.time)
 end
 
-function RagdollMixin:OnUpdatePhysics()
-    
-    if HasMixin(self, "Model") and ( self:GetIsRagdoll() or ( HasMixin(self, "Live") and not self:GetIsAlive() ) ) then
+local function UpdatePhysics(self)
+        if HasMixin(self, "Model") and ( self:GetIsRagdoll() or ( HasMixin(self, "Live") and not self:GetIsAlive() ) ) then
     
         local collisionModel = self:GetCollisionModel()
         if collisionModel and not self.removedCollisionReps then
@@ -151,8 +150,16 @@ function RagdollMixin:OnUpdatePhysics()
         end    
         
     end
-    
 end
+
+function RagdollMixin:OnUpdatePhysics()
+   UpdatePhysics(self) 
+end
+
+function RagdollMixin:OnFinishPhysics()
+   UpdatePhysics(self) 
+end
+
 
 local function SetRagdoll(self, deathTime)
 

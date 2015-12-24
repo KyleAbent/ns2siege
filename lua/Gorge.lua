@@ -128,6 +128,10 @@ function Gorge:OnCreate()
     self.verticalVelocity = 0
     self.modelsize = 1
     self.gravity = 0
+    
+    self.wallWalking = false
+    self.wallWalkingNormalGoal = Vector.yAxis
+    self.timeLastWallJump = 0
 end
 
 function Gorge:OnInitialized()
@@ -135,8 +139,7 @@ function Gorge:OnInitialized()
     Alien.OnInitialized(self)
     self.currentWallWalkingAngles = Angles(0.0, 0.0, 0.0)
     self:SetModel(Gorge.kModelName, kGorgeAnimationGraph)
-    self.wallWalking = false
-    self.wallWalkingNormalGoal = Vector.yAxis
+
     if Server then
     
         self.slideLoopSound = Server.CreateEntity(SoundEffect.kMapName)
@@ -259,7 +262,7 @@ local function PredictGoal(self, velocity)
     PROFILE("Gorge:PredictGoal")
 
     local goal = self.wallWalkingNormalGoal
-    if velocity:GetLength() > 1 and not self:GetIsOnSurface() then
+    if velocity:GetLength() > 1 and not self:GetIsGround() then
 
         local movementDir = GetNormalizedVector(velocity)
         local trace = Shared.TraceCapsule(self:GetOrigin(), movementDir * 2.5, Skulk.kXExtents, 0, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
@@ -446,7 +449,7 @@ function Gorge:GetIsSiege()
             return false
 end
 function Gorge:GetCanBeUsed(player, useSuccessTable)
-if not self:GetIsSiege() or not player:isa("Lerk") then useSuccessTable.useSuccess = false return end
+if  not player:isa("Lerk") then useSuccessTable.useSuccess = false return end
  if ( self.isriding and self.gorgeusingLerkID == player:GetId() ) or not self.isriding then useSuccessTable.useSuccess = true end
 end
 function Gorge:OnUse(player, elapsedTime, useSuccessTable)
@@ -624,7 +627,8 @@ end
 function Gorge:GetHeadAngles()
 
     if self:GetIsWallWalking() then
-        return self.currentWallWalkingAngles
+        // When wallwalking, the angle of the body and the angle of the head is very different
+        return self:GetViewAngles()
     else
         return self:GetViewAngles()
     end

@@ -12,6 +12,7 @@
 
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/Weapons/BulletsMixin.lua")
+Script.Load("lua/Hitreg.lua") 
 
 PrecacheAsset("cinematics/materials/umbra/ricochet.cinematic")
 
@@ -70,6 +71,10 @@ function ClipWeapon:OnCreate()
     
     InitMixin(self, BulletsMixin)
     
+    self.ammo = self:GetMaxClips() * self:GetClipSize()
+    self.clip = self:GetClipSize()
+    self.reloading = false
+    
 end
 
 local function CancelReload(self)
@@ -102,7 +107,7 @@ local function FillClip(self)
     
     // Transfer bullets from our ammo pool to the weapon's clip
     self.clip = math.min(self.ammo, self:GetClipSize())
-    self.ammo = self.ammo - self.clip
+    self.ammo = math.min(self.ammo - self.clip, self:GetMaxAmmo())
     
 end
 
@@ -132,8 +137,8 @@ function ClipWeapon:GetBulletsPerShot()
     return 1
 end
 
-function ClipWeapon:GetNumStartClips()
-    return 5
+function ClipWeapon:GetMaxClips()
+    return 4
 end
 
 function ClipWeapon:GetClipSize()
@@ -182,7 +187,7 @@ function ClipWeapon:GetAuxClip()
 end
 
 function ClipWeapon:GetMaxAmmo()
-    return 4 * self:GetClipSize()
+    return self:GetMaxClips() * self:GetClipSize()
 end
 
 // Return world position of gun barrel, used for weapon effects.
@@ -409,9 +414,9 @@ local function FireBullets(self, player)
     local filter = EntityFilterTwo(player, self)
     local range = self:GetRange()
     
-    if GetIsVortexed(player) then
-        range = 5
-    end
+//    if GetIsVortexed(player) then
+//        range = 5
+//    end
     
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
@@ -425,13 +430,7 @@ local function FireBullets(self, player)
         local targets, trace, hitPoints = GetBulletTargets(startPoint, endPoint, spreadDirection, bulletSize, filter)        
         local damage = self:GetBulletDamage()
 
-        /*
-        // Check prediction
-        local values = GetPredictionValues(startPoint, endPoint, trace)
-        if not CheckPredictionData( string.format("attack%d", bullet), true, values ) then
-            Server.PlayPrivateSound(player, "sound/NS2.fev/marine/voiceovers/game_start", player, 1.0, Vector(0, 0, 0))
-        end
-        */
+        HandleHitregAnalysis(player, startPoint, endPoint, trace)   
 
         local direction = (trace.endPoint - startPoint):GetUnit()
         local hitOffset = direction * kHitEffectOffset
@@ -521,7 +520,7 @@ function ClipWeapon:OnDraw(player, previousWeaponMapName)
 end
 
 function ClipWeapon:OnHolster(player)
-    if player:isa("Exo") then return end
+
     Weapon.OnHolster(self, player)
     
     CancelReload(self)
@@ -605,20 +604,19 @@ end
 function ClipWeapon:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ClipWeapon:OnUpdateAnimationInput")
-
-   // local taunting = false
+    
+  //  local stunned = false
     local interrupted = false
     local player = self:GetParent()
     if player then
     
-
+    ///    if HasMixin(player, "Stun") and player:GetIsStunned() then
+    //        stunned = true
+   //     end
+        
         if player.GetIsInterrupted and player:GetIsInterrupted() then
             interrupted = true
         end
-        
-       // if player.GetIsTaunting and player:GetIsTaunting() then
-       //    taunting = true
-      //  end
         
         if player:GetIsIdle() then
             local totalTime = math.round(Shared.GetTime() - idleTime)
@@ -640,7 +638,8 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
     end                   
     
     local activity = "none"
- //   if not taunting then
+  //  if not stunned then
+    
         if self:GetIsReloading() then
             activity = "reload"     
         elseif self.primaryAttacking then
@@ -648,7 +647,8 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
         elseif self.secondaryAttacking then
             activity = "secondary"
         end
-   //  end  
+        
+  //  end
     
     modelMixin:SetAnimationInput("activity", activity)
     modelMixin:SetAnimationInput("flinch_gore", interrupted and not self:GetIsReloading())

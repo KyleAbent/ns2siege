@@ -176,6 +176,11 @@ function Drifter:OnCreate()
     self.level = 0
     self.isoccupied = false
     self.playerId = Entity.invalidI
+    
+    self.moveSpeed = 0
+    self.moveSpeedParam = 0
+    self.moveYaw = 0
+    
 end
 
 function Drifter:OnInitialized()

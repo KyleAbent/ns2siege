@@ -889,20 +889,20 @@ end
 
 function Alien:UpdateMove( input , runningPrediction )
 
+    
 	if self.isriding then 
 	 	local drifter = Shared.GetEntity( self.drifterId ) 
 	 	 if drifter then
 	   //    if not drifter:GetIsAlive() then self.isriding = false self.drifterId = Entity.invalidI return end 
 	    	local offset = drifter:GetOrigin() + Vector(0,.5,0)
 	 	   self:SetOrigin(offset)
-           if not self:GetOrigin() == offset then self:SetOrigin(offset) end
+           if not self:GetOrigin() == offset then self:SetOrigin(offset) SetMoveForHitregAnalysis(input)  end
          else
              local lerk = Shared.GetEntity(self.gorgeusingLerkID)
              if lerk then
          	       if not lerk then self.isriding = false self.gorgeusingLerkID = Entity.invalidI return end 
-	    	       local offset = lerk:GetOrigin() +  Vector(0, .5,0)
-	 	           self:SetOrigin(offset)
-                   if not self:GetOrigin() == offset then self:SetOrigin(offset) end
+	 	           self:SetOrigin(lerk.fullPrecisionOrigin + Vector(0, .5,0))
+	 	           SetMoveForHitregAnalysis(input) 
              end
          end
    end

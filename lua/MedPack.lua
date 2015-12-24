@@ -17,11 +17,12 @@ class 'MedPack' (DropPack)
 
 MedPack.kMapName = "medpack"
 
-//if GetSeason() == "Fall" then
-    MedPack.kModelName = PrecacheAsset("seasonal/holiday2012/models/gift_medkit_01.model")
-//else
-//    MedPack.kModelName = PrecacheAsset("models/marine/medpack/medpack.model")
-//end
+MedPack.kModelNameWinter = PrecacheAsset("seasonal/holiday2012/models/gift_medkit_01.model")
+MedPack.kModelName = PrecacheAsset("models/marine/medpack/medpack.model")
+
+local function GetModelName()
+    return GetSeason() == Seasons.kWinter and MedPack.kModelNameWinter or MedPack.kModelName
+end
 
 MedPack.kHealthSound = PrecacheAsset("sound/NS2.fev/marine/common/health")
 

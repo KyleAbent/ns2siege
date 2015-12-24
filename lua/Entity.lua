@@ -400,13 +400,7 @@ function RadiusDamage(entities, centerOrigin, radius, fullDamage, doer, ignoreLO
     for index, target in ipairs(entities) do
     
         // Find most representative point to hit
-        local targetOrigin = target:GetOrigin()
-        if target.GetModelOrigin then
-            targetOrigin = target:GetModelOrigin()
-        end
-        if target.GetEngagementPoint then
-            targetOrigin = target:GetEngagementPoint()
-        end    
+        local targetOrigin = GetTargetOrigin(target)
         
         // Trace line to each target to make sure it's not blocked by a wall 
         local wallBetween = false

@@ -564,7 +564,7 @@ local addonNetworkVars =
     // required for smoother raise animation
     creationTime = "float"
 }
-
+AddMixinNetworkVars(BaseModelMixin, addonNetworkVars) 
 AddMixinNetworkVars(ClientModelMixin, addonNetworkVars)
 AddMixinNetworkVars(TeamMixin, addonNetworkVars)
 

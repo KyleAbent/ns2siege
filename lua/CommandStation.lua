@@ -233,9 +233,9 @@ function CommandStation:OnUpdate(deltaTime)
 end
 function CommandStation:UpdateBeacons()
  if not self:GetTeam() then return end
-  local beacons = self:GetTeam():GetBeacons()
+  local amount, time = self:GetTeam():GetBeacons()
   
-    if beacons > 1 then
+    if amount > 1 and time then
           local healthscalar = self:GetHealthScalar()
           if healthscalar <= .75 then
              self:UseBeacon()
@@ -264,14 +264,14 @@ function CommandStation:UseBeacon()
                         
                         
                for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Marine")) do
-                 if entity:GetIsAlive() and not GetIsPlayerNearby(self, entity, self:GetOrigin()) then table.insert(eligable,entity)  end
+                 if entity:GetIsAlive() and not GetIsPlayerNearby(self, entity, self:GetOrigin()) and not entity:GetIsInSiege() then table.insert(eligable,entity)  end
              end
  
                 
             if #eligable == 0 then return end
             
              self.distressBeaconSound:Start()
-             self:AddTimedCallback(function()  self.distressBeaconSound:Stop() end,4 ) 
+             self:AddTimedCallback(function()  self.distressBeaconSound:Stop() end,1 ) 
               self.distressBeaconSound:SetOrigin(self:GetOrigin())
                local location = GetLocationForPoint(self:GetOrigin())
                 local locationName = location and location:GetName() or ""
@@ -452,7 +452,19 @@ function CommandStation:OnUpdateRender()
     end
     
 end
+function CommandStation:OnDestroy()
 
+    ScriptActor.OnDestroy(self)
+    
+    if Server then
+    
+        DestroyEntity(self.distressBeaconSound)
+        self.distressBeaconSound = nil
+
+        
+    end
+    
+end
 function CommandStation:GetHealthbarOffset()
     return 2
 end
