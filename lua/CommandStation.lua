@@ -130,11 +130,11 @@ function CommandStation:GetIsSuddenDeath()
             local gameRules = GetGamerules()
             if gameRules then
                if gameRules:GetGameStarted() and gameRules:GetIsSuddenDeath() then 
-                   return false
+                   return true
                end
             end
         end
-            return true
+            return false
 end
 local kHelpArrowsCinematicName = PrecacheAsset("cinematics/marine/commander_arrow.cinematic")
 PrecacheAsset("models/misc/commander_arrow.model")
@@ -163,7 +163,7 @@ function CommandStation:GetUsablePoints()
 end
 
 function CommandStation:GetTechButtons()
-    return { kTechId.DistressBeacon, kTechId.None } //kTechId.BluePrintTech }
+    return { kTechId.None, kTechId.None } //kTechId.BluePrintTech }
 end
 function CommandStation:ModifyDamageTaken(damageTable, attacker, doer, damageType)
 
@@ -224,7 +224,7 @@ function CommandStation:GetTechAllowed(techId, techNode, player)
 end
 function CommandStation:OnUpdate(deltaTime)
    if Server then 
-      if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
+      if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + kBeaconDelay < Shared.GetTime() then 
       if not self:GetIsVortexed() and self:GetIsBuilt() then self:UpdateBeacons() end
     self:UpdatePassive() 
      self.timeLastUpdatePassiveCheck = Shared.GetTime()
@@ -233,20 +233,23 @@ function CommandStation:OnUpdate(deltaTime)
 end
 function CommandStation:UpdateBeacons()
  if not self:GetTeam() then return end
-  local amount, time = self:GetTeam():GetBeacons()
+  local time = self:GetTeam():GetBeacons()
   
-    if amount > 1 and time then
+    if time then
           local healthscalar = self:GetHealthScalar()
           if healthscalar <= .75 then
              self:UseBeacon()
           end
-    
     end
     
 end
-
+function CommandStation:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
 local function GetIsPlayerNearby(self, player, toOrigin)
-    return (player:GetOrigin() - toOrigin):GetLength() < 17
+    return (player:GetOrigin() - toOrigin):GetLength() < 17 or self:GetLocationName() == player:GetLocationName()
 end
 function CommandStation:UseBeacon()
    if self:GetIsVortexed() then return end
@@ -262,11 +265,14 @@ function CommandStation:UseBeacon()
                           end
                end
                         
-                        
-               for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Marine")) do
-                 if entity:GetIsAlive() and not GetIsPlayerNearby(self, entity, self:GetOrigin()) and not entity:GetIsInSiege() then table.insert(eligable,entity)  end
+             if not self:GetIsSuddenDeath() then  
+                 for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Marine")) do
+                       if entity:GetIsAlive() and not GetIsPlayerNearby(self, entity, self:GetOrigin()) 
+                      and not entity:GetIsInSiege() and entity:GetCanBeacon() then
+                       table.insert(eligable,entity) 
+                      end
+                 end
              end
- 
                 
             if #eligable == 0 then return end
             
@@ -280,33 +286,35 @@ function CommandStation:UseBeacon()
                 self:GetTeam():DeductBeacon()
                 
                 
-            local onteam = self:GetNumPlayers()
-            local scalar =  onteam - (self:GetHealthScalar()/1) * onteam
-            scalar = math.round(scalar, 0)
+            local onteam = self:GetTeam():GetNumPlayers()
+            
+             local gameRules = GetGamerules()
+           local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
+         local scalar = onteam * Clamp(kFrontDoorTime/kSiegeDoorTime, 0.1, 1)
             local beaconed = 0
            for i = 1, Clamp(#eligable, 1, scalar ) do
                 local player = eligable[i]
                 
                 if player:GetIsAlive() then
                 player:TriggerBeacon(self:FindFreeSpace())
+                player.timeLastBeacon = Shared.GetTime()
                 beaconed = beaconed + 1
                 else
+                player:GetTeam():ReplaceRespawnPlayer(player, self:FindFreeSpace(), 0, nil, true) 
                 player:SetCameraDistance(0)
-                player:GetTeam():ReplaceRespawnPlayer(player) 
+                player.timeLastBeacon = Shared.GetTime()
                 beaconed = beaconed + 1
                 end
            end  
-                Print("CommandStation HP: %s, Players on team: %s, Eligable for beacon: %s, MarineTeamBeacons Left: %s, ", 
-                     self:GetHealthScalar(), onteam, scalar, beaconed, self:GetTeam():GetBeacons())
-                    // local value = self:GetTeam():GetBeacons()
-                //self:ExperimentalBeacon(value)       
+    Print("CommandStation HP: %s, Players on team: %s, Eligable for beacon: %s, ", self:GetHealthScalar(), onteam, scalar, beaconed)
+   
 end
     function CommandStation:FindFreeSpace()
     
-        for index = 1, 20 do
+        for index = 1, 100 do
            local extents = Vector(1,1,1)
            local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 17, EntityFilterAll())
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 24, EntityFilterAll())
         
            if spawnPoint ~= nil then
              spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
@@ -331,16 +339,6 @@ return unitName
 end 
 */
 function CommandStation:ExperimentalBeacon(anotheramt)
-end
-function CommandStation:GetNumPlayers()
-local marines = 0
-
-               for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
-                          if entity:GetTeamNumber() == 1 and not entity:isa("Commander") then
-                            marines = marines +1
-                          end
-               end
-               return marines
 end
 function CommandStation:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent

@@ -229,6 +229,7 @@ function Exo:OnCreate()
     self.gravity = 1
     self.nano = false
     self.creationTime = Shared.GetTime()
+    self.timeLastBeacon = Shared.GetTime()
     
     if Server then
     
@@ -290,6 +291,9 @@ function Exo:InitExoModel()
     // the Exo are valid to attach weapons to. This is far too subtle...
     self:SetModel(modelName, graphName)
 
+end
+function Exo:GetCanBeacon()
+    return (self.timeLastBeacon + (kBeaconDelay*2 )) < Shared.GetTime()
 end
 function Exo:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
@@ -599,7 +603,17 @@ end
 function Exo:GetHeadAttachpointName()
     return "Exosuit_HoodHinge"
 end
-
+if Server then
+function Exo:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
+function Exo:GetIsInSiege()
+if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
+return false
+end
+end
 function Exo:GetArmorAmount(armorLevels)
 
     if not armorLevels then

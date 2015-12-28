@@ -800,6 +800,7 @@ function Hive:AutoUpgrade()
            team:OnUpgradeChamberConstructed(self)
            end
         end
+        return false
 end
 function Hive:OnConstructionComplete()
 
@@ -815,7 +816,8 @@ function Hive:OnConstructionComplete()
          end
          
     if not GetGamerules():GetFrontDoorsOpen() then
-     self:AutoUpgrade()
+
+    self:AddTimedCallback(Hive.AutoUpgrade, 4)
     end
     
     // Play special tech point animation at same time so it appears that we bash through it.

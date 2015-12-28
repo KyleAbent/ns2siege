@@ -297,13 +297,10 @@ function ConstructMixin:Construct(elapsedTime, builder)
             local techTree = self:GetTeam():GetTechTree()
             local techNode = techTree:GetTechNode(self:GetTechId())
 
-            local modifier = (self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and kInfestationBuildModifier or 1
-            local gameRules = GetGamerules()
-                 if not gameRules:GetFrontDoorsOpen() then
-                    modifier = modifier * kDynamicSetupMult 
-            //     elseif self:GetTeamNumber() == 2 and not gameRules:GetFrontDoorsOpen() then modifier = modifier *  kAlienTeamSetupBuildMultiplier 
-                end
-                            // if self:GetTeamNumber() == 1 then modifier = modifier * kMarineBuildSpeed  end
+            local modifier = (self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
+            modifier = modifier * kDynamicBuildSpeed 
+            modifier = modifier * ConditionalValue(self:SetupAdvantage(), 2, 1)
+            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), .3, 1)
             local startBuildFraction = self.buildFraction
             local newBuildTime = self.buildTime + elapsedTime * modifier
             local timeToComplete = self:GetTotalConstructionTime()            
@@ -375,7 +372,30 @@ function ConstructMixin:Construct(elapsedTime, builder)
     return success, playAV
     
 end
-
+function ConstructMixin:SetupAdvantage()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
+                   return false
+               end
+            end
+        end
+            return true
+end
+function ConstructMixin:SiegeDisAdvantage()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               local location = GetLocationForPoint(self:GetOrigin())
+               local locationName = location and location:GetName() or ""
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   if string.find(locationName, "Siege") or string.find(locationName, "siege") then return true end
+               end
+            end
+        end
+            return false
+end
 function ConstructMixin:GetCanBeUsedConstructed(byPlayer)
     return false
 end
@@ -515,12 +535,35 @@ end
 function ConstructMixin:GetBuiltFraction()
     return self.buildFraction
 end
+function ConstructMixin:GetTotalConstructionTime()      
+             //Remember the dynamic mult of buildspeed is applying during after front and even greater bonus during setup
+   local marineadvantage = 4
 
-function ConstructMixin:GetTotalConstructionTime()
-    return LookupTechData(self:GetTechId(), kTechDataBuildTime, kDefaultBuildTime)
+   
+   if Server then
+          local gameRules = GetGamerules()
+            if gameRules then
+                 if  gameRules:GetSiegeDoorsOpen() then
+                    marineadvantage = self:GetTeamNumber() == 1 and 4 or 9
+                     if self:isa("Hive") then
+                      marineadvantage = marineadvantage * 8
+                     end
+                 elseif gameRules:GetFrontDoorsOpen() then
+                    marineadvantage = self:GetTeamNumber() == 1 and 8 or 12
+                 else //setup
+                  marineadvantage =  self:GetTeamNumber() == 1 and 2 or 8
+                  end
+             end  
+   end
+   
+   marineadvantage = self:isa("CommandStructure") and marineadvantage * 8 or marineadvantage
+   marineadvantage = self:isa("Harvester") and  marineadvantage * 1.7 or marineadvantage
+ 
+    return marineadvantage
+    
 end
-
 if Server then
+
 
     function ConstructMixin:Reset()
 

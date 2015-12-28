@@ -165,6 +165,8 @@ if Server then
             self.iszedtime = false
             self.lastexploitcheck = Shared.GetTime()
             self:CreateFirstShiftHive()
+            self:AddTimedCallback(NS2Gamerules.CollectResources, kResourceTowerResourceInterval) 
+            
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
        //      self:AddTimedCallback(NS2Gamerules.SuddenDeath, kSiegeDoorTime + kTimeAfterSiegeOpeningToEnableSuddenDeath) 
@@ -1832,7 +1834,7 @@ function NS2Gamerules:GetCombatEntitiesCount()
 end
 function NS2Gamerules:GetCombatEntitiesCountInRoom(location)
        local entities = location:GetEntitiesInTrigger()
-       local eligable = 1
+       local eligable = 0
              for _, entity in ipairs(entities) do
              if HasMixin(entity, "Combat") then
                 local inCombat = (entity.timeLastDamageDealt + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime()) or (entity.lastTakenDamageTime + kMainRoomTimeInSecondsOfCombatToCount > Shared.GetTime())
@@ -1875,7 +1877,7 @@ function NS2Gamerules:PickMainRoom()
                           if string.find(location.name, "Siege") or string.find(location.name, "siege") then 
                           local powerpoint = GetPowerPointForLocation(location.name)
                              if powerpoint ~= nil then
-                             powerpoint:InsideMainRoom()
+                             powerpoint:SetMainRoom()
                               end
                            self.mainrooms = Shared.GetTime()
                            self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds)
@@ -1893,7 +1895,6 @@ function NS2Gamerules:PickMainRoom()
                              if powerpoint ~= nil then
                              powerpoint:SetMainRoom()
                              Print("main room is %s", powerpoint:GetLocationName())
-                             powerpoint:InsideMainRoom()
                               end
                               
                     for _, entity in ipairs(entities) do
@@ -1912,6 +1913,42 @@ end
 function NS2Gamerules:TriggerZedTime()
 
 end
+function NS2Gamerules:CollectResources()
+
+   local harvesters = 0
+   local extractors =  0
+  for _, restower in ientitylist(Shared.GetEntitiesWithClassname("ResourceTower")) do
+      if restower:GetIsBuilt() then
+         if restower:GetTeamNumber() == 1 then
+           extractors = extractors + 1
+         elseif restower:GetTeamNumber() == 2 then
+           harvesters = harvesters + 1
+         end
+       end
+    end
+                
+       if extractors == 0 then
+            extractors = 1
+       elseif harvesters == 0 then
+            harvesters = 1
+        end      
+   
+   for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+         if player:GetTeamNumber() == 1 then
+            player:AddResources(kPlayerResPerInterval * extractors)
+         elseif player:GetTeamNumber() == 2 then
+           player:AddResources(kPlayerResPerInterval * harvesters)
+         end
+
+    end
+
+        
+        self.team1:AddTeamResources(kTeamResourcePerTick  * extractors)
+        self.team2:AddTeamResources(kTeamResourcePerTick  * harvesters)
+        
+           return true
+end
+
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  

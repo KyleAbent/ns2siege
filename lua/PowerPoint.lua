@@ -452,15 +452,29 @@ end
 function PowerPoint:GetTechAllowed(techId, techNode, player)
     return true, true
 end
+if Server then
+
 function PowerPoint:SetMainRoom()
+self:Flicker() // off
+self:AddTimedCallback(function() self:Flicker() end, 10) //on
+self:AddTimedCallback(function() self:Flicker() end, 20) // off
+self:AddTimedCallback(function() self:Flicker() end, 30) // on
+end
+
+
+
+function PowerPoint:Flicker()
+      CreatePheromone(kTechId.ThreatMarker, self:GetOrigin(), 2)  //Make alien threat
+      
+          for _, player in ipairs(GetEntitiesWithinRange("Marine", self:GetOrigin(), 999)) do
+        if player:GetIsAlive() and not player:isa("Commander") then
+           player:GiveOrder(kTechId.Defend, self:GetId(), self:GetOrigin(), nil, true, true)
+        end
+              
+    end   // Create marine order
+    
 SendTeamMessage(self:GetTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
 SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
-self:Flicker() // off
-self:AddTimedCallback(function() self:Flicker() end, 5) //on
-self:AddTimedCallback(function() self:Flicker() end, 12) // off
-self:AddTimedCallback(function() self:Flicker() end, 25) // on
-end
-function PowerPoint:Flicker()
           if self:GetLightMode() ~= kLightMode.Normal then 
          self:SetLightMode(kLightMode.Normal)
          elseif self:GetLightMode() ~= kLightMode.NoPower then
@@ -468,6 +482,8 @@ function PowerPoint:Flicker()
          end
          return false
  end
+ 
+ end//server
 function PowerPoint:OnUse(player, elapsedTime, useSuccessTable)
 
     local success = false
@@ -810,6 +826,11 @@ local function DeleteEffects(self)
 end
 
 if Server then
+function PowerPoint:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
     function PowerPoint:OnUpdate(deltaTime)
 
         self:AddAttackTime(-0.1)

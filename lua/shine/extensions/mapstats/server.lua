@@ -40,6 +40,11 @@ self.MapStatsData = MapStatsFile
                    local clampedsiegetime = Clamp(unclampedsiegetime, 900, 1080)
                    kSiegeDoorTime = clampedsiegetime
                    end
+                   
+                   local unclampedcragbonus = kMapStatsCragStacks + ( (MarineWinAmount - AlienWinAmount) * .10 )
+                   local clampedcragbonus= Clamp(unclampedcragbonus, 1, 1.5)
+                   kMapStatsCragStacks = clampedcragbonus
+                   
                  
                  /*
                    local unclampedstartingres = kAlienInitialIndivRes + ( (MarineWinAmount - AlienWinAmount) * 5 )
@@ -92,7 +97,11 @@ self.MapStatsData = MapStatsFile
                    local clampedtimefront = Clamp(unclampedtimefront, 300, ConditionalValue(Shared.GetMapName() == "ns2_trainsiege2" or Shared.GetMapName() == "ns_siegeaholic_remade", 420, 360)) 
                    kFrontDoorTime = clampedtimefront
               end  
-                   
+              
+                   local unclampedcragbonus = kMapStatsCragStacks + ( (AlienWinAmount - MarineWinAmount) * .10 )
+                   local clampedcragbonus = Clamp(unclampedcragbonus, 1, 1.5)
+                   kMapStatsCragStacks = clampedcragbonus
+    
                    /*
                    local unclampedbuildtimes = kMarineTeamSetupBuildMultiplier + ( (AlienWinAmount - MarineWinAmount) * .1 )
                    local clampedbuildtime = Clamp(unclampedbuildtimes, 1.0, 2.0)

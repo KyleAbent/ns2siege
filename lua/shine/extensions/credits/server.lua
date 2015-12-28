@@ -259,7 +259,7 @@ end
    end
  end
  
-function Plugin:SaveCredits(Client)
+function Plugin:SaveCredits(Client, notify)
        local Data = self:GetCreditData( Client )
        if Data and Data.credits then 
          if not Data.name or Data.name ~= Client:GetControllingPlayer():GetName() then
@@ -272,15 +272,15 @@ function Plugin:SaveCredits(Client)
           local earnedamount = creditstosave - Data.credits
           if earnedamount > cap then 
           creditstosave = Data.credits + cap
-             if notify then
+                if notify then
              self:NotifyCredits( Client, "%s Credit cap per round exceeded. You earned %s credits this round. Only %s are saved. So your new total is %s", true, kCreditsPerRoundCap, earnedamount, kCreditsPerRoundCap, creditstosave )
              Shine.ScreenText.SetText("Credits", string.format( "%s Credits", creditstosave ), Client) 
-            end
+                end
            end
            
             Data.credits = creditstosave 
             
-            Data.credits = self:GetPlayerCreditsInfo(Client)
+            //Data.credits = self:GetPlayerCreditsInfo(Client)
        else
       self.CreditData.Users[Client:GetUserId() ] = {credits = self:GetPlayerCreditsInfo(Client), name = Client:GetControllingPlayer():GetName() }
        end//
@@ -291,24 +291,35 @@ self:SaveCredits(Client)
  self:AdjustBuildSpeed()
 end
 function Plugin:AdjustBuildSpeed()
-            local gameRules = GetGamerules()
-             //setup only
-            if gameRules:GetFrontDoorsOpen() then return end
-            local onteam = 1
-            
+       local team1PlayerCount = GetGamerules():GetTeam(kTeam1Index):GetNumPlayers()
+        local team2PlayerCount = GetGamerules():GetTeam(kTeam2Index):GetNumPlayers()
+        local active = (team1PlayerCount + team2PlayerCount)
+        
+
+
+
+          
+              local ratio = (self:GetActivePlayers()/24)
+              local bonus  = 1 -  ratio + 1
+              if bonus ~= kDynamicBuildSpeed then
+             Shared.ConsoleCommand(string.format("sh_buildspeed %s", math.round(bonus,1)))
+              end 
+              
+              //kMaxSupply = kMaxSupply - ratio * kMaxSupply
+          
+
+end
+function Plugin:GetActivePlayers()
+       local active = 0
                local Players = Shine.GetAllPlayers()
               for i = 1, #Players do
                     local Player = Players[ i ]
                    if Player then
-                   if Player:GetTeamNumber() == 1 or Player:GetTeamNumber() == 2 then onteam = onteam + 1 end
+                   if Player:GetTeamNumber() == 1 or Player:GetTeamNumber() == 2 then active = active + 1 end
                     end
-              end
-              
-              local speed = 1 - (onteam/24) + 1
-              if speed ~= kDynamicSetupMult then
-             Shared.ConsoleCommand(string.format("sh_buildspeed %s", math.round(speed,1)))
-              end 
-
+              end       
+              kActivePlayers = active
+              return kActivePlayers
 end
 function Plugin:GetPlayerCreditsInfo(Client)
    local Credits = 0
@@ -445,7 +456,7 @@ function Plugin:SetGameState( Gamerules, State, OldState )
      if State == kGameState.Team1Won or State == kGameState.Team2Won or State == kGameState.Draw then
      
       self.GameStarted = false
-          
+          /*
                  self:SimpleTimer(4, function ()
        
               local Players = Shine.GetAllPlayers()
@@ -457,18 +468,23 @@ function Plugin:SetGameState( Gamerules, State, OldState )
                   end
              end
       end)
+      */
       
              self:SimpleTimer(8, function ()
               local Players = Shine.GetAllPlayers()
               for i = 1, #Players do
               local Player = Players[ i ]
                   if Player then
+                    local Data = self:GetCreditData( Player:GetClient() )
                     local creditstosave = self:GetPlayerCreditsInfo(Player:GetClient())
-                    local earnedamount = creditstosave - Data.credits
-                    local addamount = creditstosave  
+                    local earnedamount = 0
+                    if Data then
+                     earnedamount = creditstosave - Data.credits
+                    end
+                    local addamount = earnedamount  
                     addamount = math.round(addamount, 2)
                     Shine.ScreenText.Add( 80, {X = 0.40, Y = 0.15,Text = "Total Credits Earned:"..addamount, Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
-                    Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.20,Text = "Total Credits Spent:".. self.PlayerSpentAmount[Player:GetClient()], Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
+                    Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.20,Text = "Total Credits Spent:".. self.PlayerSpentAmount[Player:GetClient()] or 0, Duration = 120,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,}, Player )
                   end
              end
       end)
@@ -1982,17 +1998,18 @@ self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 
-                  local newPlayer = Player:Replace(Gorge.kMapName, Player:GetTeamNumber(), nil, nil, extraValues)
-                  if newPlayer.lastUpgradeList then
-                    newPlayer.upgrade1 = newPlayer.lastUpgradeList[1] or 1
-                    newPlayer.upgrade2 = newPlayer.lastUpgradeList[2] or 1
-                    newPlayer.upgrade3 = newPlayer.lastUpgradeList[3] or 1
-                  end
+self.BuyUsersTimer[Client] = Shared.GetTime() + 10
+
+Player:CreditBuy(Gorge)
+        
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
 self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
+
 return
 end
+
+
 
 if String == "Lerk" then
 CreditCost = 15
@@ -2004,12 +2021,9 @@ self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 
-                  local newPlayer = Player:Replace(Lerk.kMapName, Player:GetTeamNumber(), nil, nil, extraValues)
-                  if newPlayer.lastUpgradeList then
-                    newPlayer.upgrade1 = newPlayer.lastUpgradeList[1] or 1
-                    newPlayer.upgrade2 = newPlayer.lastUpgradeList[2] or 1
-                    newPlayer.upgrade3 = newPlayer.lastUpgradeList[3] or 1
-                    end
+self.BuyUsersTimer[Client] = Shared.GetTime() + 15
+
+Player:CreditBuy(Lerk)
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
 self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
@@ -2027,12 +2041,9 @@ self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 
-                  local newPlayer = Player:Replace(Fade.kMapName, Player:GetTeamNumber(), nil, nil, extraValues)
-                  if newPlayer.lastUpgradeList then
-                    newPlayer.upgrade1 = newPlayer.lastUpgradeList[1] or 1
-                    newPlayer.upgrade2 = newPlayer.lastUpgradeList[2] or 1
-                    newPlayer.upgrade3 = newPlayer.lastUpgradeList[3] or 1
-                    end
+self.BuyUsersTimer[Client] = Shared.GetTime() + 20
+
+Player:CreditBuy(Fade)
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
 self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
@@ -2050,12 +2061,9 @@ self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 
-                  local newPlayer = Player:Replace(Onos.kMapName, Player:GetTeamNumber(), nil, nil, extraValues)
-                  if newPlayer.lastUpgradeList then
-                    newPlayer.upgrade1 = newPlayer.lastUpgradeList[1] or 1
-                    newPlayer.upgrade2 = newPlayer.lastUpgradeList[2] or 1
-                    newPlayer.upgrade3 = newPlayer.lastUpgradeList[3] or 1
-                    end
+self.BuyUsersTimer[Client] = Shared.GetTime() + 30
+
+Player:CreditBuy(Onos)
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
 self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost

@@ -297,7 +297,7 @@ function Crag:TryHeal(target)
     heal = heal * self:GetCragsInRange()/3 + heal
     
     if self:GetIsSiege() and self:IsInRangeOfHive() and target:isa("Hive") or target:isa("Crag") then
-       heal = heal * kCragSiegeBonus
+       heal = heal * kMapStatsCragStacks
     end
     
     if target:GetHealthScalar() ~= 1 and (not target.timeLastCragHeal or target.timeLastCragHeal + Crag.kHealInterval <= Shared.GetTime()) then

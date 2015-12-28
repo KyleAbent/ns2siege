@@ -76,8 +76,9 @@ function SiegeDoor:Reset()
 end
 
 function SiegeDoor:CreatePath(onUpdate) 
-    self.waypoint = self:GetOrigin() + Vector(kMoveXVector,kMoveUpVector,kMoveZVector)
+ self.waypoint = self:GetOrigin() + Vector(kMoveXVector,kMoveUpVector,kMoveZVector)
 end
+
 /*
 function SiegeDoor:ShowOpeningEffects()
   if self.OpeningEffect then

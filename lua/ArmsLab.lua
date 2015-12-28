@@ -192,7 +192,19 @@ function ArmsLab:GenerateResearchTimes()
     Print("Times: A1 %s, A2 %s, A3 %s", ArmsLab.Armor1ResearchTime,ArmsLab.Armor2ResearchTime,ArmsLab.Armor3ResearchTime)
     Print("rifle clip: %s", ArmsLab.RifleClipResearchTime)
 end
-
+   
+function ArmsLab:GetArmsLabQualifications()
+local amount = 0
+        for index, armslab in ientitylist(Shared.GetEntitiesWithClassname("ArmsLab")) do
+        
+               amount  = amount + 1
+            
+        end
+        
+    
+    return amount
+    
+end
 function ArmsLab:GetReceivesStructuralDamage()
     return true
 end

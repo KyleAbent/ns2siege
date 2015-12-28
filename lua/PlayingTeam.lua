@@ -649,13 +649,30 @@ end
  * Transform player to appropriate team respawn class and respawn them at an appropriate spot for the team.
  * Pass nil origin/angles to have spawn entity chosen.
  */
-function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName)
+function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName, isbeacon)
 
     local spawnMapName = self.respawnEntity
+    
+         local currentmod = nil
+         
+        if isbeacon then
+    
+         if GetGamerules():GetIsSuddenDeath() then
+             mapName = Exo.kMapName
+             currentmod = SD
+         elseif GetGamerules():GetSiegeDoorsOpen() then
+              mapName = JetpackMarine.kMapName
+              currentmod = siege
+         end
+    
+    end
     
     if mapName ~= nil then
         spawnMapName = mapName
     end
+
+     
+
     
     local newPlayer = player:Replace(spawnMapName, self:GetTeamNumber(), false, origin)
     
@@ -672,6 +689,23 @@ function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName)
     if HasMixin(newPlayer, "Upgradable") then
         newPlayer:ClearUpgrades()
     end
+    
+            if isbeacon then
+        
+              if currentmod ~= nil then
+              
+                 if currentmod == SD then
+                   player:GiveItem(HeavyMachineGun.kMapName)
+                 elseif currentmod == siege then
+                   player:GiveItem(Shotgun.kMapName)
+                 else                
+                   player:GiveItem(Welder.kMapName)
+                 end
+                 
+              end
+        
+          end
+
     
     return (newPlayer ~= nil), newPlayer
     
@@ -811,7 +845,6 @@ function PlayingTeam:Update(timePassed)
 
     if GetGamerules():GetGameStarted() then
 
-        self:UpdateMinResTick()
 
         if #gServerBots > 0 or #GetEntitiesWithMixinForTeam("PlayerHallucination", self:GetTeamNumber()) > 0 then
             self:GetTeamBrain():Update(timePassed)
@@ -831,31 +864,6 @@ function PlayingTeam:Update(timePassed)
     
 end
 
-function PlayingTeam:UpdateMinResTick()
-
-    PROFILE("PlayingTeam:UpdateMinResTick")
-
-    if not self.timeLastMinResUpdate or self.timeLastMinResUpdate + kResourceTowerResourceInterval * 2 <= Shared.GetTime() then
-    
-        local rtActiveCount = 0
-        local rts = GetEntitiesForTeam("ResourceTower", self:GetTeamNumber())
-        for index, rt in ipairs(rts) do
-        
-            if rt:GetIsAlive() and rt:GetIsCollecting() then
-                rtActiveCount = rtActiveCount + 1
-            end
-            
-        end
-        
-        if rtActiveCount == 0 then
-            self:AddTeamResources(kTeamResourcePerTick)
-        end
-    
-        self.timeLastMinResUpdate = Shared.GetTime()
-    
-    end
-
-end
 
 function PlayingTeam:PrintWorldTextForTeamInRange(messageType, data, position, range)
 

@@ -1,9 +1,19 @@
-kBeaconDelay = 15
+kInfestationBuildModifier = .5
+kAlienRegenerationTime = 4
+kAlienInnateRegenerationPercentage  = 0.04
+kAlienMinInnateRegeneration = 2
+kAlienMaxInnateRegeneration = 33
+kAlienRegenerationCombatModifier = .7
+//kMaxTeamResources = 420
+
+kBeaconDelay = 10
 kCreditsPerRoundCap = 200
 kCreditMultiplier = 1
 kSBCooldown = 30
-kDynamicSetupMult = 1
-kCragSiegeBonus = 1.3
+kDynamicBuildSpeed = 1
+kActivePlayers = 0
+//kCragSiegeBonus = 1.3
+kMapStatsCragStacks = 1.3
 kEtherealGateCoolDown = 20
 kOnosEggCost = 150
 

@@ -698,6 +698,7 @@ function Lerk:GetIsSiege()
         end
             return false
 end
+/*
 function Lerk:GetCanBeUsed(player, useSuccessTable)
 if not player:isa("Gorge")  then useSuccessTable.useSuccess = false return end
 if ( self.isoccupied and player.gorgeusingLerkID == self:GetId() ) or not self.isoccupied then useSuccessTable.useSuccess = true end
@@ -716,6 +717,7 @@ function Lerk:OnUse(player, elapsedTime, useSuccessTable)
      player:SetOrigin(self:GetOrigin())
      end
 end
+*/
 /*
 function Lerk:OnKill()
 

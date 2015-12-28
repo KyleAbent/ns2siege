@@ -272,7 +272,7 @@ function Alien:OnInitialized()
 end
 
 function Alien:SetRepresentingHealthValues()
-local level = 0
+local level = 1
 
   if Server then
   level = GetFairHealthValues()
@@ -301,11 +301,18 @@ local level = 0
    if GetHasThickenedSkinUpgrade(self) then
       newMaxHealth = newMaxHealth * 1.10
       end
+      
+      
 
     if newMaxHealth ~= self.maxHealth  then
 
         local healthPercent = self.maxHealth > 0 and self.health/self.maxHealth or 0
         self:SetMaxHealth(newMaxHealth)
+        
+         if GetHasRebirthUpgrade(newPlayer) then
+              healthPercent = healthPercent * .5
+           end
+           
         self:SetHealth(self.maxHealth * healthPercent)
     
     end
@@ -328,6 +335,7 @@ end
 function Alien:SetHatched()
     self.hatched = true
     self:SetRepresentingHealthValues()
+    self:AddTimedCallback(Alien.UpdateAutoHeal, kAlienRegenerationTime)
 end
 
 function Alien:GetCanRepairOverride(target)
@@ -901,7 +909,7 @@ function Alien:UpdateMove( input , runningPrediction )
              local lerk = Shared.GetEntity(self.gorgeusingLerkID)
              if lerk then
          	       if not lerk then self.isriding = false self.gorgeusingLerkID = Entity.invalidI return end 
-	 	           self:SetOrigin(lerk.fullPrecisionOrigin + Vector(0, .5,0))
+	 	           self.fullPrecisionOrigin = lerk:GetOrigin()
 	 	           SetMoveForHitregAnalysis(input) 
              end
          end

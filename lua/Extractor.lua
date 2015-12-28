@@ -109,14 +109,6 @@ function Extractor:GetDamagedAlertId()
     return kTechId.MarineAlertExtractorUnderAttack
 end
 
-if Server then
-
-    function Extractor:GetIsCollecting()    
-        return ResourceTower.GetIsCollecting(self) and self:GetIsPowered()  
-    end
-    
-end
-
 function Extractor:GetHealthbarOffset()
     return 2.0
 end 

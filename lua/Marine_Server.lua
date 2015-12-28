@@ -16,6 +16,15 @@ local function UpdateUnitStatusPercentage(self, target)
     end
 
 end
+function Marine:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
+function Marine:GetIsInSiege()
+if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
+return false
+end
 function Marine:TriggerBeacon(location)
      local locationto = location
          self:AddTimedCallback(function()        

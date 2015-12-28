@@ -6,6 +6,7 @@ local Plugin = Plugin
 
 
 Plugin.Version = "1.0"
+Shine.Hook.SetupClassHook( "MAC", "Notifyuse", "ReplaceUse", "Replace" )
 Shine.Hook.SetupClassHook( "CommandStation", "ExperimentalBeacon", "PrintInfo", "Replace" )
 Shine.Hook.SetupClassHook( "Alien", "OnRedeem", "OnRedemedHook", "PassivePre" )
 Shine.Hook.SetupClassHook( "Alien", "TriggerRebirthCountDown", "TriggerRebirthCountDown", "PassivePre" )
@@ -22,6 +23,14 @@ self.playersize = {}
 self.GlowClientsTime = {}
 self.GlowClientsColor = {}
 return true
+end
+function Plugin:ReplaceUse(player)
+
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+self:NotifySiege( Client, "Wait until front doors open to use macs.", true)
+return
 end
 function Plugin:PrintInfo(anotheramt)
 self:NotifySiege( nil, "MarineTeamBeacons Left: %s", true, anotheramt)
@@ -410,7 +419,7 @@ PlayerGravityCommand:Help( "sh_playergravity <player> <number> works differently
 
 local function BuildSpeed( Client, Number )
 
-kDynamicSetupMult = Number
+kDynamicBuildSpeed = Number
 //self:NotifySiege( nil, "Adjusted Marine Construct Speed to %s percent (1 - (marineplayercount/12) + 1)", true, Number * 100)
 end
 

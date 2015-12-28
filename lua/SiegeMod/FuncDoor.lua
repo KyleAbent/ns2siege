@@ -126,7 +126,7 @@ local function UpdateAutoOpen(self, timePassed)
                 self.isvisible = false
                 self:HandoutPoints()
                 end
-                self:SetPhysicsGroup(PhysicsGroup.OpenDoor)
+               self:AddTimedCallback(function() self:SetPhysicsGroup(PhysicsGroup.OpenDoor) end, 2) 
       self:SetState(FuncDoor.kState.Open) 
        return true 
         end

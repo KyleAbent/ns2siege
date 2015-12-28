@@ -265,7 +265,8 @@ function ExoWelder:PerformWeld(player)
             if HasMixin(target, "Construct")  then
                 target:Construct(kWelderFireDelay, player)
             end
-                 if ( target:isa("InfantryPortal") or target:isa("Sentry") and target:GetIsBuilt() ) or target:isa("MAC") and target:GetHealthScalar() == 1 then
+            
+                 if ( target:isa("InfantryPortal") or target:isa("Sentry") and target:GetIsBuilt() ) or target:isa("MAC") or target:isa("Armory") and target:GetHealthScalar() == 1 then
                  local prevlevel = target.level
                 target:AddXP(target:GetAddXPAmount())
                 local success = false

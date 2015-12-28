@@ -307,7 +307,7 @@ local function GetAutomaticOrder(self)
         else
 
             // If there's a friendly entity nearby that needs constructing, constuct it.
-            local range = self:GetIsFront() and 9999 or MAC.kOrderScanRadius
+            local range = not self:GetIsFront() and 9999 or MAC.kOrderScanRadius
             local constructables = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), range)
             for c = 1, #constructables do
             
@@ -392,7 +392,7 @@ function MAC:GetIsFront()
             return false
 end
 function MAC:GetCanBeUsed(player, useSuccessTable)
-  useSuccessTable.useSuccess = not self:GetIsFront() 
+  useSuccessTable.useSuccess = true //not self:GetIsFront() 
 end
 function MAC:OnUse(player, elapsedTime, useSuccessTable)
 
@@ -407,11 +407,24 @@ function MAC:OnUse(player, elapsedTime, useSuccessTable)
             self.timeOfLastUse = time
             
         end
-        self:GiveOrder(kTechId.FollowAndWeld, player:GetId(), player:GetOrigin(), nil, true, true) 
+       self:PlayerUse(player) 
     end
     
 end
 
+
+function MAC:PlayerUse(player)
+   if Server then
+       if not GetGamerules():GetFrontDoorsOpen() then 
+          self:NotifyUse(player)
+          return
+       end
+   end    
+   self:GiveOrder(kTechId.FollowAndWeld, player:GetId(), player:GetOrigin(), nil, true, true) 
+end
+function MAC:NotifyUse(player)
+
+end
 // avoid the MAC hovering inside (as that shows the MAC through the factory top)
 function MAC:GetHoverHeight()
     if self.rolloutSourceFactory then

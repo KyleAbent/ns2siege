@@ -259,6 +259,8 @@ function Marine:OnCreate()
    self.heavyarmor = false
    self.lastsupply = 0
    self.suppliesleft = 5
+   self.timeLastBeacon = Shared.GetTime()
+   
 end
 
 local function UpdateNanoArmor(self)
@@ -267,6 +269,9 @@ local function UpdateNanoArmor(self)
 end
 function Marine:GetHasMineMode()
 return self.minemode
+end
+function Marine:GetCanBeacon()
+    return (self.timeLastBeacon + (kBeaconDelay*2) ) < Shared.GetTime()
 end
 function Marine:GetCanJump()
     return not self:GetIsWebbed() and ( self:GetIsOnGround() or self:GetIsOnLadder() )

@@ -51,7 +51,7 @@ function MarineTeam:OnResetComplete()
         end
         
     end
-    self.beacons = 12
+    self.beacons = 16
     self.lastbeacontime = Shared.GetTime()
 end
 
@@ -73,17 +73,14 @@ function MarineTeam:Initialize(teamName, teamNumber)
     
     self.lastTimeNoIPsMessageSent = Shared.GetTime()
     
-    self.beacons = 12
     
 end
 function MarineTeam:DeductBeacon()
-self.beacons = Clamp(self.beacons - 1, 0, 12)
 self.lastbeacontime = Shared.GetTime()
 end
 function MarineTeam:GetBeacons()
-local amount = self.beacons
 local time = self.lastbeacontime == nil or Shared.GetTime() > self.lastbeacontime + kBeaconDelay
-return   amount, time
+return time
 end
 function MarineTeam:GetHasAbilityToRespawn()
 /*

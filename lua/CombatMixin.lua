@@ -146,12 +146,14 @@ end
 function CombatMixin:GetIsInCombat()
     return self.inCombat
 end
+/*
 if Server then
 function CombatMixin:GetLocationName()
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         return locationName
 end
+
 function CombatMixin:InsideMainRoom()
 
     for _, player in ipairs(GetEntitiesWithinRange("Marine", self:GetOrigin(), 999)) do
@@ -173,7 +175,7 @@ function CombatMixin:InsideMainRoom()
               
     end
              //Disabled because crashing error relating to particle effects etc not knowing what to do with the enzyme or something?
-       */
+       
                                                       //flicker marine lights
     //   for _, powerpoint in ipairs(GetEntitiesWithinRange("PowerPoint", self:GetOrigin(), 999)) do
     //    if powerpoint:GetIsAlive() and self:GetLocationName() == powerpoint:GetLocationName() then
@@ -184,7 +186,9 @@ function CombatMixin:InsideMainRoom()
 
 
 end
+
 end//server  
+*/
 function CombatMixin:GetTimeLastDamageDealt()
     return self.timeLastDamageDealt
 end

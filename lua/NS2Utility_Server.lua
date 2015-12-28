@@ -525,24 +525,27 @@ local hives = 0
    return hives
 end
 function GetFairHealthValues()
-local level = 0
+local level = 1
  local gameRules = GetGamerules()
- if not gameRules:GetGameStarted() then return .08 end 
+ if not gameRules:GetGameStarted() then return 0.478 end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
-        //Print("Length = %s", roundlength)
-      //  if ArmsLab.Weapons1ResearchTime == 0 then return level end
+      level = Clamp(roundlength/kSiegeDoorTime, 0.1, 0.478)
+        level = level * (kActivePlayers/24)
+       return level 
+end
+function GetActivePlayers()
+
+            local onteam = 1
+            
+            
+                for index, currentPlayer in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+        local owner = Server.GetOwner(currentPlayer)
+             if Player:GetTeamNumber() == 1 or Player:GetTeamNumber() == 2 then onteam = onteam + 1 end
+           end
       
-                 if roundlength > kSiegeDoorTime then
-                      level = .478
-                     elseif roundlength > 900 then
-                      level = .43
-                     elseif  roundlength > 600 then
-                      level = .35
-                    elseif roundlength > 300 then
-                      level = .25
-                    end
-                    
-       return level
+              return (onteam/24)
+
+
 end
 function UpdateAbilityAvailability(forAlien, tierOneTechId, tierTwoTechId, tierThreeTechId)
    local ispregame = false

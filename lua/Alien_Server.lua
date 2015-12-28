@@ -95,7 +95,7 @@ function Alien:OnProcessMove(input)
         
        
          
-        self:UpdateAutoHeal()
+        //self:UpdateAutoHeal()
         self:UpdateSilenceLevel()
         
     end
@@ -116,7 +116,7 @@ function Alien:UpdateAutoHeal()
 
     PROFILE("Alien:UpdateAutoHeal")
 
-    if self:GetIsHealable() and ( not self.timeLastAlienAutoHeal or self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() ) then
+    if not self:GetIsDestroyed() and self:GetIsHealable()  then
 
         local healRate = 1
         local hasRegenUpgrade = GetHasRegenerationUpgrade(self)
@@ -134,10 +134,10 @@ function Alien:UpdateAutoHeal()
         end
 
         self:AddHealth(healRate, false, false, not hasRegenUpgrade)  
-        self.timeLastAlienAutoHeal = Shared.GetTime()
+
     
     end 
-
+           return true
 end
 local function GetRelocationHive(usedhive, origin, teamnumber)
     local hives = GetEntitiesForTeam("Hive", teamnumber)
@@ -275,7 +275,30 @@ function Alien:TriggerRebirth()
     
 
 end
-function Alien:ProcessBuyAction(techIds)
+function Alien:CreditBuy(Class)
+
+        local upgradetable = {}
+        local upgrades = Player.lastUpgradeList
+        if upgrades and #upgrades > 0 then
+            table.insert(upgradetable, upgrades)
+        end
+        local class = nil
+        
+        if Class == Gorge then
+        class = kTechId.Gorge
+        elseif Class == Lerk then
+        class = kTechId.Lerk
+        elseif Class == Fade then
+        class = kTechId.Fade
+        elseif Class == Onos then
+        class = kTechId.Onos
+        end
+        
+        table.insert(upgradetable, class)
+        self:ProcessBuyAction(upgradetable, true)
+        
+end
+function Alien:ProcessBuyAction(techIds, iscredits)
     ASSERT(type(techIds) == "table")
     ASSERT(table.count(techIds) > 0)
 
@@ -306,7 +329,7 @@ function Alien:ProcessBuyAction(techIds)
         upgradeManager:Populate(self)
         // add this first because it will allow switching existing upgrades
         if lifeFormTechId then
-            upgradeManager:AddUpgrade(lifeFormTechId)
+            upgradeManager:AddUpgrade(lifeFormTechId,nil,true)
         end
         for _, newUpgradeId in ipairs(techIds) do
 
@@ -390,7 +413,9 @@ function Alien:ProcessBuyAction(techIds)
                 newPlayer:SetVelocity(Vector(0, 0, 0))                
                 newPlayer:DropToFloor()
                 
+                if not iscredits then
                 newPlayer:SetResources(upgradeManager:GetAvailableResources())
+                end
                 newPlayer:SetGestationData(upgradeManager:GetUpgrades(), self:GetTechId(), self:GetHealthFraction(), self:GetArmorScalar())
                 
                 if oldLifeFormTechId and lifeFormTechId and oldLifeFormTechId ~= lifeFormTechId then

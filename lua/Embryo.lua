@@ -153,17 +153,19 @@ local function UpdateGestation(self)
             local healthScalar = self.storedHealthScalar or 1
             local armorScalar = self.storedArmorScalar or 1
 
-            newPlayer:SetHealth(healthScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxHealth))
-            newPlayer:SetArmor(armorScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxArmor))
-            newPlayer:OnGestationComplete()
-            newPlayer:SetHatched()
-            newPlayer:TriggerEffects("egg_death")
-            
            if GetHasRebirthUpgrade(newPlayer) then
           newPlayer:TriggerRebirthCountDown(newPlayer:GetClient():GetControllingPlayer())
           newPlayer.lastredeemorrebirthtime = Shared.GetTime()
-       //       if newPlayer:isa("Onos") then newPlayer:SetHealth(self:GetHealth() * .7) end
            end
+           
+            newPlayer:SetHealth(healthScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxHealth))
+            newPlayer:SetArmor(armorScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxArmor))
+            
+            newPlayer:OnGestationComplete()
+            newPlayer:SetHatched()
+            newPlayer:TriggerEffects("egg_death")
+
+
           
             
             if self.resOnGestationComplete then
