@@ -359,15 +359,12 @@ function Marine:AttemptToBuy(techIds)
               //  self:AddResources(-GetCostForTech(techId))
                 self.hasfirebullets = true
                 return true
-              elseif techId == kTechId.HeavyMachineGun then
-                         self:GiveItem(HeavyMachineGun.kMapName)
-                         self:SetArmorAmount()
-                return true
               elseif techId == kTechId.Resupply then
                 self.hasreupply = true
                 return true
               elseif techId == kTechId.HeavyArmor then
                self.heavyarmor = true
+                 self:SetArmorAmount()
                 return true
                end
                 

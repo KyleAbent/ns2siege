@@ -501,7 +501,8 @@ function LiveMixin:Kill(attacker, doer, point, direction)
         if Server then
             GetGamerules():OnEntityKilled(self, attacker, doer, point, direction)
         end
-      if self:GetTeamNumber() == 1 and self:isa("Player") then 
+      if self:GetTeamNumber() == 1 then 
+      if self:isa("Player")  then
         if attacker and attacker:isa("Alien") and GetHasHungerUpgrade(attacker) then
                   local duration = 8
          if attacker:isa("Onos") then
@@ -510,10 +511,15 @@ function LiveMixin:Kill(attacker, doer, point, direction)
             attacker:PrimalScream(duration)
           attacker:TriggerEffects("primal_scream")
        //   attacker:TriggerEnzyme(4)
-          attacker:AddEnergy(10)
+          attacker:AddEnergy(15)
        //   attacker.timeUmbraExpires = Shared.GetTime() + 4
           attacker:AddHealth(attacker:GetHealth() * (10/100))
         end
+      elseif HasMixin(self, "Construct") and attacker:isa("Gorge") and doer:isa("DotMarker") then 
+                        attacker:TriggerEnzyme(4)
+                        attacker:AddEnergy(15)
+      
+          end
      end 
         if self.OnKill then
             self:OnKill(attacker, doer, point, direction)

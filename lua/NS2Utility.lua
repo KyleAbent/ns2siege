@@ -1977,9 +1977,9 @@ end
 
 // All damage is routed through here.
 function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, damageType)
-
+   
     if GetGameInfoEntity():GetState() == kGameState.NotStarted then
-        return false
+        return not ( target:isa("CommandStructure") and target:GetIsBuilt() )
     end
     
     if target:isa("Clog") then
@@ -2016,23 +2016,39 @@ function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, da
         return true
     end
     
-    // Your own grenades can hurt you.
+
+    
     if attacker:isa("Grenade") then
     
         local owner = attacker:GetOwner()
         if owner and owner:GetId() == target:GetId() then
-            return true
+            return false
         end
         
     end
+    
     
     // Same teams not allowed to hurt each other unless friendly fire enabled.
     local teamsOK = true
     if attacker ~= nil then
         teamsOK = GetAreEnemies(attacker, target) or friendlyFire
     end
-    
-    // Allow damage of own stuff when testing.
+                                                                         //So aliens can dmg it :P
+    if attacker and attacker:isa("Player") and target and not target:isa("FuncDoor") then //and target.GetOrigin
+     local funcdoor = GetEntitiesWithinRange("FuncDoor", attacker:GetOrigin(), 12)
+       if funcdoor then
+        
+         local viewAngles = attacker:GetViewAngles()
+        local viewCoords = viewAngles:GetCoords()
+        local endPoint = attacker:GetEyePos() + viewCoords.zAxis + 12
+           
+       // if Server then origin = target:GetOrigin() end
+    local tracey = Shared.TraceRay(attacker:GetEyePos(), endPoint, CollisionRep.Damage, PhysicsMask.FuncMoveable, EntityFilterAllButIsa("FuncDoor"))  
+     if tracey.entity ~= nil then 
+         return false
+     end
+    end
+    end
     return teamsOK
     
 end

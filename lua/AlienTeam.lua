@@ -587,7 +587,7 @@ local function UpdateAlienSpectators(self)
         
             local alienSpectator = alienSpectators[i]
             // Do not spawn players waiting in the auto team balance queue.
-            if alienSpectator:isa("AlienSpectator") and not alienSpectator:GetIsWaitingForTeamBalance() and self:GetHasAbilityToRespawn() then
+            if alienSpectator:isa("AlienSpectator") and self:GetHasAbilityToRespawn() then
             
                 // Consider min death time.
                 if alienSpectator:GetRespawnQueueEntryTime() + kAlienSpawnTime < Shared.GetTime() then

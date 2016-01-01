@@ -88,13 +88,13 @@ Shine.VoteMenu:AddPage ("SpendExpensive", function( self )
   // self:AddSideButton( "ResPoint(100)", function() Shared.ConsoleCommand ("sh_buy ResPoint")  end)  
     self:AddSideButton( "Extractor(150)", function() Shared.ConsoleCommand ("sh_buy Extractor")  end)  
    // self:AddSideButton( "TechPoint(2k)", function() Shared.ConsoleCommand ("sh_buy TechPoint")  end)    
-    self:AddSideButton( "CommandStation(4k)", function() Shared.ConsoleCommand ("sh_buy CommandStation")  end)
+  //  self:AddSideButton( "CommandStation(4k)", function() Shared.ConsoleCommand ("sh_buy CommandStation")  end)
   //  self:AddSideButton( "Custom Badge(1k)", function() Shared.ConsoleCommand ("sh_buy Badge")  end)
         elseif player:GetTeamNumber() == 2 then
    //  self:AddSideButton( "ResPoint(100)", function() Shared.ConsoleCommand ("sh_buy ResPoint")  end)  
      self:AddSideButton( "Harvester(150)", function() Shared.ConsoleCommand ("sh_buy Harvester")  end) 
    //  self:AddSideButton( "TechPoint(2k)", function() Shared.ConsoleCommand ("sh_buy TechPoint")  end)    
-     self:AddSideButton( "Hive(4k)", function() Shared.ConsoleCommand ("sh_buy Hive")  end)
+     //self:AddSideButton( "Hive(4k)", function() Shared.ConsoleCommand ("sh_buy Hive")  end)
      //self:AddSideButton( "Custom Badge(1000)", function() Shared.ConsoleCommand ("sh_buy BadgeA")  end)
     end
 

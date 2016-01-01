@@ -320,9 +320,7 @@ function Marine:OnInitialized()
     
     if Server then
     
-        //self.armor = self:GetArmorAmount()
-       // self.maxArmor = self.armor
-       
+
         self:SetArmorAmount()
         
         // This Mixin must be inited inside this OnInitialized() function.
@@ -390,14 +388,15 @@ end
 function Marine:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
 	local scale = self.modelsize
-	local hmgscale = self.heavyarmor and 1.3 or 1
+	local hmgscale = self.heavyarmor and 1.5 or 1
         coords.xAxis = (coords.xAxis * scale) * hmgscale
         coords.yAxis = (coords.yAxis * scale) 
         coords.zAxis = (coords.zAxis * scale) * hmgscale
     return coords
 end
 function Marine:SetArmorAmount()
-    local newMaxArmor = (Marine.kBaseArmor + self:GetArmorLevel() * Marine.kArmorPerUpgradeLevel) + ConditionalValue(self.heavyarmor, 30, 0)
+    local newMaxArmor = (Marine.kBaseArmor + self:GetArmorLevel() * Marine.kArmorPerUpgradeLevel)
+     newMaxArmor =  ConditionalValue(self.heavyarmor, newMaxArmor * 2, newMaxArmor)
     self:AdjustMaxArmor(newMaxArmor)
    // Print("armor is %s", newMaxArmor)
 end
@@ -504,26 +503,7 @@ function Marine:FindNearbyAutoPickupWeapon()
 		
 		return closestWeapon
 end
-function Marine:GetArmorAmount(armorLevels)
 
-    if not armorLevels then
-    
-        armorLevels = 0
-    
-        if GetHasTech(self, kTechId.Armor3, true) then
-            armorLevels = 3
-        elseif GetHasTech(self, kTechId.Armor2, true) then
-            armorLevels = 2
-        elseif GetHasTech(self, kTechId.Armor1, true) then
-            armorLevels = 1
-        end
-    
-    end
-
-    
-    return (Marine.kBaseArmor + armorLevels * Marine.kArmorPerUpgradeLevel) + ConditionalValue(self.heavyarmor, 30, 0)
-    
-end
 function Marine:GetHasHMG()
         local weapon = self:GetWeaponInHUDSlot(1)
         local hmg = false
@@ -535,6 +515,7 @@ function Marine:GetHasHMG()
     
     return hmg
 end
+
 function Marine:GetNanoShieldOffset()
     return Vector(0, -0.1, 0)
 end
@@ -676,14 +657,15 @@ end
 function Marine:GetMaxSpeed(possible)
   // Marine.kRunMaxSpeed = Marine.kRunMaxSpeed * ConditionalValue(self.heavyarmor, Marine.kRunMaxSpeed * 1.3, 1)
   // Marine.kWalkMaxSpeed = Marine.kWalkMaxSpeed * ConditionalValue(self.heavyarmor, Marine.kWalkMaxSpeed * 1.3, 1)
-  local heavyarmor = self.heavyarmor and 1.3 or 1
+  local heavyarmor = self.heavyarmor and 1.7 or 1
+     heavyarmor = self:GetHasHMG() and heavyarmor * 1.30 or 1
     if possible then
-        return Marine.kRunMaxSpeed * heavyarmor
+        return Marine.kRunMaxSpeed / heavyarmor
     end
 
-    local sprintingScalar = self:GetSprintingScalar() * heavyarmor
+    local sprintingScalar = self:GetSprintingScalar()
     local maxSprintSpeed = Marine.kWalkMaxSpeed + (Marine.kRunMaxSpeed - Marine.kWalkMaxSpeed)*sprintingScalar
-    local maxSpeed = ConditionalValue(self:GetIsSprinting(), maxSprintSpeed, Marine.kWalkMaxSpeed)
+    local maxSpeed = ConditionalValue(self:GetIsSprinting(), maxSprintSpeed, Marine.kWalkMaxSpeed) / heavyarmor
     
     // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
     local inventorySpeedScalar = self:GetInventorySpeedScalar() + .17    
@@ -715,7 +697,7 @@ function Marine:GetControllerPhysicsGroup()
 end
 
 function Marine:GetJumpHeight()
-    return Player.kJumpHeight - Player.kJumpHeight * self.slowAmount * 0.8
+    return  ( (Player.kJumpHeight - Player.kJumpHeight * self.slowAmount * 0.8) / ConditionalValue(self.heavyarmor, 2, 1) ) * ConditionalValue(self.hasjumppack, 4, 1)
 end
 
 function Marine:GetCanBeWeldedOverride()

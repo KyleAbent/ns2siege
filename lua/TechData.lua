@@ -651,7 +651,7 @@ function BuildTechData()
                              { [kTechDataId] = kTechId.HeavyArmor,   
        [kTechDataTooltipInfo] = "Heavy Armor", 
           [kTechDataDisplayName] = "Heavy Armor",  
-     [kTechDataCostKey] = 8, },
+     [kTechDataCostKey] = 10, },
         
              { [kTechDataId] = kTechId.HeavyMachineGun,   
        [kTechDataMaxHealth] = kMarineWeaponHealth,
@@ -1419,7 +1419,7 @@ function BuildTechData()
         [kTechDataDisplayName] = "Hunger", 
       [kTechDataSponitorCode] = "B",  
       [kTechDataCostKey] = 2, 
-     [kTechDataTooltipInfo] = "On Player Kill: +10% HP heal and effects of Primal Scream for 8 seconds or unntil on fire", },
+     [kTechDataTooltipInfo] = "On Player Kill: +10% HP heal and effects of Primal Scream for 8 seconds or unntil on fire. For Gorges: Enzyme on structure kill for 4s and +15 energy", },
    
 
              { [kTechDataId] = kTechId.Focus, 
@@ -1427,7 +1427,7 @@ function BuildTechData()
         [kTechDataDisplayName] = "Focus", 
       [kTechDataSponitorCode] = "B",  
       [kTechDataCostKey] = kRebirthCost, 
-     [kTechDataTooltipInfo] = "1st slot weapon and primary fire only (and healspray) - Each level of biomass slows attack rate by 2.75 percent and increases damage (or healspray) by 4.16 percent", },
+     [kTechDataTooltipInfo] = "1st slot weapon and primary fire only (and bilebomb/healspray) - Each level of biomass slows attack rate by 2.75 percent and increases damage (or healspray) by 4.16 percent", },
   
         { [kTechDataId] = kTechId.Carapace,       [kTechDataCategory] = kTechId.CragHive,    [kTechDataDisplayName] = "CARAPACE",       [kTechDataSponitorCode] = "C",   [kTechDataCostKey] = kCarapaceCost, [kTechDataTooltipInfo] = "CARAPACE_TOOLTIP", },
         { [kTechDataId] = kTechId.Regeneration,   [kTechDataCategory] = kTechId.CragHive,    [kTechDataDisplayName] = "REGENERATION",   [kTechDataSponitorCode] = "R",   [kTechDataCostKey] = kRegenerationCost, [kTechDataTooltipInfo] = "REGENERATION_TOOLTIP", },

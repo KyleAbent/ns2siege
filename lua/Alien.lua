@@ -309,7 +309,7 @@ local level = 1
         local healthPercent = self.maxHealth > 0 and self.health/self.maxHealth or 0
         self:SetMaxHealth(newMaxHealth)
         
-         if GetHasRebirthUpgrade(newPlayer) then
+         if GetHasRebirthUpgrade(self) then
               healthPercent = healthPercent * .5
            end
            
@@ -785,7 +785,8 @@ function Alien:QualifiesForFocus()   //Funny this method doesnt allow healspray 
       if stomping then return false end
            if self:isa("Gorge") then
        if
-       ( self:GetActiveWeapon():isa("SpitSpray") ) or 
+       ( self:GetActiveWeapon():isa("SpitSpray") ) or
+    ( self:GetActiveWeapon():isa("BileBomb") ) or  
        self:GetActiveWeapon().secondaryAttacking then
         return true
         end

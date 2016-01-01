@@ -69,9 +69,9 @@ InfantryPortal.kLoginAttachPoint = "keypad"
 local kPushRange = 3
 local kPushImpulseStrength = 40
 
-local kInfantryPortalGainXP = 1
-local kInfantryPortalMaxLevel = 30
-InfantryPortal.GainXp = .25
+local kInfantryPortalGainXP = 0.25
+local kInfantryPortalMaxLevel = 10
+InfantryPortal.GainXp = .025
 
 local networkVars =
 {
@@ -135,7 +135,7 @@ local function CreateSpinEffect(self)
         self.clientQueuedPlayerId = self.queuedPlayerId
     end
     
-    local spawnProgress = Clamp((Shared.GetTime() - self.timeSpinStarted) / self:GetSpawnTime(), 0, 1)
+    local spawnProgress = Clamp((Shared.GetTime() - self.timeSpinStarted) / kMarineRespawnTime, 0, 1)
     
     self.fakeMarineModel:SetIsVisible(true)
     self.fakeMarineMaterial:SetParameter("spawnProgress", spawnProgress+0.2)    // Add a little so it always fills up
@@ -332,7 +332,7 @@ function InfantryPortal:GetLevel()
 end
   function InfantryPortal:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Level %s Infantry Portal"), self:GetLevel())
+    unitName = string.format(Locale.ResolveString("Level %s Infantry Portal (%s seconds)"), self:GetLevel(), kMarineRespawnTime)
 return unitName
 end  
 function InfantryPortal:GetAddXPAmount()
@@ -408,11 +408,17 @@ end
 function InfantryPortal:GetReceivesStructuralDamage()
     return true
 end
-
 function InfantryPortal:GetSpawnTime()
-    return ( kMarineRespawnTime - (self.level/100) * kMarineRespawnTime)
+local fair = kMarineRespawnTime
+ // Print("fair is %s", fair)
+//if Server then
+// fair = GetFairRespawnLength()
+//   Print("fair is %s", fair)
+//end
+    local length = ( fair - (self.level/100) * fair)
+      // Print("respawn length is %s", length)
+    return length
 end
-
 function InfantryPortal:OnReplace(newStructure)
     newStructure.queuedPlayerId = self.queuedPlayerId
 end

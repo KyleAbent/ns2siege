@@ -31,7 +31,7 @@ function MarineBuy_GetWeaponDescription(techId)
         gWeaponDescription[kTechId.Jetpack] = "WEAPON_DESC_JETPACK"
         gWeaponDescription[kTechId.JumpPack] = "Mimics the NS1/HL1 JumpPack (With Attempted Balance Modifications WIP) - Press DUCK + Jump @ the same time to mindfuck the alien team."
         gWeaponDescription[kTechId.Resupply] = "Checks if you need a medpack and/or ammopack every 10 seconds. Spawns 1 of each or both for up to 5 times. After the 5th time, you must rebuy."
-        gWeaponDescription[kTechId.HeavyArmor] = "Avoca slacks off too much. Avoca is lazy. Avoca doesnt want to write this description. We should poke him."
+        gWeaponDescription[kTechId.HeavyArmor] = "+2x Armor, 2x Slower Movement Speed, +50% modelsize 2x lower jump height. Cannot Stack with Jetpack, Jumppack."
         gWeaponDescription[kTechId.Exosuit] = "WEAPON_DESC_EXO"
         gWeaponDescription[kTechId.DualMinigunExosuit] = "WEAPON_DESC_DUALMINIGUN_EXO"
         gWeaponDescription[kTechId.UpgradeToDualMinigun] = "WEAPON_DESC_DUALMINIGUN_EXO"
@@ -338,17 +338,6 @@ function MarineBuy_GetCosts(techId)
             end
             return minResCost
         end
-        /*
-       elseif techId == kTechId.Jetpack then
-                       local minResCost = 1337
-         for moduleType, moduleTypeName in ipairs(kJetpackModuleTypes) do
-            local moduleTypeData = kJetpackModuleTypesData[moduleType]
-            if moduleTypeData and moduleTypeData.category == kJetpackModuleCategories.PowerSupply then
-                minResCost = math.min(minResCost, moduleTypeData.resourceCost)
-            end
-                        return minResCost
-        end
-        */
         end
     
         return LookupTechData(techId, kTechDataCostKey, 0)

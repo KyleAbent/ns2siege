@@ -300,7 +300,9 @@ function ConstructMixin:Construct(elapsedTime, builder)
             local modifier = (self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
             modifier = modifier * kDynamicBuildSpeed 
             modifier = modifier * ConditionalValue(self:SetupAdvantage(), 2, 1)
-            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), .3, 1)
+            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), .7, 1)
+            modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType, kMapStatsMarineBuild, 1)
+            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType, kMapStatsAlienBuild, 1)
             local startBuildFraction = self.buildFraction
             local newBuildTime = self.buildTime + elapsedTime * modifier
             local timeToComplete = self:GetTotalConstructionTime()            
@@ -537,21 +539,28 @@ function ConstructMixin:GetBuiltFraction()
 end
 function ConstructMixin:GetTotalConstructionTime()      
              //Remember the dynamic mult of buildspeed is applying during after front and even greater bonus during setup
-   local marineadvantage = 4
+   local marineadvantage = 12
 
    
    if Server then
           local gameRules = GetGamerules()
             if gameRules then
                  if  gameRules:GetSiegeDoorsOpen() then
-                    marineadvantage = self:GetTeamNumber() == 1 and 4 or 9
+                    marineadvantage = self:GetTeamNumber() == 1 and 4 or 8
                      if self:isa("Hive") then
-                      marineadvantage = marineadvantage * 8
+                      marineadvantage = marineadvantage * 4
                      end
                  elseif gameRules:GetFrontDoorsOpen() then
                     marineadvantage = self:GetTeamNumber() == 1 and 8 or 12
                  else //setup
-                  marineadvantage =  self:GetTeamNumber() == 1 and 2 or 8
+                  marineadvantage =  self:GetTeamNumber() == 1 and 4 or 8
+                  
+                            //Troll hive in marine base gamebreaking with eggs :P
+                      if self:isa("Hive") and not self:IsInRangeOfHive() then
+                      marineadvantage = marineadvantage * 12
+                     end
+                     
+                     
                   end
              end  
    end
@@ -561,6 +570,11 @@ function ConstructMixin:GetTotalConstructionTime()
  
     return marineadvantage
     
+end
+function ConstructMixin:IsInRangeOfHive()
+      local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), kARCRange)
+   if #hives >=1 then return true end
+   return false
 end
 if Server then
 

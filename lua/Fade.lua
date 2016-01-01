@@ -59,8 +59,8 @@ local kFadeScanDuration = 4
 
 
 
-local kMaxSpeed = 6.2
-local kBlinkSpeed = 14
+local kMaxSpeed = 8 //6.2
+local kBlinkSpeed = 16 //14
 local kBlinkAcceleration = 40
 local kBlinkAddAcceleration = 1
 local kMetabolizeAnimationDelay = 0.65
@@ -68,7 +68,7 @@ local kMetabolizeAnimationDelay = 0.65
 // Delay before you can blink again after a blink.
 local kMinEnterEtherealTime = 0.4
 
-local kFadeGravityMod = 1.0
+local kFadeGravityMod = 1.3 //1.0
 
 if Server then
     Script.Load("lua/Fade_Server.lua")

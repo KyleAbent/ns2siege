@@ -10,7 +10,11 @@
 
 Script.Load("lua/GUIAnimatedScript.lua")
 
+
 class 'GUIMarineBuyMenu' (GUIAnimatedScript)
+
+//////////////////////Modular
+
 
 
 GUIMarineBuyMenu.kMenuWidth = GUIScale(190)
@@ -41,11 +45,6 @@ GUIMarineBuyMenu.kWeaponImageSize = GUIScale(Vector(80, 40, 0))
 GUIMarineBuyMenu.kUtilityImageSize = GUIScale(Vector(39, 39, 0))
 GUIMarineBuyMenu.kModuleButtonGap = GUIScale(7)
 GUIMarineBuyMenu.kPanelTitleHeight = GUIScale(35)
-
-
-
-
-
 
 GUIMarineBuyMenu.kExoSlotData = {
    /* [kExoModuleSlots.PowerSupply] = {
@@ -81,9 +80,38 @@ GUIMarineBuyMenu.kExoSlotData = {
         end,
     },
 }
+/////////////////////////////////
 
+/*
+GUIMarineBuyMenu.kJetpackSlotData = {
+    StatusPanel = { -- the one that shows weight and power usage
+        label = nil,
+        xp = 0, yp = 0, anchorX = GUIItem.Left,
+    },
+    [kJetpackModuleSlots.LeftArm] = {
+        label = "LEFT ARM",--label = "EXO_MODULESLOT_RIGHT_ARM",
+        xp = 0, yp = 0.08, anchorX = GUIItem.Left, gap = GUIMarineBuyMenu.kModuleButtonGap*0.5,
+        makeButton = function(self, moduleType, moduleTypeData, offsetX, offsetY)
+            return self:MakeWeaponModuleButton(moduleType, moduleTypeData, offsetX, offsetY, kJetpackModuleSlots.LeftArm)
+        end,
+    },
+    [kJetpackModuleSlots.RightArm] = {
+        label = "RIGHT ARM",--label = "EXO_MODULESLOT_LEFT_ARM",
+        xp = 1, yp = 0.08, anchorX = GUIItem.Right, gap = GUIMarineBuyMenu.kModuleButtonGap*0.5,
+        makeButton = function(self, moduleType, moduleTypeData, offsetX, offsetY)
+            return self:MakeWeaponModuleButton(moduleType, moduleTypeData, offsetX, offsetY, kJetpackModuleSlots.RightArm)
+        end,
+    },
+  [kJetpackModuleSlots.Utility] = {
+        label = "UTILITY",--label = "EXO_MODULESLOT_UTILITY",
+        xp = 0.23, yp = 0.62, anchorX = GUIItem.Left, gap = GUIMarineBuyMenu.kModuleButtonGap,
+        makeButton = function(self, moduleType, moduleTypeData, offsetX, offsetY)
+            return self:MakeUtilityModuleButton(moduleType, moduleTypeData, offsetX, offsetY)
+        end,
+    },
+}
 
-
+*/
 
 GUIMarineBuyMenu.kBuyMenuTexture = "ui/marine_buy_textures.dds"
 GUIMarineBuyMenu.kBuyHUDTexture = "ui/marine_buy_icons.dds"
@@ -138,7 +166,6 @@ local function GetBigIconPixelCoords(techId, researched)
         gBigIconIndex[kTechId.ClusterGrenade] = 12
         gBigIconIndex[kTechId.GasGrenade] = 13
         gBigIconIndex[kTechId.PulseGrenade] = 14
-        
         
     
     end
@@ -226,9 +253,11 @@ function GUIMarineBuyMenu:SetHostStructure(hostStructure)
     self.hostStructure = hostStructure
     self:_InitializeItemButtons()
     
-           if hostStructure:isa("PrototypeLab") then
+       if hostStructure:isa("PrototypeLab") then
        self:_InitializeExoModularButtons()
         self:_RefreshExoModularButtons()
+        //self:_InitializeJetpackModularButtons()
+      //  self:_RefreshJetpackModularButtons()
     end
     
 end
@@ -368,7 +397,7 @@ function GUIMarineBuyMenu:Update(deltaTime)
     self:_UpdateResourceDisplay(deltaTime)
     self:_UpdateCloseButton(deltaTime)
     self:_UpdateExoModularButtons(deltaTime)
-    
+  //  self:_UpdateJetpackModularButtons(deltaTime)
 end
 
 function GUIMarineBuyMenu:Uninitialize()
@@ -704,7 +733,6 @@ end
 
 function GUIMarineBuyMenu:_UpdateContent(deltaTime)
 
-
     if self.hoverItem == kTechId.Exosuit or (self.hoverItem == nil and self.hoveringExo) then
         self.hoveringExo = true
         self.portrait:SetIsVisible(true)
@@ -898,7 +926,8 @@ function GUIMarineBuyMenu:_GetResearchInfo(techId)
 end
 
 local function HandleItemClicked(self, mouseX, mouseY)
-   /*
+
+/*
     if self.itemButtons then
         for i = 1, #self.itemButtons do
         
@@ -927,7 +956,7 @@ local function HandleItemClicked(self, mouseX, mouseY)
     return false, false
     */
     
-      ///modular
+    ///modular
             for i = 1, #self.itemButtons do
             local item = self.itemButtons[i]
             if item.TechId ~= kTechId.Exosuit and GetIsMouseOver(self, item.Button) then
@@ -1025,14 +1054,13 @@ function GUIMarineBuyMenu:SendKeyEvent(key, down)
     
 end
 
-
 function  GUIMarineBuyMenu:_InitializeExoModularButtons()
     self.activeExoConfig = nil
     local player = Client.GetLocalPlayer()
     if player and player:isa("Exo") then
         self.activeExoConfig = ModularExo_ConvertNetMessageToConfig(player)
         local isValid, badReason, resourceCost, powerSupply = ModularExo_GetIsConfigValid(self.activeExoConfig)
-        self.activeExoConfigResCost = resourceCost or 0
+        self.activeExoConfigResCost = resourceCost
         self.activeExoConfigPowerSupply = powerSupply
         self.exoConfig = self.activeExoConfig
     else

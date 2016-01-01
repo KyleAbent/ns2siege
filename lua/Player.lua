@@ -327,7 +327,7 @@ function Player:OnCreate()
         self.name = ""
         self.giveDamageTime = 0
         self.sendTechTreeBase = false
-        self.waitingForAutoTeamBalance = false
+        //self.waitingForAutoTeamBalance = false
         
     end
     
@@ -1046,7 +1046,7 @@ function Player:GetGravity()
 return self.gravity
 end
 function Player:JumpPackNotGravity()
-self.gravity = 0
+self.gravity = ConditionalValue(self:isa("Onos"), 1, 0)
 end
 function Player:ModifyGravityForce(gravityTable)
 
@@ -2381,9 +2381,9 @@ end
 function Player:SetCommunicationStatus(status)
     self.communicationStatus = status
 end
-
+/*
 if Server then
-
+     
     function Player:SetWaitingForTeamBalance(waiting)
     
         self.waitingForAutoTeamBalance = waiting
@@ -2393,11 +2393,11 @@ if Server then
     end
     
     function Player:GetIsWaitingForTeamBalance()
-        return self.waitingForAutoTeamBalance
+        return false //self.waitingForAutoTeamBalance
     end
     
 end
-
+*/
 function Player:GetPositionForMinimap()
 
     local tunnels = GetEntitiesWithinRange("Tunnel", self:GetOrigin(), 30)

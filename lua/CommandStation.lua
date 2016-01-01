@@ -116,11 +116,11 @@ function CommandStation:GetIsWallWalkingAllowed()
     return false
 end
 function CommandStation:GetCanBeWeldedOverride()
-return self:GetIsSuddenDeath()
+return not self:GetIsSuddenDeath()
 end
 function CommandStation:GetAddConstructHealth()
 
-return self:GetIsSuddenDeath()
+return not self:GetIsSuddenDeath()
 end
 function CommandStation:GetCanBeNanoShieldedOverride()
 return not self:GetIsVortexed()
@@ -163,7 +163,7 @@ function CommandStation:GetUsablePoints()
 end
 
 function CommandStation:GetTechButtons()
-    return { kTechId.None, kTechId.None } //kTechId.BluePrintTech }
+    return { kTechId.None, kTechId.Recycle } //kTechId.BluePrintTech }
 end
 function CommandStation:ModifyDamageTaken(damageTable, attacker, doer, damageType)
 
@@ -222,17 +222,18 @@ function CommandStation:GetTechAllowed(techId, techNode, player)
     return allowed, canAfford
     
 end
-function CommandStation:OnUpdate(deltaTime)
+function CommandStation:OnConstructionComplete()
+self:AddTimedCallback(CommandStation.UpdateManually, kBeaconDelay)
+end
+function CommandStation:UpdateManually()
    if Server then 
-      if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + kBeaconDelay < Shared.GetTime() then 
       if not self:GetIsVortexed() and self:GetIsBuilt() then self:UpdateBeacons() end
     self:UpdatePassive() 
-     self.timeLastUpdatePassiveCheck = Shared.GetTime()
-      end
     end
+    
+    return true
 end
 function CommandStation:UpdateBeacons()
- if not self:GetTeam() then return end
   local time = self:GetTeam():GetBeacons()
   
     if time then
@@ -286,7 +287,7 @@ function CommandStation:UseBeacon()
                 self:GetTeam():DeductBeacon()
                 
                 
-            local onteam = self:GetTeam():GetNumPlayers()
+            local onteam = self:GetNumPlayers()
             
              local gameRules = GetGamerules()
            local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
@@ -300,14 +301,24 @@ function CommandStation:UseBeacon()
                 player.timeLastBeacon = Shared.GetTime()
                 beaconed = beaconed + 1
                 else
-                player:GetTeam():ReplaceRespawnPlayer(player, self:FindFreeSpace(), 0, nil, true) 
                 player:SetCameraDistance(0)
+                player:GetTeam():ReplaceRespawnPlayer(player, self:FindFreeSpace(), player:GetAngles(), nil, true) 
                 player.timeLastBeacon = Shared.GetTime()
                 beaconed = beaconed + 1
                 end
            end  
     Print("CommandStation HP: %s, Players on team: %s, Eligable for beacon: %s, ", self:GetHealthScalar(), onteam, scalar, beaconed)
    
+end
+function CommandStation:GetNumPlayers()
+local marines = 0
+
+               for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+                          if entity:GetTeamNumber() == 1 and not entity:isa("Commander") then
+                            marines = marines +1
+                          end
+               end
+               return marines
 end
     function CommandStation:FindFreeSpace()
     
@@ -342,9 +353,9 @@ function CommandStation:ExperimentalBeacon(anotheramt)
 end
 function CommandStation:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-    if  GetHasTech(self, kTechId.NanoShieldTech) or not  GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
+    if  GetHasTech(self, kTechId.NanoShieldTech) or not  GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return true end
     local commander = GetCommanderForTeam(1)
-    if not commander then return end
+    if not commander then return true end
     
 
     local techid = nil
@@ -354,7 +365,7 @@ function CommandStation:UpdatePassive()
     elseif GetHasTech(self, kTechId.MinesTech) and not GetHasTech(self, kTechId.NanoShieldTech) then
     techid = kTechId.NanoShieldTech
     else
-       return  
+       return  true
     end
     
    local techNode = commander:GetTechTree():GetTechNode( techid ) 

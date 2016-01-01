@@ -183,18 +183,18 @@ function Veil:GetLocationName()
         return locationName
 end
     function Veil:OnConstructionComplete()
-     local isinsiege = string.find(self:GetLocationName(), "Siege") or string.find(self:GetLocationName(), "siege")
-      if not isinsiege then
-        self:AddTimedCallback(TimeUp, kLifeSpan + 0.5)  
-        self:TeleportFractionHere()
+     //local isinsiege = string.find(self:GetLocationName(), "Siege") or string.find(self:GetLocationName(), "siege")
+     // if not isinsiege then
+     //   self:AddTimedCallback(TimeUp, kLifeSpan + 0.5)  
+     //   self:TeleportFractionHere()
          self:AddTimedCallback(function()  self:TeleportFractionHere() end, 4)
         self:AddTimedCallback(function()  self:TeleportFractionHere() end, 8)
         self:AddTimedCallback(function()  self:TeleportFractionHere() end, 12)
         self:AddTimedCallback(function()  self:TeleportFractionHere() end, 16)
-      else
-          self:AddTimedCallback(function()  self:TeleportFractionHere() end, 8)
-          self:AddTimedCallback(function()  self:TeleportFractionHere() end, 16)
-      end
+     // else
+          //self:AddTimedCallback(function()  self:TeleportFractionHere() end, 8)
+         // self:AddTimedCallback(function()  self:TeleportFractionHere() end, 16)
+      //end
     end
     function Veil:TeleportFractionHere()
       local eligable = {}

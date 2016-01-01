@@ -865,7 +865,7 @@ if Server then
         end
         
     end
-    
+    /*
     local function UpdateAutoTeamBalance(self, dt)
     
         local wasDisabled = false
@@ -935,7 +935,7 @@ if Server then
         end
         
     end
-    
+    */
     local function CheckForNoCommander(self, onTeam, commanderType)
 
         self.noCommanderStartTime = self.noCommanderStartTime or { }
@@ -1141,7 +1141,7 @@ function NS2Gamerules:OnUpdate(timePassed)
                 self:UpdateToReadyRoom()
                 self:UpdateMapCycle()
                 ServerAgeCheck(self)
-                UpdateAutoTeamBalance(self, timePassed)
+                //UpdateAutoTeamBalance(self, timePassed)
                 
                 self.timeSinceGameStateChanged = self.timeSinceGameStateChanged + timePassed
                 
@@ -1849,7 +1849,7 @@ function NS2Gamerules:MainRoomSD()
                         for _, CC in ientitylist(Shared.GetEntitiesWithClassname("CommandStation")) do
                              CreatePheromone(kTechId.ThreatMarker, CC:GetOrigin(), 2) 
                              local powerpoint = GetPowerPointForLocation(CC:GetLocationName())
-                            if powerpoint ~= nil then powerpoint:SetMainRoom() end
+                            if powerpoint ~= nil then powerpoint:SetMainRoom() powerpoint:AttackDefendWayPoint() end
                         end
                         for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
                              hive:MarineOrders() 
@@ -1937,7 +1937,11 @@ function NS2Gamerules:CollectResources()
          if player:GetTeamNumber() == 1 then
             player:AddResources(kPlayerResPerInterval * extractors)
          elseif player:GetTeamNumber() == 2 then
-           player:AddResources(kPlayerResPerInterval * harvesters)
+             local alienres = kPlayerResPerInterval
+             if self:GetGameStarted() and not self.doorsopened then
+                 alienres = alienres * 1.3
+             end
+           player:AddResources(alienres * harvesters)
          end
 
     end
@@ -2075,17 +2079,18 @@ self.issuddendeath = true
                  SendTeamMessage(self.team1, kTeamMessageTypes.SuddenDeath)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SuddenDeath)
                  
-                 
+                
                for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
                 if entity:GetTeamNumber() == 1 or entity:GetTeamNumber() == 2 then
-                  if not entity:GetIsAlive() then
-                  entity:GetTeam():ReplaceRespawnPlayer(entity)
-                  entity:SetCameraDistance(0)
-                  end //
+                 // if not entity:GetIsAlive() then
+                 // entity:GetTeam():ReplaceRespawnPlayer(entity)
+                 // entity:SetCameraDistance(0)
+                 // end //
                   StartSoundEffectForPlayer(NS2Gamerules.kSuddenDeathSound, entity)
-                  entity:SetResources(100)
+                //  entity:SetResources(100)
                 end //
               end //
+              
 end
 function NS2Gamerules:ToggleMarineZedTime()
 

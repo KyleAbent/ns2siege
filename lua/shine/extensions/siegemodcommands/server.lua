@@ -6,6 +6,7 @@ local Plugin = Plugin
 
 
 Plugin.Version = "1.0"
+Shine.Hook.SetupClassHook( "PowerPoint", "UpdateMiniMap", "UpdateItMan", "Replace" )
 Shine.Hook.SetupClassHook( "MAC", "Notifyuse", "ReplaceUse", "Replace" )
 Shine.Hook.SetupClassHook( "CommandStation", "ExperimentalBeacon", "PrintInfo", "Replace" )
 Shine.Hook.SetupClassHook( "Alien", "OnRedeem", "OnRedemedHook", "PassivePre" )
@@ -23,6 +24,13 @@ self.playersize = {}
 self.GlowClientsTime = {}
 self.GlowClientsColor = {}
 return true
+end
+function Plugin:UpdateItMan()
+        for _, player in ipairs( GetEntitiesWithMixin( "Player" ) ) do
+         if player:GetTeamNumber() == 1 or player:GetTeamNumber() == 2 and not player:GetIsVirtual() then
+         Shared.ConsoleCommand("setmaplocationcolor")
+         end
+        end
 end
 function Plugin:ReplaceUse(player)
 

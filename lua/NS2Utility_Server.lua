@@ -533,6 +533,55 @@ local level = 1
         level = level * (kActivePlayers/24)
        return level 
 end
+function GetFairRespawnLength()
+//Kyle Abent disabled team balance for fair respawn length for marine side only at the moment test 12.31 16
+local default = kMarineRespawnTime
+ local gameRules = GetGamerules()
+ if not gameRules:GetGameStarted() then return kMarineRespawnTime end 
+      local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
+             Print("roundlength is %s", roundlength)
+      roundlength = Clamp(roundlength/kSiegeDoorTime, 0.1, 2) //So dependent on roundlength
+             Print("roundlength is %s", roundlength)
+        roundlength = roundlength * (kActivePlayers/24) + roundlength   //And playercount
+              Print("roundlength is %s", roundlength)
+        default = kMarineRespawnTime * roundlength // applied
+              Print("default is %s", default)
+        
+        //Now TeamBalance
+            local team1Players = gameRules.team1:GetNumPlayers()
+                          Print("team1Players is %s", team1Players)
+            local team2Players = gameRules.team2:GetNumPlayers()
+                          Print("team2Players is %s", team2Players)
+        local allplayers = team1Players + team2Players
+                           Print("allplayers is %s", allplayers)
+                  //Check for how many unbalanced by
+            local thismanyplayers = 0
+            local unbalancedAmount = math.abs(team1Players - team2Players)
+                                Print("unbalancedAmount is %s", unbalancedAmount)       
+            if unbalancedAmount >= 1 then
+                 thismanyplayers = unbalancedAmount
+                 Print("thismanyplayers is %s", thismanyplayers)   
+            end
+              //Add this # to top over the clamp of a respawn timer otherwise adjusted by playercount and roundlength
+                 
+       local beforebalance = Clamp(default, kMarineRespawnTime * 0.5, kMarineRespawnTime * 2)
+                       Print("beforebalance is %s", beforebalance)    
+       if thismanyplayers ~= 0 then 
+                  Print("thismanyplayers is %s", thismanyplayers)  
+           default = beforebalance 
+           Print("default is %s", default)  
+       else
+             Print("thismanyplayers is %s, return beforebalance which is", thismanyplayers, beforebalance)  
+           return Clamp(beforebalance, 4, 16)
+       end
+       
+        //so team balance is applied 3
+        local afterbalance = 2
+        afterbalance = team1Players > team2Players and Clamp(default * math.max(unbalancedAmount, 1.10), 4, 16) or afterbalance
+        afterbalance = team2Players > team1Players and Clamp(default / math.max(unbalancedAmount, 1.10), 4, 16) or afterbalance
+         Print("afterbalance is %s, return afterbalance", afterbalance)  
+        return afterbalance
+end
 function GetActivePlayers()
 
             local onteam = 1

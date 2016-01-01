@@ -137,6 +137,7 @@ local function UpdateAutoOpen(self, timePassed)
         for index = 1, #entities do
             
             local entity = entities[index]
+            if not entity:isa("MAC") or not entity:isa("ARC") then break end
             local opensForEntity, openDistance = entity:GetCanDoorInteract(self)
 			
             if opensForEntity then
@@ -302,13 +303,13 @@ end
 function FuncDoor:OnWeldOverride(doer, elapsedTime, player)
 
     if self:GetCanBeWelded(doer) and not GetPowerFuncDoorRecentlyDestroyed(self) then
-    
+     local nanomult = self.nanoShielded and 1.5 or 1
         if doer:isa("MAC") then
-            self:AddHealth(MAC.kRepairHealthPerSecond * elapsedTime)
+            self:AddHealth(( MAC.kRepairHealthPerSecond * nanomult )* elapsedTime)
         elseif doer:isa("Welder") then
-            self:AddHealth(doer:GetRepairRate(self)  * elapsedTime)
+            self:AddHealth( (doer:GetRepairRate(self) * nanomult)  * elapsedTime)
        elseif doer:isa("ExoWelder") then
-            self:AddHealth( kExoPlayerWeldRate  * elapsedTime)
+            self:AddHealth( (kExoPlayerWeldRate * nanomult)  * elapsedTime)
         end
         
         if player and player.OnWeldTarget then

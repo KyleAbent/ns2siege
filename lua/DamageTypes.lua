@@ -87,7 +87,7 @@ function NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType, hitP
         
     end
         
-     if attacker:isa("Alien") and GetHasFocusUpgrade(attacker) and not doer:isa("DotMarker") then
+     if attacker:isa("Alien") and GetHasFocusUpgrade(attacker) then //and not doer:isa("DotMarker") then
       if doer:isa("Spit") or attacker:QualifiesForFocus() then
           damage =  damage + ( (damage/2) * (attacker:GetFocousLevel()) )
       end
@@ -227,18 +227,14 @@ local function ApplyAttackerModifiers(target, attacker, doer, damage, armorFract
     if doer and doer:isa("HeavyMachineGun") and target and target:isa("Player") then
           
             local dist = doer:GetDistance(target)
-            local kDistanceDropOff = 9 //Lower dmg at or further than this
-            local kDistanceGain = 6  //Increase dmg at or closer than this
-            //Print("%s", dist)        //Debug
-           // Print("%s unmodified dmg", damage) //Debug
-            if dist >= kDistanceDropOff then //Rules for distance dropoff
-            local distanceclamped = Clamp(dist - kDistanceDropOff, 1,3)//so 15 distance - 10 dropoff = 5 clamped to 3
-            damage = damage - distanceclamped  //Dmg = 7(weapons 0) - 3 = 4  ?
-            //Print("%s modified dmg", damage) //debug
-            elseif dist <= kDistanceGain then //rules for distance increase
-            local distanceclamped = Clamp(kDistanceGain-dist, 0, 2) //so 5 - 2 = 3
-            damage = damage + distanceclamped //dmg = 7+1 = 8
-            //Print("%s modified dmg", damage)  //debug
+            local kDistanceDropOff = 8 
+            local kDistanceGain = 6
+            if dist >= kDistanceDropOff then 
+            local distanceclamped = Clamp(dist - kDistanceDropOff, 1,3)
+            damage = damage - distanceclamped 
+            elseif dist <= kDistanceGain and target:isa("Onos") then 
+            local distanceclamped = Clamp(kDistanceGain-dist, 0, 2) 
+            damage = damage + distanceclamped
             end
             
    end

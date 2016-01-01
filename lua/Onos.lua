@@ -185,7 +185,9 @@ end
 function Onos:GetAcceleration()
     return 6.5
 end
-
+function Onos:JumpPackNotGravity()
+self.gravity = 1
+end
 function Onos:GetAirControl()
     return 4
 end

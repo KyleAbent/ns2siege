@@ -24,7 +24,10 @@ ParasiteMixin.optionalCallbacks =
 
 ParasiteMixin.networkVars =
 {
-    parasited = "boolean"
+    parasited = "boolean",
+    amtofparasite = "float (0 to 4 by 1)",
+    toggled = "boolean",
+
 }
 
 function ParasiteMixin:__initmixin()
@@ -33,6 +36,8 @@ function ParasiteMixin:__initmixin()
     
         self.timeParasited = 0
         self.parasited = false
+        self.amtofparasite = 0
+        self.toggled = false
         
     end
     
@@ -40,7 +45,7 @@ end
 
 function ParasiteMixin:OnTakeDamage(damage, attacker, doer, point, damageType)
 
-    if doer and ( doer:isa("Parasite") or doer:isa("XenocideLeap")) and GetAreEnemies(self, attacker) then
+    if doer and doer:isa("Parasite") and GetAreEnemies(self, attacker) then
         self:SetParasited(attacker)
     end
 
@@ -50,7 +55,7 @@ function ParasiteMixin:SetParasited(fromPlayer)
 
     if Server then
 
-        if not self.GetCanBeParasitedOverride or self:GetCanBeParasitedOverride() then
+        if not  self.GetCanBeParasitedOverride or self:GetCanBeParasitedOverride() then
         
             if not self.parasited and self.OnParasited then
             
@@ -64,8 +69,18 @@ function ParasiteMixin:SetParasited(fromPlayer)
         
             self.timeParasited = Shared.GetTime()
             self.parasited = true
-
-        end
+            
+            if HasMixin(self, "PowerConsumer") then 
+            
+                 if self.amtofparasite >= 4 then
+                      if self.powered then self:SetPowerOff() self.toggled = true end
+                  else
+                  self.amtofparasite = Clamp(self.amtofparasite + 1, 1, 4) 
+                  end
+                  
+            end
+            
+      end
     
     end
 
@@ -94,7 +109,12 @@ end
 function ParasiteMixin:RemoveParasite()
     self.parasited = false
 end
-
+function ParasiteMixin:CheckForPower()
+     local powerpoint = GetPowerPointForLocation(self:GetLocationName())
+     if powerpoint ~= nil then
+        if powerpoint:GetIsBuilt() then self.powered = true end
+     end
+end
 local function SharedUpdate(self)
 
     if Server then
@@ -107,7 +127,14 @@ local function SharedUpdate(self)
         if kParasiteDuration ~= -1 and self.timeParasited + kParasiteDuration < Shared.GetTime() then
             self.parasited = false
         end
-       
+        if self.toggled then
+       if HasMixin(self, "PowerConsumer") and Shared.GetTime() > self.timeParasited + 6 and self.amtofparasite ~= 0 then
+             self.amtofparasite = Clamp(self.amtofparasite - 1,0, 4)
+             self.toggled = false
+             self:CheckForPower()
+          end
+        end
+          
     elseif Client and not Shared.GetIsRunningPrediction() then
     
         if self:GetIsParasited() and self:GetIsAlive() and self:isa("Player") then

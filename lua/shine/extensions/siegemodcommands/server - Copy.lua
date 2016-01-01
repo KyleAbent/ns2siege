@@ -6,9 +6,14 @@ local Plugin = Plugin
 
 
 Plugin.Version = "1.0"
-
-Shine.Hook.SetupClassHook( "Alien", "OnRedemed", "OnRedemedHook", "PassivePre" )
+Shine.Hook.SetupClassHook( "PowerPoint", "UpdateMiniMap", "UpdateItMan", "Replace" )
+Shine.Hook.SetupClassHook( "MAC", "Notifyuse", "ReplaceUse", "Replace" )
+Shine.Hook.SetupClassHook( "CommandStation", "ExperimentalBeacon", "PrintInfo", "Replace" )
+Shine.Hook.SetupClassHook( "Alien", "OnRedeem", "OnRedemedHook", "PassivePre" )
+Shine.Hook.SetupClassHook( "Alien", "TriggerRebirthCountDown", "TriggerRebirthCountDown", "PassivePre" )
 Shine.Hook.SetupClassHook( "Player", "CopyPlayerDataFrom", "HookModelSize", "PassivePost" )
+Shine.Hook.SetupClassHook( "Alien", "TunnelFailed", "FailMessage", "Replace" )
+Shine.Hook.SetupClassHook( "Alien", "TunnelGood", "GoodMessage", "Replace" )
 
 
 function Plugin:Initialise()
@@ -20,14 +25,46 @@ self.GlowClientsTime = {}
 self.GlowClientsColor = {}
 return true
 end
-		
+function Plugin:UpdateItMan()
+        for _, player in ipairs( GetEntitiesWithMixin( "Player" ) ) do
+         if player:GetTeamNumber() == 1 or player:GetTeamNumber() == 2 and not player:GetIsVirtual() then
+         Shared.ConsoleCommand("setmaplocationcolor")
+         end
+        end
+end
+function Plugin:ReplaceUse(player)
+
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+self:NotifySiege( Client, "Wait until front doors open to use macs.", true)
+return
+end
+function Plugin:PrintInfo(anotheramt)
+self:NotifySiege( nil, "MarineTeamBeacons Left: %s", true, anotheramt)
+end
+function Plugin:TunnelFailed(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+self:NotifySiege( Client, "Tunnel entrance failed to spawn. Try creating another. An entrance will spawn in the hive room location on infestation if theres room.", true)
+end
+
+function Plugin:GoodMessage(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+self:NotifySiege( Client, "Tunnel Entrnace placed at Hive.", true)
+end
 function Plugin:HookModelSize(player, origin, angles, mapName)
 //if not self.playersize{Player:GetClient()} then return end
  local client = player:GetClient()
+ if not client then return end
  local controlling = client:GetControllingPlayer()
  local size = self.playersize[controlling:GetClient()]
  local Time = Shared.GetTime()
  local Glow = self.GlowClientsTime[controlling:GetClient()]
+
  //self:NotifyGeneric( nil, "Glow = %s, time = %s", true, Glow, Time)
            //if Glow and Glow < Shared.GetTime() then controlling:GlowColor(Shared.GetTime() - 120) end
            if Glow and Glow > Time then   
@@ -55,7 +92,9 @@ end
    function Plugin:OnRedemedHook(player) 
             Shine.ScreenText.Add( 50, {X = 0.20, Y = 0.90,Text = "Redemption Cooldown: %s",Duration = kRedemptionCooldown,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 1,FadeIn = 0,}, player ) 
  end
-
+function Plugin:TriggerRebirthCountDown(player)
+ Shine.ScreenText.Add( 50, {X = 0.20, Y = 0.90,Text = "Rebirth Cooldown: %s",Duration = kRedemptionCooldown,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 1,FadeIn = 0,}, player ) 
+end
 
 function Plugin:NotifyGiveRes( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[GiveRes]",  255, 0, 0, String, Format, ... )
@@ -66,7 +105,9 @@ end
 function Plugin:NotifyGeneric( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[Admin Abuse]",  255, 0, 0, String, Format, ... )
 end
-
+function Plugin:NotifySiege( Player, String, Format, ... )
+Shine:NotifyDualColour( Player, 255, 165, 0,  "[NS2Siege]",  255, 0, 0, String, Format, ... )
+end
 function Plugin:NotifyGiveRes( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[GiveRes]",  255, 0, 0, String, Format, ... )
 end
@@ -112,13 +153,11 @@ local function Stalemate( Client )
 local Gamerules = GetGamerules()
 if not Gamerules then return end
 Gamerules:DrawGame()
-Shine:Notify( Client, "end the game." )
+//Shine:Notify( Client, "end the game." )
 end 
 
 local StalemateCommand = self:BindCommand( "sh_stalemate", "stalemate", Stalemate )
-StalemateCommand:Help( "declares the round a draw." )
-
-local function Open( Client, String )
+StalemateCommand:Help( "declares the round a draw." )local function Open( Client, String )
 local Gamerules = GetGamerules()
 
      if String == "Front" or String == "front" then
@@ -127,6 +166,10 @@ local Gamerules = GetGamerules()
        Gamerules:OpenSideDoors()
      elseif String == "Siege" or String == "siege" then
         Gamerules:OpenSiegeDoors()
+     elseif String == "funcmoveable" or String == "FuncMoveable" then
+        Gamerules:ToggleFuncMoveable()
+         self:NotifyGeneric( nil, "toggled the %s doors", true, String)  
+         return
     end 
   self:NotifyGeneric( nil, "Opened the %s doors", true, String)  
   
@@ -153,6 +196,14 @@ end
 
 local FirstPersonCommand = self:BindCommand( "sh_firstperson", { "firstperson", "1stperson" }, FirstPerson, true)
 FirstPersonCommand:Help( "Triggers first person view" )
+
+local function MainRoom( Client )
+local Gamerules = GetGamerules()
+Gamerules:PickMainRoom(true)
+end
+
+local MainRoomCommand = self:BindCommand( "sh_mainroom","mainroom", MainRoom)
+MainRoomCommand:Help( "selects main room" )
 
 local function GiveRes( Client, TargetClient, Number )
 local Giver = Client:GetControllingPlayer()
@@ -212,7 +263,7 @@ Player:GiveItem(String)
  */
             
  local ent = CreateEntity(String, Player:GetOrigin(), Player:GetTeamNumber())  
- ent:SetConstructionComplete()
+if HasMixin(ent, "Construct") then  ent:SetConstructionComplete() end
              Shine:CommandNotify( Client, "gave %s an %s", true,
 			 Player:GetName() or "<unknown>", String )  
 end
@@ -301,23 +352,17 @@ SlapBombCommand:AddParam{ Type = "clients" }
 SlapBombCommand:AddParam{ Type = "number" }
 
 
-/*
+
 local function DiscoLights( Client )
-for _, light in ientitylist(Shared.GetEntitiesWithClassname("light_spot")) do
-            light:SetColor( math.random(0, 255), math.random(0, 255), math.random(0,255) )
-            light:SetIntensity( math.random(1,5) )
-end
-for _, lighty in ientitylist(Shared.GetEntitiesWithClassname("light_point")) do
-            lighty:SetColor( math.random(0, 255), math.random(0, 255), math.random(0,255) )
-            lighty:SetIntensity( math.random(1,5) )
-end
+ local Player = Client:GetControllingPlayer()
+DiscoLights(Player:GetLocationName())
 end
 
     
-local DiscoLightsCommand = self:BindCommand( "sh_discolights", "discolights", DiscoLights, true )
+local DiscoLightsCommand = self:BindCommand( "sh_discolights", "discolights", DiscoLights )
 DiscoLightsCommand:Help ("sh_discolights")
 
-*/
+
 local function Construct( Client )
         local Player = Client:GetControllingPlayer()
         for index, constructable in ipairs(GetEntitiesWithMixinWithinRangeAreVisible("Construct", Player:GetEyePos(), 3, true )) do       
@@ -379,6 +424,16 @@ local PlayerGravityCommand = self:BindCommand( "sh_playergravity", "playergravit
 PlayerGravityCommand:AddParam{ Type = "clients" }
 PlayerGravityCommand:AddParam{ Type = "number" }
 PlayerGravityCommand:Help( "sh_playergravity <player> <number> works differently than ns1. kinda glitchy. respawn to reset." )
+
+local function BuildSpeed( Client, Number )
+
+kDynamicBuildSpeed = Number
+//self:NotifySiege( nil, "Adjusted Marine Construct Speed to %s percent (1 - (marineplayercount/12) + 1)", true, Number * 100)
+end
+
+local BuildSpeedCommand = self:BindCommand( "sh_buildspeed", "buildspeed", BuildSpeed )
+BuildSpeedCommand:AddParam{ Type = "number" }
+BuildSpeedCommand:Help( "sh_buildspeed adjust construct speed on demand." )
 
 
 local function ModelSize( Client, Targets, Number )

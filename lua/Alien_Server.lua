@@ -267,10 +267,13 @@ function Alien:TriggerRebirth()
                // CreateEntity(NutrientMist.kMapName, newPlayer:GetOrigin(), 2)    
                 success = true
                 
-                
+                return success
             end    
             
-    
+            //redeem to hive rather than prevent death
+         self:TeleportToHive()
+        self:TriggerRebirthCountDown(self:GetClient():GetControllingPlayer())
+        self.lastredeemorrebirthtime = Shared:GetTime()
     
     
 

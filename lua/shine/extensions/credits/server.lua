@@ -267,9 +267,12 @@ function Plugin:SaveCredits(Client, notify)
            end  //      
 
        
+
+                    
+                    
               local cap = kCreditsPerRoundCap 
           local creditstosave = self:GetPlayerCreditsInfo(Client)
-          local earnedamount = creditstosave - Data.credits
+          local earnedamount = math.max(creditstosave,Data.credits) - math.min(creditstosave,Data.credits)
           if earnedamount > cap then 
           creditstosave = Data.credits + cap
                 if notify then
@@ -306,7 +309,7 @@ function Plugin:AdjustBuildSpeed()
               end 
               
               //kMaxSupply = kMaxSupply - ratio * kMaxSupply
-          
+          kMarineRespawnTime = GetFairRespawnLength()
 
 end
 function Plugin:GetActivePlayers()
@@ -475,11 +478,11 @@ function Plugin:SetGameState( Gamerules, State, OldState )
               for i = 1, #Players do
               local Player = Players[ i ]
                   if Player then
-                    local Data = self:GetCreditData( Player:GetClient() )
-                    local creditstosave = self:GetPlayerCreditsInfo(Player:GetClient())
-                    local earnedamount = 0
-                    if Data then
-                     earnedamount = creditstosave - Data.credits
+                    local Data = self:GetCreditData( Player:GetClient() ) //Amount Saved 
+                    local creditstosave = self:GetPlayerCreditsInfo(Player:GetClient()) //Amount InGame
+                    local earnedamount = 0 
+                    if Data then                //Saved - Ingame or Ingame - Saved == Earned?
+                     earnedamount = math.max(creditstosave,Data.credits) - math.min(creditstosave,Data.credits)
                     end
                     local addamount = earnedamount  
                     addamount = math.round(addamount, 2)
@@ -528,7 +531,7 @@ function Plugin:NotifyCredits( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[Credits]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
 end
 function Plugin:NotifyCreditsDC( Player, String, Format, ... )
-Shine:NotifyDualColour( Player, 255, 165, 0,  "[Double Credit Weekend]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
+Shine:NotifyDualColour( Player, 255, 165, 0,  "[Double Holiday Week]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
 end
 function Plugin:NotifyBuy( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[NS2Siege]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
@@ -749,7 +752,7 @@ obs.iscreditstructure = true
 self.MarineTotalSpent = self.MarineTotalSpent + CreditCost
 return
 end
-
+/*
 if String == "CommandStation" then
 CreditCost = 4000
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
@@ -773,7 +776,7 @@ obs.iscreditstructure = true
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 return
 end
-
+*/
 if String == "Armory"  then
 CreditCost = 12
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
@@ -1964,7 +1967,7 @@ self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
 return
 end
-
+/*
 if String == "Hive" then
 CreditCost = 4000
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
@@ -1987,7 +1990,7 @@ hive:SetConstructionComplete()
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 return
 end
-
+*/
 if String == "Gorge" then
 CreditCost = 10
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
@@ -2266,6 +2269,15 @@ end
 
 local SaveCreditsCommand = self:BindCommand("sh_savecredits", "savecredits", SaveCreditsCmd)
 SaveCreditsCommand:Help("sh_savecredits saves all credits online")
+
+
+local function Generate( Client )
+self:AdjustBuildSpeed()
+end
+
+local GenerateCommand = self:BindCommand( "sh_generate", "generate", Generate )
+GenerateCommand:Help( "bleh" )
+
 
 local function GenerateCredits(Client)
   // self:NotifyGeneric( nil, "Current # of credits is: %s", true, self:GenereateTotalCreditAmount())

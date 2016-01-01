@@ -242,6 +242,10 @@ local base = 1
 		base = 0.45
     end
     
+   // if self.primaryAttacking then
+   //     base = 2 //0.25 //0.5
+   // end
+    
 	if self.reloading then 
         base = 0.38
 	end

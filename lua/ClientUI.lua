@@ -24,7 +24,7 @@ kShowOnTeam[kTeam2Index] = { GUIAlienSpectatorHUD = true }
 kShowOnTeam[kSpectatorIndex] = { GUISpectator = true }
 
 local kBothAlienAndMarine = { GUICrosshair = true, GUINotifications = true, GUIDamageIndicators = true, GUIWorldText = true,
-                              GUIPing = true, GUIWaitingForAutoTeamBalance = true, GUITechMap = true, GUITipVideo = true }
+                              GUIPing = true, GUIWaitingForAutoTeamBalance = false, GUITechMap = true, GUITipVideo = true }
 
 for n, e in pairs(kBothAlienAndMarine) do
 

@@ -150,31 +150,11 @@ function ArmsLab:OnInitialized()
     self:SetModel(ArmsLab.kModelName, kAnimationGraph)
     self:GenerateResearchTimes()
 end
-local function GetArmorLevel(self)
-
-    local armorLevels = 0
-    
-    local techTree = self:GetTechTree()
-    if techTree then
-    
-        if techTree:GetHasTech(kTechId.Armor3) then
-            armorLevels = 3
-        elseif techTree:GetHasTech(kTechId.Armor2) then
-            armorLevels = 2
-        elseif techTree:GetHasTech(kTechId.Armor1) then
-            armorLevels = 1
-        end
-    
-    end
-    
-    return armorLevels
-
-end
 function ArmsLab:OnResearchComplete(researchId)
  if researchId ~= kTechId.kRifleClipSecondUnlockMax then
      local armorLevel = GetArmorLevel(self)
     for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
-        player:UpdateArmorAmount(armorLevel)
+        player:SetArmorAmount()
     end
  end
 end
@@ -247,21 +227,22 @@ end
   end
 return unitName
 end 
-function ArmsLab:OnUpdate(deltaTime)
+function ArmsLab:OnConstructionComplete()
+self:AddTimedCallback(ArmsLab.UpdateManually, kMarineResearchDelay)
+end
+function ArmsLab:UpdateManually()
    if Server then  
-       if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
      self:UpdatePassive()
-       self.timeLastUpdatePassiveCheck = Shared.GetTime()
-        end
    end
+   return true
 end
 if Server then
 function ArmsLab:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-       if GetHasTech(self, kTechId.RifleClip) or not GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
+       if GetHasTech(self, kTechId.RifleClip) or not GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return false end
        
     local commander = GetCommanderForTeam(1)
-    if not commander then return end
+    if not commander then return true end
     
 
     local techid = nil  
@@ -287,7 +268,7 @@ function ArmsLab:UpdatePassive()
   elseif GetHasTech(self, kTechId.Weapons3) and not GetHasTech(self, kTechId.RifleClip) then
     techid = kTechId.RifleClip
     else
-       return  
+       return  false
     end
     
    local techNode = commander:GetTechTree():GetTechNode( techid ) 

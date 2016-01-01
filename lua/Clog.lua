@@ -122,6 +122,13 @@ local function ClearRenderModel(self)
     end
     self._renderModel = nil
     
+        if self.simplePhysicsBody then
+    
+        Shared.DestroyCollisionObject(self.simplePhysicsBody)    
+        self.simplePhysicsBody = nil
+        
+    end
+    
 end
 /*
 function Clog:OnGetMapBlipInfo()

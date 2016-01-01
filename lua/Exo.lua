@@ -58,7 +58,6 @@ local networkVars =
     modelsize = "float (0 to 10 by .1)",
     gravity = "float (-5 to 5 by 1)",
    timeLastBeacon = "private time",
-   nano = "boolean",
    
    //modular
        powerModuleType    = "enum kExoModuleTypes",
@@ -70,6 +69,7 @@ local networkVars =
     	hasPhaseGate = "boolean",
     hasNano = "boolean",
 	armorBonus = "float (0 to 2045 by 1)",
+	lastnano = "private time",
 }
 
 Exo.kMapName = "exo"
@@ -227,9 +227,9 @@ function Exo:OnCreate()
     self.timeCatpackboost = 0
     self.ejecting = false
     self.gravity = 1
-    self.nano = false
     self.creationTime = Shared.GetTime()
     self.timeLastBeacon = Shared.GetTime()
+    self.lastnano = Shared.GetTime()
     
     if Server then
     
@@ -339,8 +339,7 @@ function Exo:OnInitialized()
             InitMixin(self, MapBlipMixin)
         end
         
-        self.armor = self:GetArmorAmount()
-        self.maxArmor = self.armor
+        self:SetArmorAmount()
         
         self.thrustersActive = false
         
@@ -389,7 +388,9 @@ function Exo:OnInitialized()
     self.armorBonus = armorModuleData and armorModuleData.armorBonus or 0
     self.hasPhaseGate = (self.utilityModuleType == kExoModuleTypes.PhaseGate)
     self.hasNano = (self.utilityModuleType == kExoModuleTypes.Nano)
+   // Print("armorbonus =%s, hasphasegate = %s, hasnano = %s", self.armorBonus, self.hasPhaseGate, self.hasNano)
     self.timeLastWeldEffect = 0 
+     self:AddTimedCallback(function () self:SetArmorAmount() end, .5)
     
 end
 
@@ -614,24 +615,13 @@ if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationN
 return false
 end
 end
-function Exo:GetArmorAmount(armorLevels)
-
-    if not armorLevels then
-    
-        armorLevels = 0
-    
-        if GetHasTech(self, kTechId.Armor3, true) then
-            armorLevels = 3
-        elseif GetHasTech(self, kTechId.Armor2, true) then
-            armorLevels = 2
-        elseif GetHasTech(self, kTechId.Armor1, true) then
-            armorLevels = 1
-        end
-    
-    end
-    
-    return kExosuitArmor + armorLevels * kExosuitArmorPerUpgradeLevel
-    
+function Exo:SetArmorAmount()
+    local newMaxArmor = (kExosuitArmor + self:GetArmorLevel() * kExosuitArmorPerUpgradeLevel) + self.armorBonus
+    local ratio = (kActivePlayers/24)
+    local deductamount = Clamp(newMaxArmor - ratio * newMaxArmor, 300, 600)
+    newMaxArmor = newMaxArmor - deductamount
+    self:AdjustMaxArmor(newMaxArmor)
+   // Print("armor is %s", newMaxArmor)
 end
 function Exo:GetArmorLevel()
 
@@ -798,10 +788,14 @@ function Exo:OnProcessMove(input)
         
     end
     self.flashlightLastFrame = flashlightPressed
+    if self.lastnano + 1 < Shared.GetTime() then
           if self.hasNano then
                self:OnHealed()
-               self:SetArmor(self:GetArmor() + input.time * ( self:GetArmorLevel() * kNanoArmorHealPerSecond ) * ConditionalValue(self:GetIsInCombat(), .5, 1), true) 
-       end
+               self:AddHealth( ( self:GetArmorLevel() * kNanoArmorHealPerSecond ) * ConditionalValue(self:GetIsInCombat(), .5, 1) ) 
+               self.lastnano = Shared.GetTime()
+               //self:SetArmor(self:GetArmor() + input.time * ( self:GetArmorLevel() * kNanoArmorHealPerSecond ) * ConditionalValue(self:GetIsInCombat(), .5, 1), false) 
+          end
+     end
 end
 
 function Exo:SetFlashlightOn(state)

@@ -214,15 +214,12 @@ function Observatory:RevealCysts()
 
 end
 
-function Observatory:OnUpdate(deltaTime)
+function Observatory:UpdateManually()
    if Server then 
-         if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
      self:UpdatePassive() 
-         self.timeLastUpdatePassiveCheck = Shared.GetTime()
-         end
     end
-    ScriptActor.OnUpdate(self, deltaTime)
- 
+    return true
+
 end
 function GetCheckObsyLimit(techId, origin, normal, commander)
     local location = GetLocationForPoint(origin)
@@ -249,9 +246,9 @@ function GetCheckObsyLimit(techId, origin, normal, commander)
 end
 function Observatory:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-    if GetHasTech(self, kTechId.PhaseTech) or not  GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
+    if GetHasTech(self, kTechId.PhaseTech) or not  GetGamerules():GetGameStarted() or self:GetIsResearching() then return false end
     local commander = GetCommanderForTeam(1)
-    if not commander then return end
+    if not commander then return true end
     
 
     local techid = nil
@@ -259,7 +256,7 @@ function Observatory:UpdatePassive()
     if not GetHasTech(self, kTechId.PhaseTech) then
     techid = kTechId.PhaseTech
     else
-       return  
+       return  false
     end
     
    local techNode = commander:GetTechTree():GetTechNode( techid ) 
@@ -362,7 +359,6 @@ end
 if Server then
 
     function Observatory:OnConstructionComplete()
-
         if self.phaseTechResearched then
 
             local techTree = GetTechTree(self:GetTeamNumber())
@@ -372,8 +368,9 @@ if Server then
                 techTree:QueueOnResearchComplete(kTechId.PhaseTech, self)
             end    
             
+        else
+        self:AddTimedCallback(Observatory.UpdateManually, kMarineResearchDelay)
         end
-
     end
     
 end    

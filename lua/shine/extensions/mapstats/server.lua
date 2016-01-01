@@ -45,6 +45,11 @@ self.MapStatsData = MapStatsFile
                    local clampedcragbonus= Clamp(unclampedcragbonus, 1, 1.5)
                    kMapStatsCragStacks = clampedcragbonus
                    
+                   
+                   local unclampedbuildspeed = kMapStatsAlienBuild + ( (MarineWinAmount - AlienWinAmount) * .10 )
+                   local clampedbuildspeed = Clamp(unclampedbuildspeed, 0.5, 2)
+                   kMapStatsAlienBuild = clampedbuildspeed
+                   
                  
                  /*
                    local unclampedstartingres = kAlienInitialIndivRes + ( (MarineWinAmount - AlienWinAmount) * 5 )
@@ -101,6 +106,10 @@ self.MapStatsData = MapStatsFile
                    local unclampedcragbonus = kMapStatsCragStacks + ( (AlienWinAmount - MarineWinAmount) * .10 )
                    local clampedcragbonus = Clamp(unclampedcragbonus, 1, 1.5)
                    kMapStatsCragStacks = clampedcragbonus
+                   
+                   local unclampedbuildspeed = kMapStatsMarineBuild + ( (MarineWinAmount - AlienWinAmount) * .10 )
+                   local clampedbuildspeed = Clamp(unclampedbuildspeed, 0.5, 2)
+                   kMapStatsMarineBuild = clampedbuildspeed
     
                    /*
                    local unclampedbuildtimes = kMarineTeamSetupBuildMultiplier + ( (AlienWinAmount - MarineWinAmount) * .1 )

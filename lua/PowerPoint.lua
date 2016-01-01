@@ -462,8 +462,11 @@ self:AddTimedCallback(function() self:Flicker() end, 30) // on
 end
 
 
+function PowerPoint:AttackDefendWayPoint()
+  //Yesterday had this every 10 seconds basically. Lets try every 30 instead. Less DDoss on Client/Server ?
+SendTeamMessage(self:GetTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
+SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
 
-function PowerPoint:Flicker()
       CreatePheromone(kTechId.ThreatMarker, self:GetOrigin(), 2)  //Make alien threat
       
           for _, player in ipairs(GetEntitiesWithinRange("Marine", self:GetOrigin(), 999)) do
@@ -472,9 +475,9 @@ function PowerPoint:Flicker()
         end
               
     end   // Create marine order
-    
-SendTeamMessage(self:GetTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
-SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
+end
+function PowerPoint:Flicker()
+
           if self:GetLightMode() ~= kLightMode.Normal then 
          self:SetLightMode(kLightMode.Normal)
          elseif self:GetLightMode() ~= kLightMode.NoPower then
@@ -587,6 +590,8 @@ if Server then
         self.alive = true
         
         PowerUp(self)
+        
+       // self:UpdateMiniMap()
         
     end
     
@@ -730,7 +735,12 @@ if Server then
         // A few seconds later, switch on aux power.
         self:AddTimedCallback(PlayAuxSound, 4)
         self.timeOfDestruction = Shared.GetTime()
-        
+      // self:UpdateMiniMap()
+    end
+    
+        function PowerPoint:UpdateMiniMap()
+    
+
     end
     
     function PowerPoint:Reset()

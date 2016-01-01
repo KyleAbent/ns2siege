@@ -1,3 +1,6 @@
+kParasitesToDisable = 4
+kFadeGravityMod = 1
+kMarineResearchDelay = 15
 kInfestationBuildModifier = .5
 kAlienRegenerationTime = 4
 kAlienInnateRegenerationPercentage  = 0.04
@@ -6,13 +9,15 @@ kAlienMaxInnateRegeneration = 33
 kAlienRegenerationCombatModifier = .7
 //kMaxTeamResources = 420
 
-kBeaconDelay = 10
+kBeaconDelay = 16
 kCreditsPerRoundCap = 200
-kCreditMultiplier = 1
+kCreditMultiplier = 2
 kSBCooldown = 30
 kDynamicBuildSpeed = 1
 kActivePlayers = 0
 //kCragSiegeBonus = 1.3
+kMapStatsMarineBuild = 1
+kMapStatsAlienBuild = 1
 kMapStatsCragStacks = 1.3
 kEtherealGateCoolDown = 20
 kOnosEggCost = 150
@@ -154,7 +159,7 @@ kAddAmountofFuncDoorBroken = .1
 //kAlienTeamPresBonusMult = 1
 kSideDoorTime = 300 
 kMarineRespawnProtection = 5.06
-kFrontDoorTime = 360 //6 min
+kFrontDoorTime = 300 //6 min
 kSiegeDoorTime = 900 // 20 min
 kTimeAfterSiegeOpeningToEnableSuddenDeath = 600
 
