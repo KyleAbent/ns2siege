@@ -185,7 +185,7 @@ end
     function Veil:OnConstructionComplete()
      //local isinsiege = string.find(self:GetLocationName(), "Siege") or string.find(self:GetLocationName(), "siege")
      // if not isinsiege then
-     //   self:AddTimedCallback(TimeUp, kLifeSpan + 0.5)  
+        self:AddTimedCallback(TimeUp, kLifeSpan + 0.5)  
      //   self:TeleportFractionHere()
          self:AddTimedCallback(function()  self:TeleportFractionHere() end, 4)
         self:AddTimedCallback(function()  self:TeleportFractionHere() end, 8)

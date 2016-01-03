@@ -300,7 +300,8 @@ function ConstructMixin:Construct(elapsedTime, builder)
             local modifier = (self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
             modifier = modifier * kDynamicBuildSpeed 
             modifier = modifier * ConditionalValue(self:SetupAdvantage(), 2, 1)
-            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), .7, 1)
+            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), .5, 1)
+            modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType and self:SiegeDisAdvantageMarine(), .5, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType, kMapStatsMarineBuild, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType, kMapStatsAlienBuild, 1)
             local startBuildFraction = self.buildFraction
@@ -393,6 +394,19 @@ function ConstructMixin:SiegeDisAdvantage()
                local locationName = location and location:GetName() or ""
                if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
                    if string.find(locationName, "Siege") or string.find(locationName, "siege") then return true end
+               end
+            end
+        end
+            return false
+end
+function ConstructMixin:SiegeDisAdvantageMarine()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               local location = GetLocationForPoint(self:GetOrigin())
+               local locationName = location and location:GetName() or ""
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   if not string.find(locationName, "Siege") and not string.find(locationName, "siege") then return true end
                end
             end
         end
@@ -557,7 +571,7 @@ function ConstructMixin:GetTotalConstructionTime()
                   
                             //Troll hive in marine base gamebreaking with eggs :P
                       if self:isa("Hive") and not self:IsInRangeOfHive() then
-                      marineadvantage = marineadvantage * 12
+                      marineadvantage = marineadvantage * 36
                      end
                      
                      

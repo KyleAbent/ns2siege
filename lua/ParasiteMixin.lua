@@ -129,7 +129,7 @@ local function SharedUpdate(self)
         end
         if self.toggled then
        if HasMixin(self, "PowerConsumer") and Shared.GetTime() > self.timeParasited + 6 and self.amtofparasite ~= 0 then
-             self.amtofparasite = Clamp(self.amtofparasite - 1,0, 4)
+             self.amtofparasite = 0
              self.toggled = false
              self:CheckForPower()
           end

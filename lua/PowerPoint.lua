@@ -455,6 +455,7 @@ end
 if Server then
 
 function PowerPoint:SetMainRoom()
+self:AttackDefendWayPoint()
 self:Flicker() // off
 self:AddTimedCallback(function() self:Flicker() end, 10) //on
 self:AddTimedCallback(function() self:Flicker() end, 20) // off

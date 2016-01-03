@@ -97,7 +97,7 @@ function Contamination:OnInitialized()
         InitMixin(self, StaticTargetMixin)
         self:AddTimedCallback(TimeUp, kLifeSpan)
         self:SetCoords(coords)
-       if GetHasTech(self, kTechId.ContaminationHP) then self:SetHealth(1300) end  
+//       if GetHasTech(self, kTechId.ContaminationHP) then self:SetHealth(1300) end  
     
             if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
