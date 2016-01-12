@@ -300,7 +300,7 @@ function ConstructMixin:Construct(elapsedTime, builder)
             local modifier = (self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
             modifier = modifier * kDynamicBuildSpeed 
             modifier = modifier * ConditionalValue(self:SetupAdvantage(), 2, 1)
-            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), .5, 1)
+            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), 0.07, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType and self:SiegeDisAdvantageMarine(), .5, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType, kMapStatsMarineBuild, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType, kMapStatsAlienBuild, 1)
@@ -571,7 +571,7 @@ function ConstructMixin:GetTotalConstructionTime()
                   
                             //Troll hive in marine base gamebreaking with eggs :P
                       if self:isa("Hive") and not self:IsInRangeOfHive() then
-                      marineadvantage = marineadvantage * 36
+                      marineadvantage = 300
                      end
                      
                      
@@ -587,7 +587,7 @@ function ConstructMixin:GetTotalConstructionTime()
 end
 function ConstructMixin:IsInRangeOfHive()
       local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), kARCRange)
-   if #hives >=1 then return true end
+   if #hives >=2 then return true end
    return false
 end
 if Server then

@@ -165,10 +165,21 @@ end
 function CommandStation:GetTechButtons()
     return { kTechId.None, kTechId.Recycle } //kTechId.BluePrintTech }
 end
+function CommandStation:GetIsSiege()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
 function CommandStation:ModifyDamageTaken(damageTable, attacker, doer, damageType)
 
-      if self:GetHealthScalar() <= 0.10 then 
-      damageTable.damage = damageTable.damage * .5
+      if self:GetIsSiege() then 
+      damageTable.damage = damageTable.damage * .7
       end
  
     
@@ -221,17 +232,9 @@ function CommandStation:GetTechAllowed(techId, techNode, player)
     
     return allowed, canAfford
     
-end
+end 
 function CommandStation:OnConstructionComplete()
-self:AddTimedCallback(CommandStation.UpdateManually, kBeaconDelay)
-end
-function CommandStation:UpdateManually()
-   if Server then 
-      if not self:GetIsVortexed() and self:GetIsBuilt() then self:UpdateBeacons() end
-    self:UpdatePassive() 
-    end
-    
-    return true
+self:AddTimedCallback(CommandStation.UpdateBeacons, kBeaconDelay)
 end
 function CommandStation:UpdateBeacons()
   local time = self:GetTeam():GetBeacons()
@@ -242,6 +245,8 @@ function CommandStation:UpdateBeacons()
              self:UseBeacon()
           end
     end
+    
+    return true
     
 end
 function CommandStation:GetLocationName()
@@ -260,12 +265,10 @@ function CommandStation:UseBeacon()
                 
                for _, entity in ientitylist(Shared.GetEntitiesWithClassname("MarineSpectator")) do
                           if entity:GetTeamNumber() == 1 and not entity:GetIsAlive() then
-                         // entity:SetCameraDistance(0)
-                         // entity:GetTeam():ReplaceRespawnPlayer(entity)
                          table.insert(eligable,entity)
                           end
                end
-                        
+               
              if not self:GetIsSuddenDeath() then  
                  for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Marine")) do
                        if entity:GetIsAlive() and not GetIsPlayerNearby(self, entity, self:GetOrigin()) 
@@ -274,6 +277,8 @@ function CommandStation:UseBeacon()
                       end
                  end
              end
+             
+                        
                 
             if #eligable == 0 then return end
             
@@ -283,7 +288,8 @@ function CommandStation:UseBeacon()
                local location = GetLocationForPoint(self:GetOrigin())
                 local locationName = location and location:GetName() or ""
                 local locationId = Shared.GetStringIndex(locationName)
-                SendTeamMessage(self:GetTeam(), kTeamMessageTypes.Beacon, locationId)
+                SendTeamMessage(self:GetTeam(), kTeamMessageTypes.AutoBeacon, locationId)
+                SendTeamMessage(2, kTeamMessageTypes.AutoBeacon, locationId)
                 self:GetTeam():DeductBeacon()
                 
                 
@@ -342,36 +348,6 @@ end
            Print("No valid spot found for CC beacon!")
            return self:GetOrigin()
     end
- /*
-   function CommandStation:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Command Station (%s)"), self:GetTeam():GetBeacons())
-return unitName
-end 
-*/
-function CommandStation:ExperimentalBeacon(anotheramt)
-end
-function CommandStation:UpdatePassive()
-   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-    if  GetHasTech(self, kTechId.NanoShieldTech) or not  GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return true end
-    local commander = GetCommanderForTeam(1)
-    if not commander then return true end
-    
-
-    local techid = nil
-    
-    if not GetHasTech(self, kTechId.CatPackTech) then
-    techid = kTechId.CatPackTech
-    elseif GetHasTech(self, kTechId.MinesTech) and not GetHasTech(self, kTechId.NanoShieldTech) then
-    techid = kTechId.NanoShieldTech
-    else
-       return  true
-    end
-    
-   local techNode = commander:GetTechTree():GetTechNode( techid ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
-end
 if Server then
 function CommandStation:UpdateResearch(deltaTime)
  if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 

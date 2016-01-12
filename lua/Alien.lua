@@ -780,9 +780,13 @@ function Alien:OnUpdateAnimationInput(modelMixin)
     
 end
 function Alien:QualifiesForFocus()   //Funny this method doesnt allow healspray effected on slots 2-4 :P owell for now
+
+   if self:isa("Onos") then
       local weapon = self:GetActiveWeapon()
-      local stomping = weapon and HasMixin(weapon, "Stomp") and weapon:GetIsStomping()
-      if stomping then return false end
+      local notstomping = weapon and HasMixin(weapon, "Stomp") and weapon.primaryAttacking
+      if notstomping then return true end
+   end
+   
            if self:isa("Gorge") then
        if
        ( self:GetActiveWeapon():isa("SpitSpray") ) or

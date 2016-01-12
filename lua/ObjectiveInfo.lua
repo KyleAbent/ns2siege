@@ -88,7 +88,8 @@ if Server then
         
         local owner = self:GetOwner()
        assert(owner)
-       //   if not owner or not HasMixin(self, "Live") then return end
+        //siege
+         if not owner or not HasMixin(self, "Live") then return end
         
         self.inCombat = owner:GetIsAlive() and owner:GetIsInCombat()
         self.techId = owner:GetTechId()

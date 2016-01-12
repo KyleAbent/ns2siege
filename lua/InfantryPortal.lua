@@ -69,7 +69,7 @@ InfantryPortal.kLoginAttachPoint = "keypad"
 local kPushRange = 3
 local kPushImpulseStrength = 40
 
-local kInfantryPortalGainXP = 0.25
+local kInfantryPortalGainXP = .1
 local kInfantryPortalMaxLevel = 10
 InfantryPortal.GainXp = .025
 
@@ -332,7 +332,7 @@ function InfantryPortal:GetLevel()
 end
   function InfantryPortal:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Level %s Infantry Portal (%s seconds)"), self:GetLevel(), kMarineRespawnTime)
+    unitName = string.format(Locale.ResolveString("Level %s Infantry Portal"), self:GetLevel())
 return unitName
 end  
 function InfantryPortal:GetAddXPAmount()
@@ -417,7 +417,7 @@ local fair = kMarineRespawnTime
 //end
     local length = ( fair - (self.level/100) * fair)
       // Print("respawn length is %s", length)
-    return length
+    return math.round(length, 2)
 end
 function InfantryPortal:OnReplace(newStructure)
     newStructure.queuedPlayerId = self.queuedPlayerId

@@ -416,13 +416,10 @@ function Sentry:AddXP(amount)
         xpReward = math.min(amount, Sentry.kSentryMaxLevel - self.level)
         self.level = self.level + xpReward
    
-           /*
+           
         self:AdjustMaxHealth(kSentryHealth * (self.level/100) + kSentryHealth) 
         self:AdjustMaxArmor(kSentryArmor * (self.level/100) + kSentryArmor)
-        */
-       
-        self:AdjustMaxHealth(kSentryHealth * (self.level/Sentry.kSentryMaxLevel) + kSentryHealth) 
-      //  self:AdjustMaxArmor(kSentryArmor * (self.level/kSentryMaxLevel) + kSentryArmor)
+        
       
     return xpReward
     

@@ -96,11 +96,11 @@ function MarineTeam:GetHasAbilityToRespawn()
     // Any active IPs on team? There could be a case where everyone has died and no active
     // IPs but builder bots are mid-construction so a marine team could theoretically keep
     // playing but ignoring that case for now
-    local spawningStructures = GetEntitiesForTeam("InfantryPortal", self:GetTeamNumber())
+    local spawningStructures = GetEntitiesForTeam("CommandStation", self:GetTeamNumber())
     
     for index, current in ipairs(spawningStructures) do
     
-        if current:GetIsBuilt() and current:GetIsPowered() then
+        if current:GetIsBuilt() then
             return true
         end
         
@@ -381,12 +381,12 @@ function MarineTeam:InitTechTree()
     self.techTree:AddResearchNode(kTechId.CatPackTech)
     self.techTree:AddResearchNode(kTechId.BluePrintTech)
     
-    self.techTree:AddTargetedActivation(kTechId.NanoShield,       kTechId.NanoShieldTech)
+    self.techTree:AddTargetedActivation(kTechId.NanoShield,       kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.Scan,             kTechId.Observatory)
     self.techTree:AddTargetedActivation(kTechId.PowerSurge,       kTechId.RoboticsFactory)
     self.techTree:AddTargetedActivation(kTechId.MedPack,          kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.AmmoPack,         kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.CatPack,          kTechId.CatPackTech) 
+    self.techTree:AddTargetedActivation(kTechId.CatPack,          kTechId.None) 
     
     self.techTree:AddAction(kTechId.SelectObservatory)
 
@@ -413,7 +413,7 @@ function MarineTeam:InitTechTree()
     
     self.techTree:AddBuildNode(kTechId.AdvancedArmory,               kTechId.Armory,        kTechId.None)
     self.techTree:AddResearchNode(kTechId.PhaseTech,                    kTechId.Observatory,        kTechId.None)
-    self.techTree:AddBuildNode(kTechId.PhaseGate,                    kTechId.PhaseTech,        kTechId.None, true)
+    self.techTree:AddBuildNode(kTechId.PhaseGate,                    kTechId.None,        kTechId.None, true)
 
 
     self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.None,       kTechId.None)      

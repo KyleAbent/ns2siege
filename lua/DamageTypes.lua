@@ -168,6 +168,14 @@ local function ApplyHighArmorUseFractionForExos(target, attacker, doer, damage, 
     
     if target:isa("Exo") then
         armorFractionUsed = kExosuitArmorUseFraction
+    elseif target:isa("Marine") then
+        armorFractionUsed = target.heavyarmor and 0.9 or 1
+    elseif target:isa("ARC") then  //
+        armorFractionUsed = target.level
+    elseif target:isa("Sentry") then
+        armorFractionUsed = 0.9
+    elseif target:isa("CommandStation") then
+        armorFractionUsed = 0.9
     end
     
     return damage, armorFractionUsed, healthPerArmor

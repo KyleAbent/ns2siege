@@ -1,3 +1,7 @@
+kFireFlameCloudDamagePerSecond = 4
+kExosuitCost = 10
+kARCArmor = 250
+CCSiegeBeaconDelay = 10
 kParasitesToDisable = 4
 kFadeGravityMod = 1
 kMarineResearchDelay = 15
@@ -11,7 +15,7 @@ kAlienRegenerationCombatModifier = .7
 
 kBeaconDelay = 16
 kCreditsPerRoundCap = 200
-kCreditMultiplier = 2
+kCreditMultiplier = 1
 kSBCooldown = 30
 kDynamicBuildSpeed = 1
 kActivePlayers = 0
@@ -146,7 +150,7 @@ kMoveUpVector = 10
 kMoveZVector = 0
 kMoveXVector = 0
 ///
-kResupplyCost = 7
+kResupplyCost = 10
 kFuncMoveableSpeed = 0.25
 kSiegeDoorSpeed = 0.25
 kFireBulletsCost = 5

@@ -1104,7 +1104,7 @@ function NS2Gamerules:OnUpdate(timePassed)
 */
     
         //Siege Front & Siege Doors
-         if self:GetGameStarted() and not self.siegedoorsopened and not Shared.GetCheatsEnabled() and (self.lastexploitcheck + 10) > Shared.GetTime()  then
+         if self:GetGameStarted() and not self.siegedoorsopened and not Shared.GetCheatsEnabled() and (self.lastexploitcheck + 30) < Shared.GetTime()  then
          self.lastexploitcheck = Shared.GetTime()
         // self.siegedoorsopened = true  
      //  if not self.alreadyhookedsiege then self:HookSiegeOpen() self.alreadyhookesiege = true end
@@ -1291,9 +1291,9 @@ function NS2Gamerules:OnUpdate(timePassed)
                 return false, 0
             end
             
-        elseif not self:GetRookieMode() and not playedTutorial[player:GetSteamId()] and
-                player:GetPlayerSkill() ~= -1 and player:GetPlayerSkill() < 1 then
-            return false, 1
+      //  elseif not self:GetRookieMode() and not playedTutorial[player:GetSteamId()] and
+        //        player:GetPlayerSkill() ~= -1 and player:GetPlayerSkill() < 1 then
+          //  return false, 1
         end
         
         return true
@@ -1939,7 +1939,7 @@ function NS2Gamerules:CollectResources()
          elseif player:GetTeamNumber() == 2 then
              local alienres = kPlayerResPerInterval
              if self:GetGameStarted() and not self.doorsopened then
-                 alienres = alienres * 1.3
+                 alienres = alienres * 1.15
              end
            player:AddResources(alienres * harvesters)
          end
@@ -2042,7 +2042,6 @@ function NS2Gamerules:OpenSiegeDoors()
   
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
-                 
                self:AddTimedCallback(NS2Gamerules.SwitchShadesToSiegeMode, kShadeInkCooldown)
                self:AddTimedCallback(NS2Gamerules.SwitchCragsToSiegeMode, kHealWaveCooldown)
                self:AddTimedCallback(NS2Gamerules.SwitchObservatoryToSiegeMode, kSiegeObsAutoScanCooldown)

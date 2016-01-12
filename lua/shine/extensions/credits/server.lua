@@ -531,7 +531,7 @@ function Plugin:NotifyCredits( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[Credits]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
 end
 function Plugin:NotifyCreditsDC( Player, String, Format, ... )
-Shine:NotifyDualColour( Player, 255, 165, 0,  "[Double Holiday Week]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
+Shine:NotifyDualColour( Player, 255, 165, 0,  "[Double Credits]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )
 end
 function Plugin:NotifyBuy( Player, String, Format, ... )
 Shine:NotifyDualColour( Player, 255, 165, 0,  "[NS2Siege]",  math.random(0,255), math.random(0,255), math.random(0,255), String, Format, ... )

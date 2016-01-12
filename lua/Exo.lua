@@ -615,11 +615,15 @@ if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationN
 return false
 end
 end
-function Exo:SetArmorAmount()
-    local newMaxArmor = (kExosuitArmor + self:GetArmorLevel() * kExosuitArmorPerUpgradeLevel) + self.armorBonus
-    local ratio = (kActivePlayers/24)
-    local deductamount = Clamp(newMaxArmor - ratio * newMaxArmor, 1, 300)
-    newMaxArmor = Clamp(newMaxArmor - deductamount, 300, 600)
+function Exo:SetArmorAmount() 
+   local level = 1
+     if Server then
+  level = GetFairHealthValues()
+  end
+  local lifeformstrengthmult = self:GetArmorLevel()
+   local newMaxArmor = 600 * (level * lifeformstrengthmult) + 600
+   
+    newMaxArmor = Clamp(newMaxArmor + self.armorBonus, 300, 600)
     self:AdjustMaxArmor(newMaxArmor)
    // Print("armor is %s", newMaxArmor)
 end

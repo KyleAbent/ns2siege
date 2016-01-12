@@ -795,6 +795,8 @@ function Whip:SlapTarget(target)
     
     self:DoDamage(Whip.kDamage * (self.level/100) + kWhipSlapDamage, target, hitPosition, hitDirection, nil, true)
     self:TriggerEffects("whip_attack")
+    self:StealFlamethrower(target)
+    
 
 end
 
@@ -872,7 +874,7 @@ function Whip:OnAttackStart()
     
 end
 //self:GiveUpgrade(kTechId.WhipBombard)
-/*
+
 function Whip:CreateFTAtAttachPointandFlickIt()
 
     local bombStart = self:GetAttachPointOrigin("Whip_Ball")
@@ -885,28 +887,29 @@ local flamethrower = CreateEntity(Flamethrower.kMapName, bombStart + Vector(0,1,
 
 
 end
-*/
-/*
-            
+
+  function Whip:StealFlamethrower(target)      
                 if target:isa("Marine") or target:isa("JetpackMarine") then 
                      local client = target:GetClient()
                      if not client then return end
                      local controlling = client:GetControllingPlayer()
                   if controlling:GetWeaponInHUDSlot(1) ~= nil and controlling:GetWeaponInHUDSlot(1):isa("Flamethrower") then
                      local roll = math.random(1,100)
-                     if roll <=30 then
+                  if roll <=30 then
                     DestroyEntity(controlling:GetWeaponInHUDSlot(1))
                     if controlling:GetWeaponInHUDSlot(2) ~= nil then
                      controlling:SwitchWeapon(2)
                      else
                       controlling:SwitchWeapon(3)
-                      end
+                      end //
                        self:CreateFTAtAttachPointandFlickIt()
                        
-         end
-                    end
+                  end//
+                end//
+              end//
+  end
                    
-*/
+
 function Whip:OnAttackHit(target)
 
     if target and self.slapping then

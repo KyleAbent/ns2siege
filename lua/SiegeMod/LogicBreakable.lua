@@ -236,7 +236,7 @@ end
 -- Handle the health scaling when a player joins/leaves the team
 
 -- Ignore the commander when calculating the team size, they can't contribute to breaking the object, so this makes the scaling more linear/fair.
-local function GetNumPlayersIgnoringCommander(team)
+local function GetNumPlayersIgnoringCommander()
 
     local numPlayers = 0
 
@@ -246,7 +246,7 @@ local function GetNumPlayersIgnoringCommander(team)
 	    numPlayers = numPlayers + 1
 	end
     end
-    team:ForEachPlayer( CountPlayers )
+    self:GetTeam():ForEachPlayer( CountPlayers )
 
     return numPlayers
 

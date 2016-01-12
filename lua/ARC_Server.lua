@@ -11,6 +11,7 @@
 
 local kMoveParam = "move_speed"
 local kMuzzleNode = "fxnode_arcmuzzle"
+/*
 function ARC:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
 local damage = 1
      if doer:isa("DotMarker") or doer:isa("Gore") then
@@ -18,6 +19,7 @@ local damage = 1
     end
   damageTable.damage = damageTable.damage * damage 
 end
+*/
 function ARC:OnEntityChange(oldId)
 
     if self.targetedEntity == oldId then
@@ -307,7 +309,7 @@ local function PerformAttack(self)
       // if not self:GetIsaCreditStructure() then self:AddXP(ARC.GainXP) end
 
       //  if self:GetIsInSiege() then self:AddXP(ARC.GainXP) end
-      self:AddXP(ARC.GainXP)
+      //self:AddXP(ARC.GainXP)
     end
     
     // reset target position and acquire new target
@@ -366,13 +368,13 @@ function ARC:OnTag(tagName)
         
         //self:AdjustMaxHealth(kARCDeployedHealth * self.level/100 + kARCDeployedHealth)
         
-        local currentArmor = self:GetArmor()
-        if currentArmor ~= 0 then
-            self.undeployedArmor = currentArmor
-        end
+      //  local currentArmor = self:GetArmor()
+      //  if currentArmor ~= 0 then
+      //      self.undeployedArmor = currentArmor
+      //  end
         
-        self:SetMaxArmor(kARCDeployedArmor * self.level/100 + kARCDeployedArmor)
-        self:SetArmor(self.deployedArmor)
+       // self:SetMaxArmor(kARCDeployedArmor * self.level/100 + kARCDeployedArmor)
+       // self:SetArmor(self.deployedArmor)
         
 
         
@@ -381,9 +383,9 @@ function ARC:OnTag(tagName)
         self.deployMode = ARC.kDeployMode.Undeployed
         
         self:AdjustMaxHealth(kARCHealth * self.level/100 + kARCHealth)
-        self.deployedArmor = self:GetArmor()
-        self:SetMaxArmor(kARCArmor * self.level/100 + kARCArmor)
-        self:SetArmor(self.undeployedArmor)
+      //  self.deployedArmor = self:GetArmor()
+      //  self:SetMaxArmor(kARCArmor * self.level/100 + kARCArmor)
+      //  self:SetArmor(self.undeployedArmor)
         
 
         

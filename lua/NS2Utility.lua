@@ -1184,8 +1184,39 @@ function GetNearest(origin, className, teamNumber, filterFunc)
     
     return nearest
     
-end
+end 
+                   //Siege
+function GetNearestMixin(origin, mixinType, teamNumber, filterFunc)
 
+    assert(type(mixinType) == "string")
+    
+    local nearest = nil
+    local nearestDistance = 0
+    
+    for index, ent in ientitylist(Shared.GetEntitiesWithTag(mixinType)) do
+    
+        // Filter is optional, pass through if there is no filter function defined.
+        if not filterFunc or filterFunc(ent) then
+        
+            if teamNumber == nil or (teamNumber == ent:GetTeamNumber()) then
+            
+                local distance = (ent:GetOrigin() - origin):GetLength()
+                if nearest == nil or distance < nearestDistance then
+                
+                    nearest = ent
+                    nearestDistance = distance
+                    
+                end
+                
+            end
+            
+        end
+        
+    end
+    
+    return nearest
+    
+end
 function GetCanAttackEntity(seeingEntity, targetEntity)
     return GetCanSeeEntity(seeingEntity, targetEntity, true)
 end

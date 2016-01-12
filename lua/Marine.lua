@@ -162,7 +162,6 @@ local networkVars =
    hasreupply = "boolean",
       heavyarmor = "boolean",
    lastsupply = "time",
-   suppliesleft = "float (0 to 5 by 1)",
    
     
 }
@@ -258,7 +257,6 @@ function Marine:OnCreate()
    self.hasreupply = false
    self.heavyarmor = false
    self.lastsupply = 0
-   self.suppliesleft = 5
    self.timeLastBeacon = Shared.GetTime()
    
 end
@@ -1026,7 +1024,6 @@ function Marine:OnProcessMove(input)
     
          if self.hasreupply then
       if Shared.GetTime() >  self.lastsupply + 10 then
-           if self.suppliesleft >= 1 then
             if self:GetHealth() <= 90 then 
              self:TriggerDropPack(self:GetOrigin(), kTechId.MedPack)
              end
@@ -1036,9 +1033,7 @@ function Marine:OnProcessMove(input)
              self:TriggerDropPack(self:GetOrigin(), kTechId.AmmoPack) 
              end
              
-       self.suppliesleft = self.suppliesleft - 1
        self.lastsupply = Shared.GetTime()
-         end
      end
      end
      

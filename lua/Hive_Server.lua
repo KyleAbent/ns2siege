@@ -461,7 +461,14 @@ function Hive:OnEntityChange(oldId, newId)
     CommandStructure.OnEntityChange(self, oldId, newId)
     
 end
-
+function Hive:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
+local damage = 1
+          local gameRules = GetGamerules()
+          if not gameRules:GetSiegeDoorsOpen() and not gameRules:GetFrontDoorsOpen() and attacker:GetTeamNumber() == 1 then
+             damage = self:GetHealth()
+           end
+  damageTable.damage = damageTable.damage * damage 
+end
 function Hive:OnUpdate(deltaTime)
 
     PROFILE("Hive:OnUpdate")

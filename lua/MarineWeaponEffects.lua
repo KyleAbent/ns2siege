@@ -438,6 +438,15 @@ kMarineWeaponEffects =
         }    
     },
     
+        release_firegas =
+    {
+        releaseFireGasEffects = 
+        {
+            {parented_cinematic = "cinematics/marine/grenades/fire_gas.cinematic"},
+            {sound = "sound/NS2.fev/marine/flamethrower/attack_start"},
+        },    
+    },
+    
     grenade_explode =
     {
         grenadeExplodeEffects =

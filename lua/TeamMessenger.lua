@@ -10,7 +10,7 @@ kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject',
                            'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack',
-                           'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
+                           'PowerPointUnderAttack', 'Beacon', 'AutoBeacon', 'NoCommander', 'TeamsUnbalanced',
                            'TeamsBalanced', 'GameStartCommanders', 'SideDoor', 'FrontDoor', 'SiegeDoor', 
                            'SuddenDeath', 'ZedTimeBegin', 'ZedTimeEnd', 'Weapons1Researching', 'Weapons2Researching', 
                            'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', 'MainRoom', })
@@ -60,7 +60,9 @@ kTeamMessages[kTeamMessageTypes.HiveUnderAttack] = { text = { [kAlienTeamType] =
 
 kTeamMessages[kTeamMessageTypes.PowerPointUnderAttack] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "POWER_POINT_UNDER_ATTACK") end } }
 
-kTeamMessages[kTeamMessageTypes.Beacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "BEACON_TO") end } }
+kTeamMessages[kTeamMessageTypes.Beacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "BEACON_TO") end} }
+
+kTeamMessages[kTeamMessageTypes.AutoBeacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "AutoBeacon: %s") end, [kAlienTeamType] = function(data) return locationStringGen(data, "Auto Beacon: %s") end } }
 
 kTeamMessages[kTeamMessageTypes.NoCommander] = { text = { [kMarineTeamType] = "NO_COMM", [kAlienTeamType] = "NO_COMM" } }
 

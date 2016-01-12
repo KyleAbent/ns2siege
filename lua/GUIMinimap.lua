@@ -385,27 +385,23 @@ function OnCommandSetMapLocationColor()
 
         for _, locationItem in ipairs(gLocationItems) do
         
-       if locationItem.IsSiege then
-         locationItem.text:SetColor(Color(232, 129, 23, 1000))
-         /*
-        else
+       //  locationItem.text:SetColor(Color(232/255, 129/255, 23/255, 1))
              
              local powerpoint = GetPowerPointForLocation(locationItem.Name)
                 if powerpoint ~= nil then 
                     if powerpoint:GetIsBuilt() then 
-                      locationItem.text:SetColor(Color(44, 106, 426, 1000))
+                      locationItem.text:SetColor(Color(44.0, 106.0, 426, 1))
                     else
-                      locationItem.text:SetColor(Color(1.0, 255, 31, 1000))
+                      locationItem.text:SetColor(Color(1.0, 255.0, 31.0, 1))
                      end
                 else
                locationItem.text:SetColor(Color(1.0, 1.0, 1.0, 0.65))
                end
-               */
-        end//
+               
         
-          end//
+          end
 
-    end//
+    end
         
 end
 
@@ -458,7 +454,7 @@ function GUIMinimap:InitializeLocationNames()
 
         self.minimap:AddChild(locationText)
 
-        local locationItem = {text = locationText, origin = location.Origin, IsSiege = string.find(location.Name, "Siege") }
+        local locationItem = {text = locationText, origin = location.Origin }
         table.insert(self.locationItems, locationItem)
         
         

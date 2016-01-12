@@ -75,8 +75,8 @@ ARC.kMaxPitch               = 45
 ARC.kMaxYaw                 = 180
 ARC.kCapsuleHeight = .05
 ARC.kCapsuleRadius = .5
-ARC.MaxLevel = 10
-ARC.GainXP = 1
+ARC.MaxLevel = 99
+ARC.GainXP = 0.66
 ARC.ScaleSize = 1.3
 
 ARC.kMode = enum( {'Stationary', 'Moving', 'Targeting', 'Destroyed'} )
@@ -219,8 +219,8 @@ function ARC:OnInitialized()
         // Cannons start out mobile
         self:SetMode(ARC.kMode.Stationary)
         
-        self.undeployedArmor = kARCArmor
-        self.deployedArmor = kARCDeployedArmor
+        //self.undeployedArmor = kARCArmor
+        //self.deployedArmor = kARCDeployedArmor
         
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -306,6 +306,9 @@ function ARC:AddXP(amount)
     local xpReward = 0
         xpReward = math.min(amount, ARC.MaxLevel - self.level)
         self.level = self.level + xpReward
+        
+        self:AdjustMaxArmor(kARCArmor * (self.level/100) + kARCArmor)
+        
    
     return xpReward
     
@@ -564,16 +567,12 @@ function ARC:OnUpdate(deltaTime)
     if Server then
     
     
-      /*
-            if self.CheckModelCoords == nil or (Shared.GetTime() > self.CheckModelCoords + 90) then
-            self:UpdateModelCoords()
-            self:UpdatePhysicsModel()
-            if (self._modelCoords and self.boneCoords and self.physicsModel) then
-            self.physicsModel:SetBoneCoords(self._modelCoords, self.boneCoords)
-            end      
-            self.CheckModelCoords = Shared.GetTime()
+      
+            if self.Levelslowly == nil or (Shared.GetTime() > self.Levelslowly + 4) then
+            self:AddXP(ARC.GainXP)
+            self.Levelslowly = Shared.GetTime()
             end
-      */  
+      
    
         self:UpdateOrders(deltaTime)
         self:UpdateSmoothAngles(deltaTime)
