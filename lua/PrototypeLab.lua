@@ -22,6 +22,7 @@ Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/ScriptActor.lua")
+Script.Load("lua/StunMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/NanoShieldMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
@@ -66,7 +67,8 @@ local networkVars =
     loggedInNorth = "boolean",
     loggedInSouth = "boolean",
     loggedInWest = "boolean",
-    deployed = "boolean"
+    deployed = "boolean",
+       stunned = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -116,6 +118,7 @@ function PrototypeLab:OnCreate()
     InitMixin(self, VortexAbleMixin)
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
+    InitMixin(self, StunMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)
@@ -141,7 +144,7 @@ function PrototypeLab:OnCreate()
     self.loginWestAmount = 0
     
     self.deployed = false
-    
+     self.stunned = false
 end
 
 function PrototypeLab:OnInitialized()
@@ -275,6 +278,53 @@ function PrototypeLab:OnUpdate(deltaTime)
     
     ScriptActor.OnUpdate(self, deltaTime)
     
+end
+if Server then
+function PrototypeLab:OnStun()   
+              //  local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
+               // bonewall.modelsize = 0.5
+            //    bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
+            //    bonewall.targetid = self:GetId()
+                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThroughHit)
+                self.stunned = true
+                self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
+end
+end//server
+if Client then
+
+    function PrototypeLab:OnUpdateRender()
+          local showMaterial = GetAreEnemies(self, Client.GetLocalPlayer()) and self.stunned
+    
+        local model = self:GetRenderModel()
+        if model then
+
+            model:SetMaterialParameter("glowIntensity", 0)
+
+            if showMaterial then
+                
+                if not self.hallucinationMaterial then
+                    self.hallucinationMaterial = AddMaterial(model, kHallucinationMaterial)
+                end
+                
+                self:SetOpacity(0, "hallucination")
+            
+            else
+            
+                if self.hallucinationMaterial then
+                    RemoveMaterial(model, self.hallucinationMaterial)
+                    self.hallucinationMaterial = nil
+                end//
+                
+                self:SetOpacity(1, "hallucination")
+            
+            end //showma
+            
+        end//omodel
+   end //up render
+    
+end//client
+function PrototypeLab:GetIsStunAllowed()
+    return  self:GetLastStunTime() + 16 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
 function PrototypeLab:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent

@@ -233,15 +233,16 @@ function CommandStation:GetTechAllowed(techId, techNode, player)
     return allowed, canAfford
     
 end 
+if Server then
 function CommandStation:OnConstructionComplete()
 self:AddTimedCallback(CommandStation.UpdateBeacons, kBeaconDelay)
 end
 function CommandStation:UpdateBeacons()
   local time = self:GetTeam():GetBeacons()
-  
+                    //So the auto beacon triggers infinite as long as health says so.  
     if time then
-          local healthscalar = self:GetHealthScalar()
-          if healthscalar <= .75 then
+          local armorscalar = self:GetArmorScalar()
+          if armorscalar <= .15 then
              self:UseBeacon()
           end
     end
@@ -249,7 +250,9 @@ function CommandStation:UpdateBeacons()
     return true
     
 end
-function CommandStation:GetLocationName()
+function CommandStation:GetLocationName() //Minimap location name which powerpoints use to determine where things take place
+                                          //I figure it would be handy for both marines and aliens to recieve notifications 
+                                          //Perhaps even waypoints for less confusion of learning all these new map designsw.
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         return locationName
@@ -257,18 +260,13 @@ end
 local function GetIsPlayerNearby(self, player, toOrigin)
     return (player:GetOrigin() - toOrigin):GetLength() < 17 or self:GetLocationName() == player:GetLocationName()
 end
-function CommandStation:UseBeacon()
-   if self:GetIsVortexed() then return end
-                
-                
+function CommandStation:FindEligable()
                 local eligable = {}
-                
                for _, entity in ientitylist(Shared.GetEntitiesWithClassname("MarineSpectator")) do
                           if entity:GetTeamNumber() == 1 and not entity:GetIsAlive() then
                          table.insert(eligable,entity)
                           end
-               end
-               
+               end        
              if not self:GetIsSuddenDeath() then  
                  for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Marine")) do
                        if entity:GetIsAlive() and not GetIsPlayerNearby(self, entity, self:GetOrigin()) 
@@ -277,55 +275,71 @@ function CommandStation:UseBeacon()
                       end
                  end
              end
-             
-                        
-                
-            if #eligable == 0 then return end
-            
-             self.distressBeaconSound:Start()
-             self:AddTimedCallback(function()  self.distressBeaconSound:Stop() end,1 ) 
-              self.distressBeaconSound:SetOrigin(self:GetOrigin())
-               local location = GetLocationForPoint(self:GetOrigin())
+             return eligable
+end
+function CommandStation:RespawnAndTeleportEligable(eligable)
+local gameRules = GetGamerules()
+ local roundlength = Shared.GetTime() - gameRules:GetGameStartTime()
+              for i = 1, Clamp(#eligable, 1, 12 ) do
+                local player = eligable[i]
+                if player:GetIsAlive() and player:GetCanBeacon() then
+                player:TriggerBeacon(self:FindFreeSpace())
+                else
+                player:GetTeam():ReplaceRespawnPlayer(player, self:FindFreeSpace(), player:GetAngles(), nil, true) 
+                player:SetCameraDistance(0)
+                player.timeLastBeacon = Shared.GetTime()
+                end
+           end  
+end
+function CommandStation:UseBeacon()
+   if self:GetIsVortexed() then return end
+                local eligable = self:FindEligable()
+                if #eligable == 0 then return end
+               self.distressBeaconSound:Start()
+               self.distressBeaconSound:SetOrigin(self:GetOrigin())
+                self:AlertTeams()
+                self:GetTeam():DeductBeacon()
+                self:RespawnAndTeleportEligable(eligable)
+                                    --This version the sound will stop after beacon is complete
+                                    --This way I know that the beacon actually works or not. Before
+                                    --Before I couldnt tell. I just want it to work correctly before
+                                    --People judge it. I know there's alot of complaints :l. But I love 
+                                    --How this plays out too much.
+      self.distressBeaconSound:Stop()
+      self:AddTimedCallback(CommandStation.AlertMarinesWeld, 4 ) 
+   
+end
+function CommandStation:AlertTeams()
+                local location = GetLocationForPoint(self:GetOrigin())
                 local locationName = location and location:GetName() or ""
                 local locationId = Shared.GetStringIndex(locationName)
                 SendTeamMessage(self:GetTeam(), kTeamMessageTypes.AutoBeacon, locationId)
-                SendTeamMessage(2, kTeamMessageTypes.AutoBeacon, locationId)
-                self:GetTeam():DeductBeacon()
-                
-                
-            local onteam = self:GetNumPlayers()
-            
-             local gameRules = GetGamerules()
-           local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
-         local scalar = onteam * Clamp(kFrontDoorTime/kSiegeDoorTime, 0.1, 1)
-            local beaconed = 0
-           for i = 1, Clamp(#eligable, 1, scalar ) do
-                local player = eligable[i]
-                
-                if player:GetIsAlive() then
-                player:TriggerBeacon(self:FindFreeSpace())
-                player.timeLastBeacon = Shared.GetTime()
-                beaconed = beaconed + 1
-                else
-                player:SetCameraDistance(0)
-                player:GetTeam():ReplaceRespawnPlayer(player, self:FindFreeSpace(), player:GetAngles(), nil, true) 
-                player.timeLastBeacon = Shared.GetTime()
-                beaconed = beaconed + 1
-                end
-           end  
-    Print("CommandStation HP: %s, Players on team: %s, Eligable for beacon: %s, ", self:GetHealthScalar(), onteam, scalar, beaconed)
-   
+                SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.AutoBeacon, locationId)
+                //This sends on screen notifications saying the room location the beacon took place.
+end
+function CommandStation:AlertMarinesWeld()
+          //So after the auto beacon triggers, marines recieve a notification to weld the CC
+          //they may not know it but this is the cause of auto beacon
+          //Aliens can trap marines in a room like flies, taking over their hardware for their own conveniance,
+          //If a marine tries to leave the room they have 30 seconds until they are eligable again for an auto beacon,
+          //unless they so happen to die the counter resets (Perhaps later the counter may last through death but not yet)
+          for _, player in ipairs(GetEntitiesWithinRange("Marine", self:GetOrigin(), 999)) do
+        if player:GetIsAlive() and not player:isa("Commander") then
+           player:GiveOrder(kTechId.Weld, self:GetId(), self:GetOrigin(), nil, true, true)
+        end
+              CreatePheromone(kTechId.ThreatMarker, self:GetOrigin(), 2)  //Make alien threat
+        //Also give away your position to the enemies you poor S.O.B's !
 end
 function CommandStation:GetNumPlayers()
-local marines = 0
-
+local marines = 1
                for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
                           if entity:GetTeamNumber() == 1 and not entity:isa("Commander") then
-                            marines = marines +1
+                            marines = marines + 1
                           end
                end
                return marines
 end
+end//server
     function CommandStation:FindFreeSpace()
     
         for index = 1, 100 do
@@ -348,62 +362,7 @@ end
            Print("No valid spot found for CC beacon!")
            return self:GetOrigin()
     end
-if Server then
-function CommandStation:UpdateResearch(deltaTime)
- if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
-   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-    local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
-    if researchNode then
-        local gameRules = GetGamerules()
-        local projectedminutemarktounlock = 60
-        local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
-        if researchNode:GetTechId() == kTechId.CatPackTech then
-           projectedminutemarktounlock = CommandStation.UnlockCatPatTime
-        elseif researchNode:GetTechId() == kTechId.NanoShieldTech then
-          projectedminutemarktounlock = CommandStation.UnlockNanoTime
-         end
-        
-     /// kRecycleTime
-
-        //1 minute = mines
-        //so if building armory at 30 seconds
-        //then progress will be 30 seconds
-        //
-       
-       //mines 60
-       //grenades 120
-       //shotgun 180
-       //onifle 240
-       //AA 300
-       
-        local progress = Clamp(currentroundlength / projectedminutemarktounlock, 0, 1)
-        //Print("%s", progress)
-        if progress ~= self.researchProgress then
-        
-            self.researchProgress = progress
-
-            researchNode:SetResearchProgress(self.researchProgress)
-            
-            local techTree = self:GetTeam():GetTechTree()
-            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
-            
-            // Update research progress
-            if self.researchProgress == 1 then
-
-                // Mark this tech node as researched
-                researchNode:SetResearched(true)
-                
-                techTree:QueueOnResearchComplete(self.researchingId, self)
-                
-            end
-        
-        end
-        
-    end 
-self.timeLastUpdateCheck = Shared.GetTime()
 end
-end
-end//server
 function CommandStation:GetIsPlayerInside(player)
 
     // Check to see if we're in range of the visible center of the login platform

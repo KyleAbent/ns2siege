@@ -475,10 +475,10 @@ local function MultiplyFlameAble(target, attacker, doer, damage, armorFractionUs
 end
 
 local function DoubleHealthPerArmorForStructures(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint)
-    if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
-        healthPerArmor = healthPerArmor * (kStructureLightHealthPerArmor / kHealthPointsPerArmor)
-        armorFractionUsed = kStructureLightArmorUseFraction
-    end
+   // if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
+   //     healthPerArmor = healthPerArmor * (kStructureLightHealthPerArmor / kHealthPointsPerArmor)
+   //     armorFractionUsed = kStructureLightArmorUseFraction
+   // end
     return damage, armorFractionUsed, healthPerArmor
 end
 

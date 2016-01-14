@@ -269,7 +269,7 @@ function Marine:GetHasMineMode()
 return self.minemode
 end
 function Marine:GetCanBeacon()
-    return (self.timeLastBeacon + (kBeaconDelay*2) ) < Shared.GetTime()
+    return (self.timeLastBeacon + 30) > Shared.GetTime()
 end
 function Marine:GetCanJump()
     return not self:GetIsWebbed() and ( self:GetIsOnGround() or self:GetIsOnLadder() )
@@ -1132,7 +1132,7 @@ end
 // dont allow marines to me chain stomped. this gives them breathing time and the onos needs to time the stomps instead of spamming
 // and being able to permanently disable the marine
 function Marine:GetIsStunAllowed()
-    return self:GetLastStunTime() + 4 < Shared.GetTime() and not self.spawnprotection and (GetAreFrontDoorsOpen() or Shared.GetCheatsEnabled()) and self:GetIsOnGround()
+    return self.timeLastStun + 8 < Shared.GetTime() and not self.spawnprotection and (GetAreFrontDoorsOpen() or Shared.GetCheatsEnabled()) and self:GetIsOnGround()
 end
 
 

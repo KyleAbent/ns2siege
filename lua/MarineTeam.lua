@@ -178,43 +178,51 @@ local function CheckForNoIPs(self)
     
 end
 
-local function SpawnInfantryPortal(self, techPoint)
-
-    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
-    
-    local spawnPoint = nil
-    
-    // First check the predefined spawn points. Look for a close one.
-    for p = 1, #Server.infantryPortalSpawnPoints do
-		
-		if not takenInfantryPortalPoints[p] then 
-			local predefinedSpawnPoint = Server.infantryPortalSpawnPoints[p]
-			if (predefinedSpawnPoint - techPointOrigin):GetLength() <= kInfantryPortalAttachRange then
-				spawnPoint = predefinedSpawnPoint
-				takenInfantryPortalPoints[p] = true
-				break
-			end
-		end
+local function SpawnBaseEntities(self, techPoint)
+//messy and mir-air. But whatever. Requires GetGroundPosition
+    local techPointOrigin = techPoint:GetOrigin()
+        local IPspawnPoint1 = GetRandomBuildPosition( kTechId.InfantryPortal, techPointOrigin, 12 )
+        local IPspawnPoint2 = GetRandomBuildPosition( kTechId.InfantryPortal, techPointOrigin, 12 )
+        local ArmoryPoint = GetRandomBuildPosition( kTechId.Armory, techPointOrigin, 12 )
+        local ArmsLabPoint = GetRandomBuildPosition( kTechId.ArmsLab, techPointOrigin, 12 )
+        local MacPoint1 = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, 12 )
+        local MacPoint2 = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, 12 )
+        local MacPoint3 = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, 12 )
+        local PrototypeLabPoint = GetRandomBuildPosition( kTechId.PrototypeLab, techPointOrigin, 12 )
+  
+    CreateEntity(InfantryPortal.kMapName, IPspawnPoint1, self:GetTeamNumber())
+    CreateEntity(InfantryPortal.kMapName, IPspawnPoint2, self:GetTeamNumber())
+    CreateEntity(Armory.kMapName, ArmoryPoint, self:GetTeamNumber())
+    CreateEntity(ArmsLab.kMapName, ArmsLabPoint, self:GetTeamNumber())
+    CreateEntity(MAC.kMapName, MacPoint1, self:GetTeamNumber())
+    CreateEntity(MAC.kMapName, MacPoint2, self:GetTeamNumber())
+    CreateEntity(MAC.kMapName, MacPoint3, self:GetTeamNumber())
+    CreateEntity(PrototypeLab.kMapName, PrototypeLabPoint, self:GetTeamNumber())
         
-    end
-    
-    if not spawnPoint then
-		
-        spawnPoint = GetRandomBuildPosition( kTechId.InfantryPortal, techPointOrigin, kInfantryPortalAttachRange )
-        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
-		
-    end
-    
-    if spawnPoint then
-    
-        local ip = CreateEntity(InfantryPortal.kMapName, spawnPoint, self:GetTeamNumber())
-        
-        SetRandomOrientation(ip)
-        ip:SetConstructionComplete()
-        
-    end
     
 end
+   local function FindFreeSpace(origin)
+    
+        for index = 1, 100 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, 1, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == GetLocationForPoint(origin)
+        
+           if spawnPoint ~= nil and sameLocation  then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for marine initial structure spawn!")
+           return origin
+    end
 local function SpawnMac(self, techPoint)
 
     local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
@@ -542,8 +550,7 @@ function MarineTeam:SpawnInitialStructures(techPoint)
 
     local tower, commandStation = PlayingTeam.SpawnInitialStructures(self, techPoint)
     
-    SpawnInfantryPortal(self, techPoint)
-    SpawnInfantryPortal(self, techPoint)
+    SpawnBaseEntities(self, techPoint)
     return tower, commandStation
     
 end

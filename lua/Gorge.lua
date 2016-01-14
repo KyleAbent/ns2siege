@@ -46,6 +46,8 @@ local networkVars =
     timeOfLastPhase = "private time",
     modelsize = "float (0 to 10 by .1)",
            gravity = "float (-5 to 5 by 1)",
+        gorgeusingLerkID = "entityid",
+    isriding = "boolean",
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
@@ -132,6 +134,8 @@ function Gorge:OnCreate()
     self.wallWalking = false
     self.wallWalkingNormalGoal = Vector.yAxis
     self.timeLastWallJump = 0
+    self.gorgeusingLerkID = Entity.invalidI
+    self.isriding = false
 end
 
 function Gorge:OnInitialized()
@@ -448,7 +452,7 @@ function Gorge:GetIsSiege()
         end
             return false
 end
-/*
+
 function Gorge:GetCanBeUsed(player, useSuccessTable)
 if  not player:isa("Lerk") then useSuccessTable.useSuccess = false return end
  if ( self.isriding and self.gorgeusingLerkID == player:GetId() ) or not self.isriding then useSuccessTable.useSuccess = true end
@@ -456,7 +460,7 @@ end
 function Gorge:OnUse(player, elapsedTime, useSuccessTable)
   
        
-      if not player.isoccupied then
+      if player.isoccupied == false then
      player.isoccupied = true 
     self.gorgeusingLerkID = player:GetId()
     player.lerkcarryingGorgeId = self:GetId()
@@ -471,7 +475,7 @@ function Gorge:OnUse(player, elapsedTime, useSuccessTable)
        
        
 end
-*/
+
 function Gorge:ModifyJump(input, velocity, jumpVelocity)
 
     if self:GetCanWallJump() then
@@ -703,6 +707,28 @@ function Gorge:PreUpdateMove(input, runningPrediction)
         // When not wall walking, the goal is always directly up (running on ground).
         self.wallWalkingNormalGoal = Vector.yAxis
     end
+    
+    	if self.isriding then 
+	 	local drifter = Shared.GetEntity( self.drifterId ) 
+	 	 if drifter then
+	   //    if not drifter:GetIsAlive() then self.isriding = false self.drifterId = Entity.invalidI return end 
+	    	local offset = drifter:GetOrigin() + Vector(0,.5,0)
+	 	   self:SetOrigin(offset)
+           if not self:GetOrigin() == offset then self:SetOrigin(offset) SetMoveForHitregAnalysis(input)  end
+         else
+             local lerk = Shared.GetEntity(self.gorgeusingLerkID)
+             if lerk then
+         	       if not lerk then self.isriding = false self.gorgeusingLerkID = Entity.invalidI return end 
+         	       local origin = lerk:GetOrigin() + Vector(0,.5,0)
+	 	           self.fullPrecisionOrigin = origin
+	 	          self:SetOrigin(origin)
+                  if not self:GetOrigin() == origin then self:SetOrigin(origin)  end
+                  SetMoveForHitregAnalysis(input)
+             end
+         end
+   end
+   
+   
 
   //  if self.leaping and Shared.GetTime() > self.timeOfLeap + kLeapTime then
   //      self.leaping = false

@@ -26,14 +26,13 @@ if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationN
 return false
 end
 function Marine:TriggerBeacon(location)
-     local locationto = location
-         self:AddTimedCallback(function()        
-            if HasMixin(player, "SmoothedRelevancy") then
-            player:StartSmoothedRelevancy(locationto)
+ if not self:GetCanBeacon() then return end
+     local locationto = location      
+            if HasMixin(self, "SmoothedRelevancy") then
+            self:StartSmoothedRelevancy(locationto)
              end      
            self:SetOrigin(locationto)
-          // self.lastbeacontime = Shared.GetTime()
-           end, 4)
+           self.lastbeacontime = Shared.GetTime()
 end
 function Marine:OnConstructTarget(target)
     UpdateUnitStatusPercentage(self, target)
@@ -156,7 +155,7 @@ function Marine:CopyPlayerDataFrom(player)
         self.parasited = player.parasited
         self:OnParasited()
     end
-    
+    self.timeLastBeacon = player.timeLastBeacon
 end
 
 function Marine:SetRuptured()

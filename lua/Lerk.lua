@@ -57,7 +57,8 @@ local networkVars =
     flapPressed = "private compensated boolean",
     timeOfLastPhase = "private time",
     modelsize = "float (0 to 10 by .1)",
-    occupied = "boolean",
+    isoccupied = "boolean",
+       lerkcarryingGorgeId = "entityid",
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
@@ -150,6 +151,7 @@ function Lerk:OnCreate()
     end
         self.modelsize = 1
         self.isoccupied = false
+        self.lerkcarryingGorgeId = Entity.invalidI
 end
 
 function Lerk:OnInitialized()
@@ -698,7 +700,7 @@ function Lerk:GetIsSiege()
         end
             return false
 end
-/*
+
 function Lerk:GetCanBeUsed(player, useSuccessTable)
 if not player:isa("Gorge")  then useSuccessTable.useSuccess = false return end
 if ( self.isoccupied and player.gorgeusingLerkID == self:GetId() ) or not self.isoccupied then useSuccessTable.useSuccess = true end
@@ -717,8 +719,8 @@ function Lerk:OnUse(player, elapsedTime, useSuccessTable)
      player:SetOrigin(self:GetOrigin())
      end
 end
-*/
-/*
+
+
 function Lerk:OnKill()
 
    if self.occupied then
@@ -731,5 +733,5 @@ function Lerk:OnKill()
    end
 
 end
-*/
+
 Shared.LinkClassToMap("Lerk", Lerk.kMapName, networkVars, true)

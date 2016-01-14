@@ -120,10 +120,7 @@ local networkVars =
     spawnprotection = "boolean",
    modelsize = "float (0 to 10 by .1)",
    infiniteenergy = "boolean", 
-   isriding = "boolean",
    drifterId = "entityid",
-   gorgeusingLerkID = "entityid",
-   lerkcarryingGorgeId = "entityid",
    primaledID = "entityid",
    lastredeemorrebirthtime = "time",
   canredeemorrebirth = "boolean",
@@ -204,10 +201,9 @@ function Alien:OnCreate()
     end
       self.modelsize = 1  
       self.infiniteenergy = false
-     self.isriding = false
      self.drifterId = Entity.invalidI
-   self.gorgeusingLerkID = Entity.invalidI
-   self.lerkcarryingGorgeId = Entity.invalidI
+
+
    self.primaledID = Entity.invalidI  
 end
 
@@ -780,12 +776,6 @@ function Alien:OnUpdateAnimationInput(modelMixin)
     
 end
 function Alien:QualifiesForFocus()   //Funny this method doesnt allow healspray effected on slots 2-4 :P owell for now
-
-   if self:isa("Onos") then
-      local weapon = self:GetActiveWeapon()
-      local notstomping = weapon and HasMixin(weapon, "Stomp") and weapon.primaryAttacking
-      if notstomping then return true end
-   end
    
            if self:isa("Gorge") then
        if
@@ -900,25 +890,5 @@ function Alien:ModifyHeal(healTable)
     
 end 
 
-function Alien:UpdateMove( input , runningPrediction )
-
-    
-	if self.isriding then 
-	 	local drifter = Shared.GetEntity( self.drifterId ) 
-	 	 if drifter then
-	   //    if not drifter:GetIsAlive() then self.isriding = false self.drifterId = Entity.invalidI return end 
-	    	local offset = drifter:GetOrigin() + Vector(0,.5,0)
-	 	   self:SetOrigin(offset)
-           if not self:GetOrigin() == offset then self:SetOrigin(offset) SetMoveForHitregAnalysis(input)  end
-         else
-             local lerk = Shared.GetEntity(self.gorgeusingLerkID)
-             if lerk then
-         	       if not lerk then self.isriding = false self.gorgeusingLerkID = Entity.invalidI return end 
-	 	           self.fullPrecisionOrigin = lerk:GetOrigin()
-	 	           SetMoveForHitregAnalysis(input) 
-             end
-         end
-   end
-end
 
 Shared.LinkClassToMap("Alien", Alien.kMapName, networkVars, true)

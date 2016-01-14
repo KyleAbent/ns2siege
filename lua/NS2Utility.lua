@@ -2049,11 +2049,11 @@ function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, da
     
 
     
-    if attacker:isa("Grenade") then
+    if attacker:isa("Grenade") or attacker:isa("FireGrenade") then
     
         local owner = attacker:GetOwner()
         if owner and owner:GetId() == target:GetId() then
-            return false
+            return true
         end
         
     end

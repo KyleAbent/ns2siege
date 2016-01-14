@@ -86,7 +86,7 @@ function Gore:OnCreate()
     if Server then
         self.lastAttackType = Gore.kAttackType.None
     end
-    
+    self.primaryAttacking = false  
 end
 
 function Gore:GetDeathIconIndex()
@@ -129,7 +129,7 @@ function Gore:GetMeleeBase()
     return 1, 1.4
 end
 
-function Gore:Attack(player)
+function Gore:Attack(player, charged)
 
     local didHit = false
     local impactPoint = nil
@@ -142,8 +142,9 @@ function Gore:Attack(player)
     
     local range = GetGoreAttackRange(player:GetViewCoords())
     didHit, target, impactPoint = AttackMeleeCapsule(self, player, kGoreDamage, range)
-
+     if not charged then
     player:DeductAbilityEnergy(self:GetEnergyCost(player))
+     end
     
     return didHit, impactPoint, target
     
@@ -157,7 +158,7 @@ function Gore:OnTag(tagName)
     
         local player = self:GetParent()
         
-        local didHit, impactPoint, target = self:Attack(player)
+        local didHit, impactPoint, target = self:Attack(player, false)
         
         // play sound effects
         self:TriggerEffects("gore_attack")
@@ -197,6 +198,7 @@ function Gore:OnPrimaryAttack(player)
     if player:GetEnergy() >= self:GetEnergyCost(player) then
         self.attackType = nextAttackType
         self.attackButtonPressed = true
+        self.primaryAttacking = true
     else
         self:OnAttackEnd()
     end 
@@ -211,6 +213,7 @@ function Gore:OnPrimaryAttackEnd(player)
 end
 
 function Gore:OnAttackEnd()
+    self.primaryAttacking = false
     self.attackType = Gore.kAttackType.None
     self.attackButtonPressed = false
 end

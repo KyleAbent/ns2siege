@@ -1,4 +1,5 @@
-kFireFlameCloudDamagePerSecond = 4
+kMatureVeilHealth = 2000
+kFireFlameCloudDamagePerSecond = 24
 kExosuitCost = 10
 kARCArmor = 250
 CCSiegeBeaconDelay = 10
@@ -6,6 +7,8 @@ kParasitesToDisable = 4
 kFadeGravityMod = 1
 kMarineResearchDelay = 15
 kInfestationBuildModifier = .5
+      //Purely in theory for server perf. 
+       //Not in any way meant for balance
 kAlienRegenerationTime = 4
 kAlienInnateRegenerationPercentage  = 0.04
 kAlienMinInnateRegeneration = 2
@@ -366,9 +369,6 @@ kSkulkHealth = 75
 kMucousShieldCooldown = 10
 kMucousShieldDuration = 10
 kGorgeNoBuildNearDoorsRadius = 10
-
-kARCHealth = 2200    kARCArmor = 500    kARCPointValue = 5
-kARCDeployedHealth = 2200    kARCDeployedArmor = 50
 
 
 //kMatureHydraHealth = 675    kMatureHydraArmor = 100  <- Buffed value

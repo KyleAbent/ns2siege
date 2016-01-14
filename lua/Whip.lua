@@ -22,7 +22,7 @@ Script.Load("lua/DamageMixin.lua")
 // Handle movement
 Script.Load("lua/AlienStructureMoveMixin.lua")
 //Script.Load("lua/ResearchMixin.lua")
-local kWhipMaxLevel = 20
+local kWhipMaxLevel = 99
 local kWhipScaleSize = 1.8
 local kWhipXPGain = 1
 local kWhipHealXPGain = 1
@@ -191,15 +191,36 @@ function Whip:GetFov()
     return Whip.kFov
 end
 function Whip:GetAddXPAmount()
-return kWhipHealXPGain
+return self:GetIsSetup() and kWhipHealXPGain * 4 or kWhipHealXPGain
 end
-/*
+function Whip:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
+function Whip:GetIsSiege()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
 function Whip:OnTakeDamage(damage, attacker, doer, point)
-if self:GetIsBuilt() and attacker and attacker:GetTeamNumber() == 1 then
+if not self:GetIsSiege() and self:GetIsBuilt() and attacker and attacker:GetTeamNumber() == 1 then
 self:AddXP(kWhipXPGain/100)
 end
 end
-*/
+
 // --- DamageMixin
 function Whip:GetShowHitIndicator()
     return false
@@ -574,7 +595,7 @@ function Whip:UpdateAttacks()
 end
 
 function Whip:UpdateRootState()
-    
+
     local infested = self:GetGameEffectMask(kGameEffect.OnInfestation)
     local moveOrdered = self:GetCurrentOrder() and self:GetCurrentOrder():GetType() == kTechId.Move //or self:GetCurrentOrder():GetType() == kTechId.Follow
     // unroot if we have a move order or infestation recedes
@@ -624,6 +645,7 @@ function Whip:Unroot()
 end
 
 function Whip:GetCanStartSlapAttack()
+
     if self.slapping or self.bombarding or not self.rooted or self:GetIsOnFire() then
         return false
     end

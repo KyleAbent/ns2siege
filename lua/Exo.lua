@@ -295,6 +295,14 @@ end
 function Exo:GetCanBeacon()
     return (self.timeLastBeacon + (kBeaconDelay*2 )) < Shared.GetTime()
 end
+function Exo:TriggerBeacon(location)
+     local locationto = location      
+            if HasMixin(self, "SmoothedRelevancy") then
+            self:StartSmoothedRelevancy(locationto)
+             end      
+           self:SetOrigin(locationto)
+           self.lastbeacontime = Shared.GetTime()
+end
 function Exo:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
 	local scale = self.modelsize
@@ -316,7 +324,7 @@ function Exo:GetCanDoorInteract(inEntity)
 return false
 end
 function Exo:GetIsStunAllowed()
-    return self:GetLastStunTime() + 8 < Shared.GetTime() and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
+    return self.timeLastStun + 12 < Shared.GetTime() and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
 function Exo:OnInitialized()
 
@@ -616,6 +624,7 @@ return false
 end
 end
 function Exo:SetArmorAmount() 
+/*
    local level = 1
      if Server then
   level = GetFairHealthValues()
@@ -626,6 +635,14 @@ function Exo:SetArmorAmount()
     newMaxArmor = Clamp(newMaxArmor + self.armorBonus, 300, 600)
     self:AdjustMaxArmor(newMaxArmor)
    // Print("armor is %s", newMaxArmor)
+   */
+       local newMaxArmor = (kExosuitArmor + self:GetArmorLevel() * kExosuitArmorPerUpgradeLevel) + self.armorBonus
+    local ratio = (kActivePlayers/24)
+    local deductamount = Clamp(newMaxArmor - ratio * newMaxArmor, 1, 300)
+    newMaxArmor = Clamp(newMaxArmor - deductamount, 300, 600)
+    self:AdjustMaxArmor(newMaxArmor)
+   // Print("armor is %s", newMaxArmor)
+   
 end
 function Exo:GetArmorLevel()
 

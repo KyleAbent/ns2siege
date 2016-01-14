@@ -1,10 +1,6 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Marine\Grenade.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+/*
+Modified version of GasGrenade with custom cinematics and fire dmg rules
+*/
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
@@ -23,8 +19,8 @@ FireGrenade.kUseServerPosition = true
 
 
 FireGrenade.kRadius = 0.085
-FireGrenade.kClearOnImpact = false
-FireGrenade.kClearOnEnemyImpact = false 
+FireGrenade.kClearOnImpact = true
+FireGrenade.kClearOnEnemyImpact = true 
 
 
 local networkVars = 
@@ -65,12 +61,19 @@ function FireGrenade:GetDeathIconIndex()
     return kDeathMessageIcon.GasGrenade
 end
 
-
+function FireGrenade:ProcessNearMiss( targetHit, endPoint )
+    if targetHit and GetAreEnemies(self, targetHit) then
+        if Server then
+            self:ReleaseGas()
+        end
+        return true
+    end
+end 
     function FireGrenade:ProcessHit(targetHit, surface, normal, endPoint )
 
-       if self:GetVelocity():GetLength() > 2 then
-           self:TriggerEffects("grenade_bounce")
-        end
+       //if self:GetVelocity():GetLength() > 2 then
+           self:ReleaseGas()
+      //  end
         
     end
 if Client then
@@ -97,10 +100,8 @@ elseif Server then
     
         if self.releaseGas then
         
-            local direction = Vector(math.random() - 0.5, 0.5, math.random() - 0.5)
-            direction:Normalize()
             
-            local trace = Shared.TraceRay(self:GetOrigin() + Vector(0, 0.2, 0), self:GetOrigin() + direction * 7, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterAll())
+            local trace = Shared.TraceRay(self:GetOrigin(), self:GetOrigin() + Vector(0,1,0), CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterAll())
             local fireflamecloud = CreateEntity(FireFlameCloud.kMapName, self:GetOrigin(), self:GetTeamNumber())
             fireflamecloud:SetEndPos(trace.endPoint)
             
@@ -111,7 +112,7 @@ elseif Server then
         
         end
         
-        return true
+        return false // one time
     
     end
 end
@@ -128,8 +129,8 @@ local gFireFlameCloudDamageTakers = {}
 
 local kCloudUpdateRate = 1
 local kSpreadDelay = 0.6
-local kFireFlameCloudRadius = 7
-local kFireFlameCloudLifetime = 6
+local kFireFlameCloudRadius = 4
+local kFireFlameCloudLifetime = 8
 
 local kCloudMoveSpeed = 2
 
@@ -173,6 +174,7 @@ if Client then
         local cinematic = Client.CreateCinematic(RenderScene.Zone_Default)
         cinematic:SetCinematic(FireFlameCloud.kEffectName)
         cinematic:SetParent(self)
+        cinematic:SetRepeatStyle(Cinematic.Repeat_Loop)
         cinematic:SetCoords(Coords.GetIdentity())
         
     end
@@ -209,7 +211,6 @@ local function GetIsInCloud(self, entity, radius)
     return (self:GetOrigin() - targetPos):GetLength() <= radius
 
 end
-
 function FireFlameCloud:DoSetOnFire()
 
     local radius = math.min(1, (Shared.GetTime() - self.creationTime) / kSpreadDelay) * kFireFlameCloudRadius
@@ -217,8 +218,13 @@ function FireFlameCloud:DoSetOnFire()
     for _, entity in ipairs(GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), 2*kFireFlameCloudRadius)) do
 
         if not GetRecentlyDamaged(entity:GetId(), (Shared.GetTime() - kCloudUpdateRate)) and GetIsInCloud(self, entity, radius) then
-            
-            self:DoDamage(kFireFlameCloudDamagePerSecond * kCloudUpdateRate, entity, entity:GetOrigin(), GetNormalizedVector(self:GetOrigin() - entity:GetOrigin()), "none")
+          local stackdmg = GetEntitiesWithinRange("FireGrenade", self:GetOrigin(), 4)
+          local number = #stackdmg
+          local variantdamage = kFireFlameCloudDamagePerSecond
+            //  variantdamage = ConditionalValue(entity:isa("Structure"), kFireFlameCloudDamagePerSecond/number, kFireFlameCloudDamagePerSecond)
+            //  variantdamage = ConditionalValuue(entity:isa("Player"), kFireFlameCloudDamagePerSecond, variantdamage)
+          number = Clamp(number, 1, 4)
+            self:DoDamage( (number * variantdamage) * kCloudUpdateRate, entity, entity:GetOrigin(), GetNormalizedVector(self:GetOrigin() - entity:GetOrigin()), "none")
          //   entity:SetOnFire(4)
             SetRecentlyDamaged(entity:GetId())
             

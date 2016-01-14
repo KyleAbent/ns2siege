@@ -17,7 +17,11 @@ local kCheckLowHealthRate = 12
 // A little bigger than we might expect because the hive origin isn't on the ground
 local kEggMinRange = 4
 local kEggMaxRange = 22
-
+function Hive:HasShadeHive()
+      local hives = GetEntitiesWithinRange("ShadeHive", self:GetOrigin(), 999)
+   if #hives >=1 then return true end
+   return false
+end
 function Hive:OnResearchComplete(researchId)
 
     local success = false
@@ -33,11 +37,9 @@ function Hive:OnResearchComplete(researchId)
         hiveTypeChosen = true
         
     elseif researchId == kTechId.UpgradeToShadeHive then
-    
         success = self:UpgradeToTechId(kTechId.ShadeHive)
         newTechId = kTechId.ShadeHive
         hiveTypeChosen = true
-        
     elseif researchId == kTechId.UpgradeToShiftHive then
     
         success = self:UpgradeToTechId(kTechId.ShiftHive)
@@ -173,9 +175,9 @@ local function UpdateHealing(self)
             
                 if player:GetIsAlive() and ((player:GetOrigin() - self:GetOrigin()):GetLength() < Hive.kHealRadius) then   
                     // min healing, affects skulk only         
-                      if player.GetLocationName and not ( string.find(player:GetLocationName(), "siege") or string.find(player:GetLocationName(), "Siege") ) then
+                      //if player.GetLocationName and not ( string.find(player:GetLocationName(), "siege") or string.find(player:GetLocationName(), "Siege") ) then
                     player:AddHealth(math.max(10, player:GetMaxHealth() * Hive.kHealthPercentage), true )                
-                      end
+                     // end
                 end
                 
             end
@@ -794,7 +796,13 @@ function Hive:UpdateAliensWeaponsManually() ///Seriously this makes more sense t
    end
 end
 function Hive:AutoUpgrade()
-        if GetShellLevel(2) == 0  then
+        if GetSpurLevel(2) == 0 then  
+           self:UpgradeToTechId(kTechId.ShiftHive)
+           local team = self:GetTeam()
+           if team then
+           team:OnUpgradeChamberConstructed(self)
+           end
+        elseif GetShellLevel(2) == 0  then
            self:UpgradeToTechId(kTechId.CragHive)
            local team = self:GetTeam()
            if team then
