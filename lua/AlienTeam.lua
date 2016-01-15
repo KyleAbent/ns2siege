@@ -760,6 +760,11 @@ function AlienTeam:InitTechTree()
     self.techTree:AddOrder(kTechId.Grow)
     self.techTree:AddAction(kTechId.FollowAlien)    
     
+    
+    self.techTree:AddActivation(kTechId.ARCDeploy)
+    self.techTree:AddActivation(kTechId.ARCUndeploy)
+    
+    
     self.techTree:AddPassive(kTechId.Infestation)
     self.techTree:AddPassive(kTechId.SpawnAlien)
     self.techTree:AddPassive(kTechId.CollectResources, kTechId.Harvester)

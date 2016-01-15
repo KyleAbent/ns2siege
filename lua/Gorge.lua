@@ -470,7 +470,6 @@ function Gorge:OnUse(player, elapsedTime, useSuccessTable)
      self.gorgeusingLerkID = Entity.invalidI
      player.lerkcarryingGorgeId = Entity.invalidI
      self.isriding = false
-     self:SetOrigin(player:GetOrigin())
      end
        
        
@@ -718,7 +717,7 @@ function Gorge:PreUpdateMove(input, runningPrediction)
          else
              local lerk = Shared.GetEntity(self.gorgeusingLerkID)
              if lerk then
-         	       if not lerk then self.isriding = false self.gorgeusingLerkID = Entity.invalidI return end 
+         	       if not lerk then self.isriding = false self.gorgeusingLerkID = Entity.invalidI  self:RedemAlienToHive() return end 
          	       local origin = lerk:GetOrigin() + Vector(0,.5,0)
 	 	           self.fullPrecisionOrigin = origin
 	 	          self:SetOrigin(origin)

@@ -310,6 +310,11 @@ function ARC:AddXP(amount)
     return xpReward
     
 end
+/*
+function ARC:GetCanDieOverride() 
+return false
+end
+*/
 function ARC:GetArcsInRange()
       local arc = GetEntitiesWithinRange("ARC", self:GetOrigin(), Crag.kHealRadius)
            return Clamp(#arc, 0, 100)
@@ -319,7 +324,11 @@ function ARC:GetLevel()
 end
   function ARC:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Level %s ARC (%s)"), self:GetLevel(), self:GetArcsInRange())
+      //  if self.health == 0 then
+            unitName = string.format(Locale.ResolveString("ALIEN HIJACKED ARC"))
+      //  else
+        unitName = string.format(Locale.ResolveString("Level %s ARC (%s)"), self:GetLevel(), self:GetArcsInRange())
+   //end
 return unitName
 end 
 function ARC:Deploy(commander)
@@ -568,8 +577,19 @@ function ARC:OnUpdate(deltaTime)
             if self.Levelslowly == nil or (Shared.GetTime() > self.Levelslowly + 4) then
             self:AddXP(ARC.GainXP)
             self.Levelslowly = Shared.GetTime()
-            end
+  /*
+      if self.health == 0 then
       
+         if self.team == 1 then
+            self.team = 2
+            self:PerformActivation(kTechId.ARCDeploy, nil, normal, commander)
+         end
+      elseif self.health ~= 0 and self.team ~= 1 then
+            self.team = 1
+      
+      end
+   */   
+                  end
    
         self:UpdateOrders(deltaTime)
         self:UpdateSmoothAngles(deltaTime)

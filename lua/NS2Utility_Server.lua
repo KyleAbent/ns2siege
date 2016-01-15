@@ -533,8 +533,16 @@ local level = 1
         level = level * (kActivePlayers/24)
        return level 
 end
+function GetHandicapRespawnLength()
+                 --Totally imperfect. I just want dynamic. I dont feel like writing something
+                 --As complex as for marines just yet. Down below is something really really
+                 --Thought out and appears to work as intended thus far.
+        return GetFairRespawnLength() / 2
+        
+end
 function GetFairRespawnLength()
 //Kyle Abent disabled team balance for fair respawn length for marine side only at the moment test 12.31 16
+--Works well as of 1.15
 local default = kMarineRespawnTime
  local gameRules = GetGamerules()
  if not gameRules:GetGameStarted() then return kMarineRespawnTime end 

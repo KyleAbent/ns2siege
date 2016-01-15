@@ -161,7 +161,7 @@ local function UpdateAutoOpen(self, timePassed)
         end
         
    //end
-    if not self.canbewelded then self.canbewelded = true  self:ActivateNanoShield(16) end
+    if not self.canbewelded then self.canbewelded = true  if self:CheckBuffNeeded() then self:ActivateNanoShield(16) end end
     if not self.isvisible then self.isvisible = true end
     if self:GetPhysicsGroup() ~= PhysicsGroup.FuncMoveable then self:SetPhysicsGroup(PhysicsGroup.FuncMoveable) end
     return true
@@ -300,6 +300,19 @@ function FuncDoor:GetCanTakeDamageOverride()
     return true
     end
 end
+function FuncDoor:CheckBuffNeeded()
+//Don't nano during siege
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return false
+               end
+            end
+        end
+            return true
+end
+
 function FuncDoor:OnWeldOverride(doer, elapsedTime, player)
 
     if self:GetCanBeWelded(doer) and not GetPowerFuncDoorRecentlyDestroyed(self) then

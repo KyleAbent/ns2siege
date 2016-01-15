@@ -1873,17 +1873,18 @@ function NS2Gamerules:PickMainRoom()
      local locations = EntityListToTable(Shared.GetEntitiesWithClassname("Location"))
      for i = 1, #locations do //
         local location = locations[i]
-               if self.siegedoorsopened then
-                          if string.find(location.name, "Siege") or string.find(location.name, "siege") then 
-                          local powerpoint = GetPowerPointForLocation(location.name)
-                             if powerpoint ~= nil then
-                             powerpoint:SetMainRoom()
-                              end
-                           self.mainrooms = Shared.GetTime()
-                           self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds)
-                            return true //or break? meh.
-                          end
-                end //siege
+                      //Setting main room to siege is lame. Turns out. 
+              // if self.siegedoorsopened then
+                       //   if string.find(location.name, "Siege") or string.find(location.name, "siege") then 
+                       //   local powerpoint = GetPowerPointForLocation(location.name)
+                       //      if powerpoint ~= nil then
+                       //      powerpoint:SetMainRoom()
+                       //       end
+                       //    self.mainrooms = Shared.GetTime()
+                       //    self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds)
+                       //     return true //or break? meh.
+                       //   end
+                //end //siege
               if self:GetCombatEntitiesCountInRoom(location) >=  ( self:GetCombatEntitiesCount() * kPercentofInCombatToQualify ) then  
                   self.mainrooms = Shared.GetTime() //Prevents 2 rooms being picked at once?
                    self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds) // Clears and says is ready for another

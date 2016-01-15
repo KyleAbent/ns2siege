@@ -135,7 +135,7 @@ local function CreateSpinEffect(self)
         self.clientQueuedPlayerId = self.queuedPlayerId
     end
     
-    local spawnProgress = Clamp((Shared.GetTime() - self.timeSpinStarted) / kMarineRespawnTime, 0, 1)
+    local spawnProgress = Clamp((Shared.GetTime() - self.timeSpinStarted) / self:GetSpawnTime(), 0, 1)
     
     self.fakeMarineModel:SetIsVisible(true)
     self.fakeMarineMaterial:SetParameter("spawnProgress", spawnProgress+0.2)    // Add a little so it always fills up

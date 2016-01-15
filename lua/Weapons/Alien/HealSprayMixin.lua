@@ -303,7 +303,8 @@ local function PerformHealSpray(self, player)
         
             if entity:GetTeamNumber() == player:GetTeamNumber() then
                 HealEntity(self, player, entity)
-                    if entity:isa("Hydra") or entity:isa("Whip") and entity:GetIsBuilt() then 
+                  --so gorge healspray levels up structures based on their.... settings.
+                    if entity:isa("Hydra") or entity:isa("Whip") or entity:isa("Crag") or entity:isa("Shift") or entity:isa("Shade") and entity:GetIsBuilt() then 
                           local target = entity
                           local prevlevel = target.level
                           local focusmult = 1

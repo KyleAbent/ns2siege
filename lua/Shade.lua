@@ -72,9 +72,14 @@ Shade.kCloakRadius = 17
 
 Shade.kCloakUpdateRate = 0.2
 
+Shade.MaxLevel = 99
+Shade.ScaleSize = 2
+Shade.GainXP = 1
+
 local networkVars = { 
     moving = "boolean",
     lastinktrigger = "time",
+    level = "float (0 to " .. Shade.MaxLevel .. " by .1)",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -142,7 +147,7 @@ function Shade:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     self.lastinktrigger = 0
-    
+    self.level = 1
 
 end
 
@@ -214,6 +219,36 @@ function Shade:PerformAction(techNode)
         self:ClearOrders()
     end
 
+end
+function Shade:GetAddXPAmount()
+return self:GetIsSetup() and Shade.GainXP * 4 or Shade.GainXP
+end
+function Shade:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
+function Shade:AddXP(amount)
+
+    local xpReward = 0
+        xpReward = math.min(amount, Shade.MaxLevel - self.level)
+        self.level = self.level + xpReward
+   
+      
+   // self:AdjustMaxHealth(kHydraHealth * (self.level/100) + kHydraHealth) 
+   // self:AdjustMaxArmor(kHydraArmor * (self.level/100) + kHydraArmor)
+    
+    return xpReward
+    
+end
+function Shade:GetLevel()
+        return Round(self.level, 2)
 end
 
 function Shade:OnResearchComplete(researchId)
@@ -329,10 +364,26 @@ end
 function Shade:OnUpdate(deltaTime)
     ScriptActor.OnUpdate(self, deltaTime)        
     UpdateAlienStructureMove(self, deltaTime)
+        if Server then
     
+            if self.Levelslowly == nil or (Shared.GetTime() > self.Levelslowly + 4) then
+            self:AddXP(Shade.GainXP * 4)
+            self.Levelslowly = Shared.GetTime()
+            end
+    
+    end
     
 end
-
+function Shade:OnScan()
+               
+     if self:GetIsBuilt() and not self:GetIsOnFire() and (self.lastinktrigger + kShadeInkCooldown) > Shared.GetTime() then
+                 local number = math.random(self.level, 100)
+                 if number >= 99 then self:TriggerInk() end
+     end     
+                 
+    self:TriggerUncloak()
+    
+end
 function Shade:IsInRangeOfHive()
       local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)
    if #hives >=1 then return true end
@@ -361,14 +412,15 @@ function Shade:GetIsSuddenDeath()
             return false
 
 end
+
   function Shade:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    
+    --Kyle Abent :) Original writings! Wooo! who woulda thunk it? eh?. well you know it plays out fun, so who knows. May be onto somethin here.. ;)
   //  if self:GetIsSiege() then //and not self:GetCanAutomaticTriggerInkAgain() then
      local NowToInk = self:GetCoolDown() - (Shared.GetTime() - self.lastinktrigger)
      local InkLength =  math.ceil( Shared.GetTime() + NowToInk - Shared.GetTime() )
      local time = InkLength
-     unitName = string.format(Locale.ResolveString("Shade (%s)"), Clamp(time, 0, self:GetCoolDown()))
+     unitName = string.format(Locale.ResolveString("Level %s Shade (%s)"), self:GetLevel(), Clamp(time, 0, self:GetCoolDown()))
   //  end
  
 return unitName

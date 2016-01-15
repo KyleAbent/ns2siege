@@ -242,7 +242,7 @@ function CommandStation:UpdateBeacons()
                     //So the auto beacon triggers infinite as long as health says so.  
     if time then
           local armorscalar = self:GetArmorScalar()
-          if armorscalar <= .15 then
+          if armorscalar <= .25 then
              self:UseBeacon()
           end
     end

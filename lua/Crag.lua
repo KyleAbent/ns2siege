@@ -73,6 +73,10 @@ Crag.kMinHeal = 10
 Crag.kMaxHeal = 60
 Crag.kHealWaveMultiplier = 1.3
 
+Crag.MaxLevel = 10
+//Crag.ScaleSize = 2
+Crag.GainXP = 0.1
+
 local networkVars =
 {
     // For client animations
@@ -80,6 +84,7 @@ local networkVars =
     healWaveActive = "boolean",
     moving = "boolean",
     lasthealwavetrigger = "time",
+    level = "float (0 to " .. Crag.MaxLevel .. " by .1)",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -151,6 +156,7 @@ function Crag:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     self.lasthealwavetrigger = 0
+    self.level = 1
 end
 
 function Crag:OnInitialized()
@@ -277,13 +283,43 @@ end
     local NowToHeal = kHealWaveCooldown - (Shared.GetTime() - self.lasthealwavetrigger)
      local InkLength =  math.ceil( Shared.GetTime() + NowToHeal - Shared.GetTime() )
      local time = InkLength
-    unitName = string.format(Locale.ResolveString("Crag (%s Stacking) (%s)"), self:GetCragsInRange(),  Clamp(time, 0, kHealWaveCooldown) )
+    unitName = string.format(Locale.ResolveString("Level %s Crag (%s Stacking) (%s)"),self:GetLevel(), self:GetCragsInRange(),  Clamp(time, 0, kHealWaveCooldown) )
 return unitName
+end
+function Crag:GetAddXPAmount()
+return self:GetIsSetup() and Crag.GainXP * 4 or Crag.GainXP
+end
+function Crag:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
 end
 function Crag:IsInRangeOfHive()
       local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)
    if #hives >=1 then return true end
    return false
+end
+function Crag:AddXP(amount)
+
+    local xpReward = 0
+        xpReward = math.min(amount, Crag.MaxLevel - self.level)
+        self.level = self.level + xpReward
+   
+      
+   // self:AdjustMaxHealth(kHydraHealth * (self.level/100) + kHydraHealth) 
+   // self:AdjustMaxArmor(kHydraArmor * (self.level/100) + kHydraArmor)
+    
+    return xpReward
+    
+end
+function Crag:GetLevel()
+        return Round(self.level, 2)
 end
 function Crag:TryHeal(target)
 
@@ -295,6 +331,7 @@ function Crag:TryHeal(target)
     end
     
     heal = heal * self:GetCragsInRange()/3 + heal
+    heal = heal * (self.level/100) + heal
     
     if self:GetIsSiege() and self:IsInRangeOfHive() and target:isa("Hive") or target:isa("Crag") then
        heal = heal * kMapStatsCragStacks
@@ -303,7 +340,7 @@ function Crag:TryHeal(target)
     if target:GetHealthScalar() ~= 1 and (not target.timeLastCragHeal or target.timeLastCragHeal + Crag.kHealInterval <= Shared.GetTime()) then
        local amountHealed = target:AddHealth(heal)
        target.timeLastCragHeal = Shared.GetTime()
-       
+       self:AddXP(Crag.GainXP * 4)
        return amountHealed
     else
         return 0

@@ -18,7 +18,7 @@ kAlienRegenerationCombatModifier = .7
 
 kBeaconDelay = 16
 kCreditsPerRoundCap = 200
-kCreditMultiplier = 1
+kCreditMultiplier = 2
 kSBCooldown = 30
 kDynamicBuildSpeed = 1
 kActivePlayers = 0

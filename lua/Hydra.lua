@@ -57,9 +57,9 @@ Hydra.kRange = 17.78              // From NS1 (also "alert" range)
 Hydra.kDamage = kHydraDamage
 Hydra.kAlertCheckInterval = 2
 
-Hydra.MaxLevel = 50
+Hydra.MaxLevel = 99
 Hydra.ScaleSize = 2
-Hydra.GainXP = .9
+Hydra.GainXP = 1
 
 Hydra.kFov = 360
 
@@ -242,7 +242,18 @@ function Hydra:OnAdjustModelCoords(modelCoords)
     return coords
 end
 function Hydra:GetAddXPAmount()
-return Hydra.GainXP
+return self:GetIsSetup() and Hydra.GainXP * 4 or Hydra.GainXP
+end
+function Hydra:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
 end
 function Hydra:AddXP(amount)
 
