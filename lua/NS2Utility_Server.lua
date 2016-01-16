@@ -530,7 +530,7 @@ local level = 1
  if not gameRules:GetGameStarted() then return 0.478 end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
       level = Clamp(roundlength/kSiegeDoorTime, 0.1, 0.478)
-        level = level * (kActivePlayers/24)
+        level = level * (kActivePlayers/28)
        return level 
 end
 function GetHandicapRespawnLength()
@@ -550,7 +550,7 @@ local default = kMarineRespawnTime
              Print("roundlength is %s", roundlength)
       roundlength = Clamp(roundlength/kSiegeDoorTime, 0.1, 2) //So dependent on roundlength
              Print("roundlength is %s", roundlength)
-        roundlength = roundlength * (kActivePlayers/24) + roundlength   //And playercount
+        roundlength = roundlength * (kActivePlayers/28) + roundlength   //And playercount
               Print("roundlength is %s", roundlength)
         default = kMarineRespawnTime * roundlength // applied
               Print("default is %s", default)
@@ -600,7 +600,7 @@ function GetActivePlayers()
              if Player:GetTeamNumber() == 1 or Player:GetTeamNumber() == 2 then onteam = onteam + 1 end
            end
       
-              return (onteam/24)
+              return (onteam/28)
 
 
 end

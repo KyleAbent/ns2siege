@@ -1,3 +1,13 @@
+//kGorgeCost = 10
+//kLerkCost = 20
+//kFadeCost = 30
+//kOnosCost = 40
+
+kGorgeEggCost = 0
+kLerkEggCost = 0
+kFadeEggCost = 0
+kOnosEggCost = 0
+
 kMatureVeilHealth = 2000
 kFireFlameCloudDamagePerSecond = 24
 kExosuitCost = 10

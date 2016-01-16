@@ -213,27 +213,8 @@ local function SpawnBuildings( team )
 		MakeTechEnt( techPoint, Crag.kMapName, 3.5, 2, teamNr )
 		MakeTechEnt( techPoint, Crag.kMapName, 3.5, -2, teamNr )
 		MakeTechEnt( techPoint, Shift.kMapName, -3.5, 2, teamNr )
-	else
-		--don't spawn them if cheats is on(it already does it)
-		if not ( Shared.GetCheatsEnabled() and MarineTeam.gSandboxMode ) then
-			MakeTechEnt(techPoint, AdvancedArmory.kMapName, 3.5, -2, teamNr)
-			MakeTechEnt(techPoint, PrototypeLab.kMapName, -3.5, 2, teamNr)
-		end
-    //    SpawnMac(techPoint)
-    //    SpawnMac(techPoint)
-    //    SpawnMac(techPoint)
-    //    SpawnArc(techPoint)
-    //    SpawnArc(techPoint)
-    //    SpawnArc(techPoint)
-     //   SpawnArc(techPoint)
-        
-     //   SpawnObservatory(techPoint)
-     //   SpawnObservatory(techPoint)
-       
-        //SpawnPrototypeLab(self, techPoint)
-       // SpawnArmory(self, techPoint)
-       
 	end
+	
 end
 local function SpawnMac(techPoint)
 

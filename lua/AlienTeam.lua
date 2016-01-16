@@ -453,7 +453,7 @@ local function UpdateEggCount(self)
 
     for _, egg in ipairs(GetEntitiesForTeam("Egg", self:GetTeamNumber())) do
     
-        if egg:GetIsFree() and egg:GetGestateTechId() == kTechId.Skulk then        
+        if egg:GetIsFree() then        
             self.eggCount = self:GetEggCount() + 1
         end
     
@@ -465,8 +465,7 @@ local function AssignPlayerToEgg(self, player, enemyTeamPosition)
 
     local success = false
     
-    // use non-preevolved eggs sorted by "critical hives position"
-    local lifeFormEgg = nil
+
     
     local spawnPoint = player:GetDesiredSpawnPoint()
 
@@ -477,34 +476,14 @@ local function AssignPlayerToEgg(self, player, enemyTeamPosition)
     local eggs = GetEntitiesForTeam("Egg", self:GetTeamNumber())        
     Shared.SortEntitiesByDistance(spawnPoint, eggs)
     
-    // Find the closest egg, doesn't matter which Hive owns it.
     for _, egg in ipairs(eggs) do
     
-        // Any unevolved egg is fine as long as it is free.
         if egg:GetIsFree() then
-        
-            if egg:GetGestateTechId() == kTechId.Skulk then
-        
                 egg:SetQueuedPlayerId(player:GetId())
                 success = true
                 break
-            
-            elseif lifeFormEgg == nil then
-                lifeFormEgg = egg
-            end
-            
         end
-        
     end
-    
-    // use life form egg
-    if not success and lifeFormEgg then
-    
-        lifeFormEgg:SetQueuedPlayerId(player:GetId())
-        success = true
-
-    end
-    
     return success
     
 end
@@ -863,10 +842,10 @@ function AlienTeam:InitTechTree()
     self.techTree:AddAction(kTechId.Onos,                      kTechId.None,                kTechId.None)
     self.techTree:AddBuyNode(kTechId.Egg,                      kTechId.None,                kTechId.None)
     
-    self.techTree:AddUpgradeNode(kTechId.GorgeEgg, kTechId.BioMassTwo)
-    self.techTree:AddUpgradeNode(kTechId.LerkEgg, kTechId.BioMassTwo)
-    self.techTree:AddUpgradeNode(kTechId.FadeEgg, kTechId.BioMassNine)
-    self.techTree:AddUpgradeNode(kTechId.OnosEgg, kTechId.BioMassNine)
+    self.techTree:AddUpgradeNode(kTechId.GorgeEgg, kTechId.None)
+    self.techTree:AddUpgradeNode(kTechId.LerkEgg, kTechId.None)
+    self.techTree:AddUpgradeNode(kTechId.FadeEgg, kTechId.None)
+    self.techTree:AddUpgradeNode(kTechId.OnosEgg, kTechId.None)
     
     
 

@@ -144,6 +144,8 @@ function Gore:Attack(player, charged)
     didHit, target, impactPoint = AttackMeleeCapsule(self, player, kGoreDamage, range)
      if not charged then
     player:DeductAbilityEnergy(self:GetEnergyCost(player))
+    elseif charged and target and target:isa("FuncDoor") then //attack it twice make sure it goes down
+         didHit, target, impactPoint = AttackMeleeCapsule(self, player, kGoreDamage, range)
      end
     
     return didHit, impactPoint, target

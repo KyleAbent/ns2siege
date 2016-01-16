@@ -376,13 +376,22 @@ function Shade:OnUpdate(deltaTime)
 end
 function Shade:OnScan()
                
-     if self:GetIsBuilt() and not self:GetIsOnFire() and (self.lastinktrigger + kShadeInkCooldown) > Shared.GetTime() then
+     if self:GetIsBuilt() and not self:GetIsOnFire() and self:GetCanTrigger() then
                  local number = math.random(self.level, 100)
                  if number >= 99 then self:TriggerInk() end
      end     
                  
     self:TriggerUncloak()
     
+end
+function Shade:GetCanTrigger()
+  for _, Shade in ipairs(GetEntitiesForTeamWithinRange("Shade", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius)) do
+               if not (Shade.lastinktrigger + kShadeInkCooldown) > Shared.GetTime() then 
+                return false
+                end
+          end
+         return true 
+
 end
 function Shade:IsInRangeOfHive()
       local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)

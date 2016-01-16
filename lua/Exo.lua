@@ -637,7 +637,7 @@ function Exo:SetArmorAmount()
    // Print("armor is %s", newMaxArmor)
    */
        local newMaxArmor = (kExosuitArmor + self:GetArmorLevel() * kExosuitArmorPerUpgradeLevel) + self.armorBonus
-    local ratio = (kActivePlayers/24)
+    local ratio = (kActivePlayers/28)
     local deductamount = Clamp(newMaxArmor - ratio * newMaxArmor, 1, 300)
     newMaxArmor = Clamp(newMaxArmor - deductamount, 300, 600)
     self:AdjustMaxArmor(newMaxArmor)
