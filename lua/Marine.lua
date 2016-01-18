@@ -1023,7 +1023,7 @@ function Marine:OnProcessMove(input)
     if Server then
     
          if self.hasreupply then
-      if Shared.GetTime() >  self.lastsupply + 10 then
+      if Shared.GetTime() >  self.lastsupply + 8 then
             if self:GetHealth() <= 90 then 
              self:TriggerDropPack(self:GetOrigin(), kTechId.MedPack)
              end

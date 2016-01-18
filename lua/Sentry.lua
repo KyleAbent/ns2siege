@@ -35,7 +35,7 @@ Script.Load("lua/SupplyUserMixin.lua")
 
 local kSpinUpSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_up")
 local kSpinDownSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_down")
-local kSentryWeldGainXp =  0.45
+local kSentryWeldGainXp =  0.75
 local kSentryScaleSize = 1.8
 
 class 'Sentry' (ScriptActor)
@@ -390,10 +390,21 @@ function Sentry:GetHealthbarOffset()
     return 0.4
 end 
 function Sentry:GetAddXPAmount()
-return kSentryWeldGainXp
+return self:GetIsSetup() and  kSentryWeldGainXp * 4 or kSentryWeldGainXp
 end
 function Sentry:GetLevelPercentage()
 return self.level / Sentry.kSentryMaxLevel * kSentryScaleSize
+end
+function Sentry:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
 end
 /*
 function Sentry:OnAdjustModelCoords(modelCoords)

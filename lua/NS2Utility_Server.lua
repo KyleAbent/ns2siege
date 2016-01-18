@@ -77,6 +77,7 @@ function GetAreFrontDoorsOpen()
             end
             return false
  end
+
  function GetIsSuddenDeathEnabled()
 
             local gameRules = GetGamerules()
@@ -524,6 +525,15 @@ local hives = 0
    
    return hives
 end
+function GetRoundLengthToSiege()
+local level = 1
+ local gameRules = GetGamerules()
+ if not gameRules:GetGameStarted() then return 0 end 
+      local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
+      level = Clamp(roundlength/kSiegeDoorTime, 0.1, 1)
+      Print("level = %s", level)
+       return level 
+end
 function GetFairHealthValues()
 local level = 1
  local gameRules = GetGamerules()
@@ -534,10 +544,35 @@ local level = 1
        return level 
 end
 function GetHandicapRespawnLength()
+ local v18 =  GetFairRespawnLength() / 2 
+  local gameRules = GetGamerules()
+ if not gameRules:GetGameStarted() then return v18 end 
+        // TeamBalance
+            local team1Players = gameRules.team1:GetNumPlayers()
+            local team2Players = gameRules.team2:GetNumPlayers()
+        local allplayers = team1Players + team2Players
+        if team2Players > team1Players then
+        local unbalancedAmount = team2Players - team1Players
+         v18 = v18 + (unbalancedAmount*4) --4 seconds each player
+        end
+            
+
+   --roundlength
+   /*
+ if GetIsSuddenDeathEnabled() then
+
+ elseif GetIsSiegeEnabled() then
+
+ elseif GetAreSideDoorsOpen() then
+ elseif GetAreFrontDoorsOpen() then
+end
+*/
+
+
                  --Totally imperfect. I just want dynamic. I dont feel like writing something
                  --As complex as for marines just yet. Down below is something really really
                  --Thought out and appears to work as intended thus far.
-        return GetFairRespawnLength() / 2
+        return v18
         
 end
 function GetFairRespawnLength()

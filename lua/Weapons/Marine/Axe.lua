@@ -53,7 +53,7 @@ function Axe:GetAnimationGraphName()
 end
 
 function Axe:GetHUDSlot()
-    return kTertiaryWeaponSlot
+    return 4
 end
 
 function Axe:GetRange()

@@ -1916,6 +1916,10 @@ function NS2Gamerules:TriggerZedTime()
 end
 function NS2Gamerules:CollectResources()
 
+            local team1Players = self.team1:GetNumPlayers()
+            local team2Players = self.team2:GetNumPlayers()
+            local unbalancedAmount = math.abs(team1Players - team2Players)
+
    local harvesters = 0
    local extractors =  0
   for _, restower in ientitylist(Shared.GetEntitiesWithClassname("ResourceTower")) do
@@ -1927,7 +1931,12 @@ function NS2Gamerules:CollectResources()
          end
        end
     end
-                
+  local alienmoreplayers = team2Players > team1Players and (harvesters - (unbalancedAmount/14) * harvesters)  or harvesters
+  local marinemoreplayers = team2Players < team1Players and (extractors - (unbalancedAmount/14) * extractors)  or extractors
+  
+  harvesters = alienmoreplayers
+  extractors = marinemoreplayers
+  
        if extractors == 0 then
             extractors = 1
        elseif harvesters == 0 then

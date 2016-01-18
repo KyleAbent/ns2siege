@@ -193,10 +193,33 @@ function Marine:InitWeapons()
     self:GiveItem(Pistol.kMapName)
     self:GiveItem(Axe.kMapName)
     self:GiveItem(Builder.kMapName)
-    
+    self:SetActiveWeapon(Rifle.kMapName)   
     self:SetQuickSwitchTarget(Pistol.kMapName)
-    self:SetActiveWeapon(Rifle.kMapName)
-    if GetHasTech(self, kTechId.RifleClip) then self:GetWeaponInHUDSlot(1):SetClip(75) end
+    if GetRoundLengthToSiege() >= .9 then 
+      self:GiveItem(Welder.kMapName)
+      self:GiveItem(HeavyMachineGun.kMapName)
+      self:SetActiveWeapon(HeavyMachineGun.kMapName)
+      self.hasreupply = true
+      self.heavyarmor = true
+      self:SetQuickSwitchTarget(Welder.kMapName)
+    elseif GetRoundLengthToSiege() >= .5 then
+          self:GiveItem(Welder.kMapName)
+          self:GiveItem(GrenadeLauncher.kMapName)
+          self:SetActiveWeapon(GrenadeLauncher.kMapName)
+          self.hasreupply = true
+          self.heavyarmor = true
+          self.hasfirebullets = true
+          self:SetQuickSwitchTarget(Welder.kMapName)
+    elseif GetRoundLengthToSiege() >= .15 then
+           self:GiveItem(Welder.kMapName)
+           self:GiveItem(Shotgun.kMapName)
+           self:SetActiveWeapon(Shotgun.kMapName)
+           self:SetQuickSwitchTarget(Welder.kMapName)
+    end
+    
+
+
+    if GetHasTech(self, kTechId.RifleClip) then self:GetWeaponInHUDSlot(2):SetClip(75) end
 end
 
 local function GetHostSupportsTechId(forPlayer, host, techId)

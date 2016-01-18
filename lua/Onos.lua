@@ -697,11 +697,21 @@ local damage = 1
   //  damage = damage * 1.07
     end
     
-    if hitPoint ~= nil and ( self:GetIsBoneShieldActive() or self:GetIsSiege() ) and GetHitsBoneShield(self, doer, hitPoint) then
+    if hitPoint ~= nil then
+
+        if GetHitsBoneShield(self, doer, hitPoint) then 
+
+
+          if self:GetIsBoneShieldActive() then 
     
-       damage =  damage * kBoneShieldDamageReduction
-        self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )
-        
+         damage =  damage * kBoneShieldDamageReduction
+         self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )
+         elseif self:GetIsSiege() then
+         damage =  damage * (kBoneShieldDamageReduction/2)
+         self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )      
+         end
+    end
+    
     end
   damageTable.damage = damageTable.damage * damage 
 end

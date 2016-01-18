@@ -193,7 +193,7 @@ function Pistol:GetInaccuracyScalar(player)
 end
 
 function Pistol:GetHUDSlot()
-    return kSecondaryWeaponSlot
+    return 3
 end
 function Pistol:GetDamageType()
     local parent = self:GetParent()

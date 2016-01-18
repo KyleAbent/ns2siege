@@ -285,8 +285,8 @@ local gameRules = GetGamerules()
                 if player:GetIsAlive() and player:GetCanBeacon() then
                 player:TriggerBeacon(self:FindFreeSpace())
                 else
+                 player:SetCameraDistance(0)
                 player:GetTeam():ReplaceRespawnPlayer(player, self:FindFreeSpace(), player:GetAngles(), nil, true) 
-                player:SetCameraDistance(0)
                 player.timeLastBeacon = Shared.GetTime()
                 end
            end  

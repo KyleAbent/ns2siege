@@ -71,9 +71,9 @@ Armory.HeavyRifleTime = 0
 
 Armory.kSentryGainXp =  0.06
 //Armory.kSentryLoseXp = 0.06
-Armory.kMaxLevel = 50
+Armory.kMaxLevel = 99
 
-local kArmoryWeldGainXp =  0.30
+local kArmoryWeldGainXp =  0.45
 local kArmoryScaleSize = 1.8
 
 
@@ -261,7 +261,18 @@ function Armory:GetMaxLevel()
 return Armory.kMaxLevel
 end
 function Armory:GetAddXPAmount()
-return kArmoryWeldGainXp
+return self:GetIsSetup() and kArmoryWeldGainXp * 4 or kArmoryWeldGainXp
+end
+function Armory:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
 end
 function Armory:GetLevelPercentage()
 return self.level / Armory.kMaxLevel * kArmoryScaleSize

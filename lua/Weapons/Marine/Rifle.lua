@@ -235,7 +235,7 @@ function Rifle:GetDeathIconIndex()
 end
 
 function Rifle:GetHUDSlot()
-    return kPrimaryWeaponSlot
+    return 2
 end
 
 function Rifle:GetClipSize()
