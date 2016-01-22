@@ -635,7 +635,7 @@ function GetDamageByType(target, attacker, doer, damage, damageType, hitPoint)
         return 0, 0, 0
     end
           
-      if Server and not target:isa("PowerPoint") and not target:isa("LogicBreakable") and not target:isa("CommandStructure") and not target:isa("BoneWall") then
+      if Server and not target:isa("PowerPoint") and not target:isa("Cyst") and not target:isa("LogicBreakable") and not target:isa("CommandStructure") and not target:isa("BoneWall") then
             local gameRules = GetGamerules()
             if gameRules then
                if (gameRules:GetGameStarted() and not Shared.GetCheatsEnabled() ) and not ConditionalValue(Shared.GetMapName() == "ns_siegeaholic_remade" or Shared.GetMapName() == "ns2_trainsiege2" or Shared.GetMapName() ==  "ns2_rockdownsiege2", gameRules:GetSideDoorsOpen(), gameRules:GetFrontDoorsOpen()) then 

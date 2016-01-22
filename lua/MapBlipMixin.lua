@@ -176,9 +176,9 @@ function MapBlipMixin:GetMapBlipInfo()
     
         blipType = kMinimapBlipType.Infestation
         
-        if not self:GetIsConnected() then
-            blipType = kMinimapBlipType.InfestationDying
-        end
+       // if not self:GetIsConnected() then
+       //     blipType = kMinimapBlipType.InfestationDying
+       // end
         
         blipTeam = self:GetTeamNumber()
         isAttacked = false

@@ -1830,6 +1830,7 @@ function NS2Gamerules:GetCombatEntitiesCount()
                   if inCombat then combatentities = combatentities + 1 end
                   if entity.mainbattle == true then entity.mainbattle = false end
              end
+             //     Print("combatentities %s", combatentities)
             return combatentities
 end
 function NS2Gamerules:GetCombatEntitiesCountInRoom(location)
@@ -1843,6 +1844,7 @@ function NS2Gamerules:GetCombatEntitiesCountInRoom(location)
                  end
              end
             end
+       // Print("location %s, eligable %s", location, eligable)
         return eligable
 end
 function NS2Gamerules:MainRoomSD()
@@ -1860,13 +1862,15 @@ function NS2Gamerules:MainRoomSD()
                              return true
 end
 
-function NS2Gamerules:PickMainRoom()
+function NS2Gamerules:PickMainRoom(force)
   //Kyle Abent ns2siege 11.22 kyleabent@gmail.com
     if not self:GetGameStarted() then return  end //pregame bug fix? because at start of round says self.mainrooms = shared.gettime //12.5
+    // Print("Main room step 1")
        if not self.doorsopened or (self.mainrooms + kMainRoomPickEveryXSeconds) > Shared.GetTime() then return true end 
-       
+        //    Print("Main room step 2")
                  if self:GetIsSuddenDeath() then
                      self:MainRoomSD()
+               //           Print("Main room step 3")
                      return true
                  end
           
@@ -1890,12 +1894,13 @@ function NS2Gamerules:PickMainRoom()
                    self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds) // Clears and says is ready for another
                       local entities = location:GetEntitiesInTrigger()
                       local shouldbreak = 0
+                      //     Print("Main room step 4")
                   if entities then
                   
                              local powerpoint = GetPowerPointForLocation(location.name)
                              if powerpoint ~= nil then
                              powerpoint:SetMainRoom()
-                             Print("main room is %s", powerpoint:GetLocationName())
+                           //  Print("main room is %s", powerpoint:GetLocationName())
                               end
                               
                     for _, entity in ipairs(entities) do
@@ -1959,10 +1964,56 @@ function NS2Gamerules:CollectResources()
         
         self.team1:AddTeamResources(kTeamResourcePerTick  * extractors)
         self.team2:AddTeamResources(kTeamResourcePerTick  * harvesters)
-        
+        self:AutoBuildResTowers()
            return true
 end
+function NS2Gamerules:AutoBuildResTowers()
+//if self.doorsopened == true then return end
+  for _, respoint in ientitylist(Shared.GetEntitiesWithClassname("ResourcePoint")) do
+         respoint:AutoDrop()
+    end//
+   // self:AutoBuildArmory()
+end
 
+function NS2Gamerules:AutoBuildArmory()
+--Only build armories in front automatically during setup? Just to test out how useful it may or may not be
+if self.doorsopened == true then return end
+local frontdoornearestmarinewithpower =  nil
+    
+ for _, frontdoor in ientitylist(Shared.GetEntitiesWithClassname("FrontDoor")) do
+      local nearest = GetNearest(self:GetOrigin(), "Location", nil, function(ent) local powerpoint = GetPowerPointForLocation(ent.name) return powerpoint ~= nil and powerpoint:GetIsBuilt() end)
+       if nearest then
+        frontdoornearestmarinewithpower = nearest:GetOrigin()
+        break
+       end
+ end
+          if frontdoornearestmarinewithpower ~= nil then
+               local armory = CreateEntity(Armory.kMapName, self:FindFreeSpace(frontdoornearestmarinewithpower), 1)    
+         end
+
+end
+    function NS2Gamerules:FindFreeSpace(origin)
+    
+        for index = 1, 100 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, .5, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == GetLocationForPoint(origin)
+        
+           if spawnPoint ~= nil and sameLocation  then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for auto armory drop!")
+           return origin
+    end
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  

@@ -308,20 +308,13 @@ local function GetAutomaticOrder(self)
 
             // If there's a friendly entity nearby that needs constructing, constuct it.
             local range = not self:GetIsFront() and 9999 or MAC.kOrderScanRadius
-            local constructables = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), range)
-            for c = 1, #constructables do
-            
-                local constructable = constructables[c]
-                if constructable:GetCanConstruct(self) then
+            local constructable =  GetNearestMixin(self:GetOrigin(), "Construct", self:GetTeamNumber(), function(ent) return not ent:GetIsBuilt() and self:GetDistance(ent) <= range and ent:GetCanConstruct(self) and self:CheckTarget(ent:GetOrigin()) end)
+                if constructable and not (not self:GetIsFront() and constructable:isa("PowerPoint")) then
                 
                     target = constructable
                     orderType = kTechId.Construct
-                    break
                     
                 end
-                
-            end
-            
             if not target then
             
                 // Look for entities to heal with weld.

@@ -199,16 +199,11 @@ function Marine:InitWeapons()
       self:GiveItem(Welder.kMapName)
       self:GiveItem(HeavyMachineGun.kMapName)
       self:SetActiveWeapon(HeavyMachineGun.kMapName)
-      self.hasreupply = true
-      self.heavyarmor = true
       self:SetQuickSwitchTarget(Welder.kMapName)
-    elseif GetRoundLengthToSiege() >= .5 then
+    elseif GetRoundLengthToSiege() >= .7 then
           self:GiveItem(Welder.kMapName)
           self:GiveItem(GrenadeLauncher.kMapName)
           self:SetActiveWeapon(GrenadeLauncher.kMapName)
-          self.hasreupply = true
-          self.heavyarmor = true
-          self.hasfirebullets = true
           self:SetQuickSwitchTarget(Welder.kMapName)
     elseif GetRoundLengthToSiege() >= .15 then
            self:GiveItem(Welder.kMapName)

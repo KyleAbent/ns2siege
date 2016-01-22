@@ -300,7 +300,7 @@ function ConstructMixin:Construct(elapsedTime, builder)
             local modifier = (self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
             modifier = modifier * kDynamicBuildSpeed 
             modifier = modifier * ConditionalValue(self:SetupAdvantage(), 2, 1)
-            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), 0.25, 1)
+            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), 0.10, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType and self:SiegeDisAdvantageMarine(), .5, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType, kMapStatsMarineBuild, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType, kMapStatsAlienBuild, 1)

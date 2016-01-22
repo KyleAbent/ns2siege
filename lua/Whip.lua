@@ -148,7 +148,7 @@ function Whip:GetStructureMoveable()
 end
 
 function Whip:GetMaxSpeed()
-    return Whip.kMoveSpeed
+    return Whip.kMoveSpeed * (self.level/100) + Whip.kMoveSpeed
 end
 
 // ---  RepositionMixin
@@ -815,7 +815,7 @@ function Whip:SlapTarget(target)
     // fudge a bit - put the point of attack 0.5m short of the target
     local hitPosition = targetPoint - hitDirection * 0.5
     
-    self:DoDamage(Whip.kDamage * (self.level/100) + kWhipSlapDamage, target, hitPosition, hitDirection, nil, true)
+    self:DoDamage(kWhipSlapDamage, target, hitPosition, hitDirection, nil, true)
     self:TriggerEffects("whip_attack")
     self:StealFlamethrower(target)
     

@@ -18,14 +18,14 @@ Spit.kMapName = "spit"
 Spit.kDamage = kSpitDamage
 Spit.kClearOnImpact = true
 Spit.kClearOnEnemyImpact = true
-
+Spit.kModelName          = PrecacheAsset("models/alien/cyst/cyst.model")
 local networkVars =
 {
 }
 
 local kSpitLifeTime = 8
 
-Spit.kProjectileCinematic = PrecacheAsset("cinematics/alien/gorge/dripping_slime.cinematic")
+//Spit.kProjectileCinematic = PrecacheAsset("cinematics/alien/gorge/dripping_slime.cinematic")
 Spit.kRadius = 0.15
 
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -42,7 +42,9 @@ function Spit:OnCreate()
     end
 
 end
-
+function Spit:GetProjectileModel()
+    return Spit.kModelName
+end 
 function Spit:GetDeathIconIndex()
     return kDeathMessageIcon.Spit
 end
@@ -52,11 +54,20 @@ function Spit:GetWeaponTechId()
 end
 
 if Server then
+
+local function GetPathingRequirementsMet(position, extents)
+
+    local noBuild = Pathing.GetIsFlagSet(position, extents, Pathing.PolyFlag_NoBuild)
+    local walk = Pathing.GetIsFlagSet(position, extents, Pathing.PolyFlag_Walk)
+    return not noBuild and walk
+    
+end
           
     function Spit:ProcessHit(targetHit, surface, normal, hitPoint)
 
         if self:GetOwner() ~= targetHit then
             self:DoDamage(kSpitDamage, targetHit, hitPoint, normal, "none", false, false)
+            if entity ~= nil and HasMixin(entity, "Webable") then entity:SetWebbed(4) end
         elseif self:GetOwner() == targetHit then
             //a little hacky
             local player = self:GetOwner()
@@ -73,7 +84,21 @@ if Server then
         end
         
         GetEffectManager():TriggerEffects("spit_hit", { effecthostcoords = self:GetCoords() })
-
+        
+        local cysts = GetEntitiesWithinRange("Cyst", self:GetOrigin(), kCystRedeployRange)
+        if #cysts == 0 then
+          --enforce ground
+           //for i = 1, #20 do
+        local origin = GetGroundAtPointWithCapsule(self:GetOrigin(), Vector(.25,.25,.25),  PhysicsMask.CystBuild, EntityFilterOne(self))
+        //   if origin then break end
+           //end
+           if origin then
+             if GetPathingRequirementsMet(origin, Vector(.25,.25,.25)) then
+             local cyst = CreateEntity(Cyst.kMapName, origin, 2)
+             end
+           end
+           
+        end   
         DestroyEntity(self)
         
     end

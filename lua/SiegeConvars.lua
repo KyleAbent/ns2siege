@@ -1,3 +1,4 @@
+kLightMode = enum( {'Normal', 'NoPower', 'LowPower', 'Damaged', 'MainRoom', } )
 //kGorgeCost = 10
 //kLerkCost = 20
 //kFadeCost = 30
@@ -28,7 +29,7 @@ kAlienRegenerationCombatModifier = .7
 
 kBeaconDelay = 16
 kCreditsPerRoundCap = 200
-kCreditMultiplier = 1
+kCreditMultiplier = 2
 kSBCooldown = 30
 kDynamicBuildSpeed = 1
 kActivePlayers = 0
@@ -178,7 +179,7 @@ kSideDoorTime = 300
 kMarineRespawnProtection = 5.06
 kFrontDoorTime = 300 //6 min
 kSiegeDoorTime = 900 // 20 min
-kTimeAfterSiegeOpeningToEnableSuddenDeath = 600
+kTimeAfterSiegeOpeningToEnableSuddenDeath = 480
 
 kAlienTeamInitialTres = 60
 kMarineTeamInitialTres = 60

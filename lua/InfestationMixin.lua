@@ -104,7 +104,6 @@ local function CreateInfestation(self)
     self.infestationGenerated = true
 
 end
-
 local function DestroyInfestation(self)
 
     for i = 1, #self.infestationPatches do
@@ -120,11 +119,8 @@ local function DestroyInfestation(self)
 end
 
 function InfestationMixin:__initmixin()
-   if Server then
-    local gameRules = GetGamerules()
-    local setupbonus = gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen()
-    end
-    self.growthRate =  ( self:GetInfestationGrowthRate() * gInfestationMultiplier ) * ConditionalValue(setupbonus, kAlienTeamSetupBuildMultiplier, 1)
+    
+    self.growthRate = self:GetInfestationGrowthRate() * gInfestationMultiplier
     self.desiredInfestationRadius = self:GetInfestationMaxRadius()
     self.infestationPatches = {}
     
@@ -169,10 +165,6 @@ function InfestationMixin:OnDestroy()
         DestroyInfestation(self)        
     end
     
-      for _, structure in ipairs(GetEntitiesForTeamWithinXZRangeMixin("InfestationTracker", 1, self:GetOrigin(), 7)) do
-      structure:InfestationNeedsUpdate()
-      end
-
 end
 
 function InfestationMixin:OnKill()
@@ -180,17 +172,8 @@ function InfestationMixin:OnKill()
     // trigger receed
     self:SetDesiredInfestationRadius(0)
     
-      for _, structure in ipairs(GetEntitiesForTeamWithinXZRangeMixin("InfestationTracker", 1, self:GetOrigin(), 7)) do
-      structure:InfestationNeedsUpdate()
-      end
-     
 end
-function InfestationMixin:CleanUpAnyGlitchedMarineStructures()
-    
-      for _, structure in ipairs(GetEntitiesForTeamWithinXZRangeMixin("InfestationTracker", 1, self:GetOrigin(), 7)) do
-      structure:InfestationNeedsUpdate()
-      end
-end
+
 function InfestationMixin:SetInfestationFullyGrown()
     self.startGrown = true
     self:SetInfestationRadius(self.desiredInfestationRadius)

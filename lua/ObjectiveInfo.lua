@@ -87,7 +87,7 @@ if Server then
         Entity.OnUpdate(self, deltaTime)
         
         local owner = self:GetOwner()
-       assert(owner)
+//       assert(owner)
         //siege
          if not owner or not HasMixin(self, "Live") then return end
         

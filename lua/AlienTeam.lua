@@ -600,28 +600,6 @@ local function UpdateAlienSpectators(self)
     
 end
 
-local function UpdateCystConstruction(self, deltaTime)
-
-    local numCystsToConstruct = self:GetNumCapturedTechPoints()
-
-    for _, cyst in ipairs(GetEntitiesForTeam("Cyst", self:GetTeamNumber())) do
-    
-        local parent = cyst:GetCystParent()
-        if not cyst:GetIsBuilt() and parent and parent:GetIsBuilt() then
-      
-            cyst:Construct(deltaTime)
-            numCystsToConstruct = numCystsToConstruct - 1
-
-        end
-        
-        if numCystsToConstruct <= 0 then
-            break
-        end
-    
-    end
-
-end
-
 function AlienTeam:Update(timePassed)
 
     PROFILE("AlienTeam:Update")
@@ -633,8 +611,6 @@ function AlienTeam:Update(timePassed)
     UpdateEggCount(self)
     UpdateAlienSpectators(self)
     
-    
-    UpdateCystConstruction(self, timePassed)
     
 end
 

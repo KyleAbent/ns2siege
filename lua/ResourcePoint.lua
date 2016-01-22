@@ -60,7 +60,11 @@ function ResourcePoint:OnCreate()
     self:SetTechId(kTechId.ResourcePoint)
     
 end
-
+function ResourcePoint:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
 function ResourcePoint:OnInitialized()
 
     ScriptActor.OnInitialized(self)

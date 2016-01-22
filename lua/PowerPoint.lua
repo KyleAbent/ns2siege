@@ -123,9 +123,6 @@ local kUnderAttackTeamMessageLimit = 5
 // max amount of "attack" the powerpoint has suffered (?)
 local kMaxAttackTime = 10
 
-local kMinFullLightDelay = 2
-local kFullPowerOnTime = 4
-local kMaxFullLightDelay = 4
 
 PowerPoint.kPowerState = enum( { "unsocketed", "socketed", "destroyed" } )
 
@@ -156,27 +153,21 @@ AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 
 local function SetupWithInitialSettings(self)
-
-    if self.startSocketed then
-
-        self:SetInternalPowerState(PowerPoint.kPowerState.socketed)
-        self:SetConstructionComplete()
-        self:SetLightMode(kLightMode.Normal)
-        self:SetPoweringState(true)
-    
-    else
-
         self:SetModel(kUnsocketedSocketModelName, kUnsocketedAnimationGraph)
         
         self.lightMode = kLightMode.Normal
-        self.powerState = PowerPoint.kPowerState.unsocketed
         self.timeOfDestruction = 0
-        
+        self.buildFraction = 0
+        self.constructionComplete = false
+
+        self:TriggerEffects("commander_create", { isalien = false })
+    
+    
         if Server then
         
             self.startsBuilt = false
             self.attackTime = 0.0
-            
+            self:SetInternalPowerState(PowerPoint.kPowerState.socketed)    
         elseif Client then 
         
             self.unchangingLights = { }
@@ -184,7 +175,6 @@ local function SetupWithInitialSettings(self)
             
         end
     
-    end
     
 end
 
@@ -325,38 +315,8 @@ function PowerPoint:GetTechButtons()
         techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None,  
                     kTechId.None, kTechId.None, kTechId.None, kTechId.None }
     
-    if self:GetPowerState() == PowerPoint.kPowerState.unsocketed then
-        techButtons[1] = kTechId.SocketPowerNode 
-    end
     
     return techButtons
-    
-end
-function PowerPoint:PerformActivation(techId, position, normal, commander)
-
-    if techId == kTechId.SocketPowerNode then
-    
-        self:SocketPowerNode()
-        return true, true
-        
-    end
-    
-    return false, true
-    
-end
-
-function PowerPoint:SocketPowerNode()
-
-    assert(self.powerState == PowerPoint.kPowerState.unsocketed)
-    
-    self.buildFraction = 0
-    self.constructionComplete = false
-    self:SetInternalPowerState(PowerPoint.kPowerState.socketed)
-    self:TriggerEffects("commander_create", { isalien = false })
-    
-    if GetGamerules():GetAutobuild() then
-        self:SetConstructionComplete()
-    end
     
 end
 
@@ -385,7 +345,7 @@ function PowerPoint:SetLightMode(lightMode)
     local time = Shared.GetTime()
     
     if self.lastLightMode == kLightMode.NoPower and lightMode == kLightMode.Damaged then
-        local fullFullLightTime = self.timeOfLightModeChange + kMinFullLightDelay + kMaxFullLightDelay + kFullPowerOnTime    
+        local fullFullLightTime = self.timeOfLightModeChange + 1    
         if time < fullFullLightTime then
             // Don't allow the light mode to change to damaged until after the power is fully restored
             return
@@ -455,11 +415,12 @@ end
 if Server then
 
 function PowerPoint:SetMainRoom()
-self:AttackDefendWayPoint()
-self:Flicker() // off
-self:AddTimedCallback(function() self:Flicker() end, 10) //on
-self:AddTimedCallback(function() self:Flicker() end, 20) // off
-self:AddTimedCallback(function() self:Flicker() end, 30) // on
+local oldmode = self:GetLightMode()
+self:SetLightMode(kLightMode.MainRoom)
+self:AddTimedCallback(function() self:AttackDefendWayPoint() end, 10)
+self:AddTimedCallback(function() self:AttackDefendWayPoint() end, 20) 
+self:AddTimedCallback(function() self:SetLightMode(oldmode) end, 30)
+self:AddTimedCallback(function() self:AttackDefendWayPoint() end, 30)
 end
 
 
@@ -477,16 +438,7 @@ SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.MainRoom, self:GetLocatio
               
     end   // Create marine order
 end
-function PowerPoint:Flicker()
-
-          if self:GetLightMode() ~= kLightMode.Normal then 
-         self:SetLightMode(kLightMode.Normal)
-         elseif self:GetLightMode() ~= kLightMode.NoPower then
-          self:SetLightMode(kLightMode.NoPower)
-         end
-         return false
- end
- 
+      
  end//server
 function PowerPoint:OnUse(player, elapsedTime, useSuccessTable)
 
@@ -677,7 +629,7 @@ if Server then
             
             if healthScalar < kDamagedPercentage then
             
-                self:SetLightMode(kLightMode.LowPower)
+              if not self:GetLightMode() == kLightMode.MainRoom  then self:SetLightMode(kLightMode.LowPower) end
                 
                 if not self.playingLoopedDamaged then
                 
@@ -687,7 +639,7 @@ if Server then
                 end
                 
             else
-                self:SetLightMode(kLightMode.Damaged)
+                 if not self:GetLightMode() == kLightMode.MainRoom  then self:SetLightMode(kLightMode.Damaged) end
             end
             
             if not preventAlert then

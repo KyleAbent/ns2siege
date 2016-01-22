@@ -84,7 +84,7 @@ Sentry.kLaserNode = "fxnode_eye"
 Sentry.Damage = 5
 Sentry.kSentryGainXp =  0.08
 Sentry.kSentryLoseXp = 0.06
-Sentry.kSentryMaxLevel = 50
+Sentry.kSentryMaxLevel = 99
 
 // prevents attacking during deploy animation for kDeployTime seconds
 local kDeployTime = 3.5

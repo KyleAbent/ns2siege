@@ -386,11 +386,22 @@ function Shade:OnScan()
 end
 function Shade:GetCanTrigger()
   for _, Shade in ipairs(GetEntitiesForTeamWithinRange("Shade", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius)) do
-               if not (Shade.lastinktrigger + kShadeInkCooldown) > Shared.GetTime() then 
+               if not Shade:GetCanInk() then 
                 return false
                 end
           end
          return true 
+
+end
+function Shade:GetCanInk()
+
+if (self.lastinktrigger + kShadeInkCooldown) < Shared.GetTime() then
+Print("shade ink trigger returned true") 
+return true
+else
+Print("shade ink trigger returned false")
+return false
+end
 
 end
 function Shade:IsInRangeOfHive()

@@ -430,10 +430,10 @@ function Armory:OnUpdate(deltaTime)
     if Client then
         self:UpdateArmoryWarmUp()
     elseif Server then
-     if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
-        self:UpdatePassive()
-        self.timeLastUpdatePassiveCheck = Shared.GetTime()
-     end
+   //  if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
+   //     self:UpdatePassive()
+   //     self.timeLastUpdatePassiveCheck = Shared.GetTime()
+   //  end
     end
     
     if GetIsUnitActive(self) and self.deployed then

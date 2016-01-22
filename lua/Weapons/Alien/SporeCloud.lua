@@ -125,26 +125,32 @@ function SporeCloud:GetShowHitIndicator()
 end
 
 function SporeCloud:SporeDamage(time)
-
-    local enemies = GetEntitiesForTeam("Player", GetEnemyTeamNumber(self:GetTeamNumber()))
+    local eligable = GetEntitiesWithinRange("Player", self:GetOrigin(), self:GetDamageRadius())
     local damageRadius = self:GetDamageRadius()
     
     // When checking if spore cloud can reach something, only walls and door entities will block the damage.
     local filterNonDoors = EntityFilterAllButIsa("FuncMoveable")
-    for index, entity in ipairs(enemies) do
+    for index, entity in ipairs(eligable) do
     
         local attackPoint = entity:GetEyePos()        
         if (attackPoint - self:GetOrigin()):GetLength() < damageRadius then
 
             if not entity:isa("Commander") and not GetEntityRecentlyHurt(entity:GetId(), (time - kDamageInterval)) then
-
                 // Make sure spores can "see" target
                 local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
                 if trace.fraction == 1.0 or trace.entity == entity then
-                
+                    if entity:GetTeamNumber() == 1 then
                     self:DoDamage(kSporesDustDamagePerSecond * kDamageInterval, entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "organic" )
-                    
-                    // Spores can't hurt this entity for kDamageInterval
+                    elseif entity:GetTeamNumber() == 2 and GetHasTech(entity, kTechId.CragHive) then
+                    --Stack heal per each spore cloud up to 4, just like firegrenade. more stack == more effective. Only fair, no?
+                     local stackheal = GetEntitiesWithinRange("SporeCloud", self:GetOrigin(), self:GetDamageRadius())
+                     local number = #stackheal or 1
+                     local variantheal = math.random(1,2)
+                     variantheal = ConditionalValue(GetHasRegenerationUpgrade(entity), variantheal*2, variantheal)
+                     variantheal = variantheal * number
+                    entity:AddHealth(variantheal)
+                    end
+                    --pores can't hurt this entity for kDamageInterval
                     SetEntityRecentlyHurt(entity:GetId())
                     
                 end

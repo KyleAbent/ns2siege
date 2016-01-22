@@ -515,9 +515,9 @@ function LiveMixin:Kill(attacker, doer, point, direction)
        //   attacker.timeUmbraExpires = Shared.GetTime() + 4
           attacker:AddHealth(attacker:GetHealth() * (10/100))
         end
-      elseif HasMixin(self, "Construct") and attacker:isa("Gorge") and doer:isa("DotMarker") then 
+      elseif ( HasMixin(self, "Construct") or self:isa("ARC") or self:isa("MAC") ) and attacker and attacker:isa("Gorge") and doer:isa("DotMarker") then 
                         attacker:TriggerEnzyme(4)
-                        attacker:AddEnergy(15)
+                        attacker:AddEnergy(25)
       
           end
      end 
