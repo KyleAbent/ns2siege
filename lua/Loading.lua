@@ -342,10 +342,7 @@ function InitBackgroundFileNames( out )
     // did we find any?
     if #out == 0 then
         //Print("Found no map-specific ordered screenshots for %s. Using shots in 'screens' instead.", mapname)
-        Shared.GetMatchingFileNames("screens/custom/*.jpg", false, out )
-        if #out == 0 then        
-            Shared.GetMatchingFileNames("screens/*.jpg", false, out )
-        end
+        Shared.GetMatchingFileNames("screens/IntroScreen.jpg", false, out )
         mapBackgrounds = false
     end
 end
@@ -360,7 +357,7 @@ function InitializeBackgrounds()
         backgrounds[i] = GUI.CreateItem()
         backgrounds[i]:SetSize( bgSize )
         backgrounds[i]:SetPosition( bgPos )
-        backgrounds[i]:SetTexture( "screens/IntroScreen.jpg" )
+        backgrounds[i]:SetTexture( backgroundFileNames[i] )
         backgrounds[i]:SetIsVisible( false )
 
     end
