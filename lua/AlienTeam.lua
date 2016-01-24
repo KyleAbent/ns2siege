@@ -410,7 +410,6 @@ local function CreateCysts(hive, harvester, teamNumber)
             local cyst = CreateEntityForTeam(kTechId.Cyst, spawnPoint, teamNumber, nil)
             cyst:SetConstructionComplete()
             cyst:SetInfestationFullyGrown()
-            cyst:SetImmuneToRedeploymentTime(1)
     end
     
 end

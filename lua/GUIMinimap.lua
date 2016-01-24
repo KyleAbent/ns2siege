@@ -374,7 +374,11 @@ local function SetLocationTextPosition( item, mapPos )
     local offset = 1
 
 end
+local function SetLocationTextColor( item, color )
 
+    item.text:SetColor( color )
+
+end
 function OnCommandSetMapLocationColor()
 
 
@@ -437,9 +441,11 @@ function GUIMinimap:InitializeLocationNames()
     
         local averageOrigin = Vector(0, 0, 0)
         table.foreachfunctor(origins, function (origin) averageOrigin = averageOrigin + origin end)
-        table.insert(uniqueLocationsData, { Name = name, Origin = averageOrigin / table.count(origins) })
+        table.insert(uniqueLocationsData, { Name = name, Origin = averageOrigin / table.count(origins), IsSiege =  string.find(name, "Siege"), IsFront = string.find(name, "Front") })
         
     end
+    
+    
     
     for i, location in ipairs(uniqueLocationsData) do
 
@@ -447,14 +453,17 @@ function GUIMinimap:InitializeLocationNames()
 
         // Locations only supported on the big mode.
         local locationText = GUIManager:CreateTextItem()
-        locationText:SetColor(Color(1.0, 1.0, 1.0, 0.65))
+        local color = Color(1.0, 1.0, 1.0, 0.65)
+        color = ConditionalValue(location.IsSiege, Color(1, 0, 0), color)
+        color = ConditionalValue(location.isFront, Color(1, 0, 0), color)
+        locationText:SetColor(color)
         SetupLocationTextItem(locationText)
         locationText:SetText(location.Name)
         locationText:SetPosition( Vector(posX, posY, 0) )
 
         self.minimap:AddChild(locationText)
 
-        local locationItem = {text = locationText, origin = location.Origin }
+        local locationItem = {name = location.Name, text = locationText, origin = location.Origin, IsSiege = location.IsSiege, IsFront = location.IsFront }
         table.insert(self.locationItems, locationItem)
         
         
@@ -1175,6 +1184,31 @@ local function UpdateDynamicBlips(self)
     end
     
 end
+local function UpdateColorNames(self)
+
+    if self.locationItems ~= nil then
+    //Change Siege/Front names to Red, Blue for rooms with built powernode and Green for Rooms with unbuilt/killed node. 
+
+        for _, locationItem in ipairs(self.locationItems) do
+       local room = locationItem.name
+    //   local built = false
+       local color = Color(1.0, 1.0, 1.0, 0.65)
+             local powerpoint = GetPowerPointForLocation(room)
+             if powerpoint ~= nil then
+                if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() then 
+                   //     built = true
+                        color = Color(20/255, 127/255, 209/55, 1)
+                elseif powerpoint:GetIsDisabled() or  powerpoint:GetIsSocketed() then     
+                        color = Color(18/255, 231/255, 22/255, 1)
+                if  locationItem.IsSiege  or locationItem.IsFront then color = Color(1, 0, 0) end
+                end
+                   SetLocationTextColor( locationItem, color )
+                   //Print("Room is %s, built is %s", room, built )
+              end
+        end
+    end
+    
+end
 
 local function UpdateMapClick(self)
 
@@ -1333,7 +1367,8 @@ function GUIMinimap:Update(deltaTime)
 
         UpdatePlayerIcon(self)
         UpdateMapClick(self)
-
+        
+       UpdateColorNames(self)
                  
         UpdateStaticBlips(self, deltaTime)  
         DrawLocalBlips(self)

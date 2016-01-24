@@ -307,10 +307,6 @@ function Egg:GetIsFlameAble()
     return true
 end
 
-/** 
- * Takes the queued player from this Egg and placed them back in the
- * respawn queue to be spawned elsewhere.
- */
 local function RequeuePlayer(self)
 
     if self.queuedPlayerId then

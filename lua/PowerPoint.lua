@@ -415,12 +415,9 @@ end
 if Server then
 
 function PowerPoint:SetMainRoom()
-local oldmode = self:GetLightMode()
+self:AttackDefendWayPoint()
 self:SetLightMode(kLightMode.MainRoom)
-self:AddTimedCallback(function() self:AttackDefendWayPoint() end, 10)
-self:AddTimedCallback(function() self:AttackDefendWayPoint() end, 20) 
-self:AddTimedCallback(function() self:SetLightMode(oldmode) end, 30)
-self:AddTimedCallback(function() self:AttackDefendWayPoint() end, 30)
+self:AddTimedCallback(function() self:SetLightMode(kLightMode.Normal) end, 10)
 end
 
 
@@ -429,7 +426,15 @@ function PowerPoint:AttackDefendWayPoint()
 SendTeamMessage(self:GetTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
 SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
 
+  if not self:GetIsDisabled() and not self:GetIsSocketed() then
       CreatePheromone(kTechId.ThreatMarker, self:GetOrigin(), 2)  //Make alien threat
+  else
+       local nearestenemy = GetNearestMixin(self:GetOrigin(), "Combat", self:GetTeamNumber(), function(ent) return not ent:isa("Commander") and ent:GetIsAlive() and ent:GetIsInCombat() end)
+         if nearestenemy then
+        CreatePheromone(kTechId.ThreatMarker, nearestenemy:GetOrigin(), 2)  //Make alien threat
+        end
+  
+  end
       
           for _, player in ipairs(GetEntitiesWithinRange("Marine", self:GetOrigin(), 999)) do
         if player:GetIsAlive() and not player:isa("Commander") then

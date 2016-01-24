@@ -61,7 +61,11 @@ function FrontDoor:Reset()
 end
 
 function FrontDoor:CreatePath(onUpdate) 
-    self.waypoint = self:GetOrigin() + Vector(0,kMoveUpVector,0)
+    local moveVector = Vector(kMoveXVector,kMoveUpVector,kMoveZVector)
+    if self.direction == 1 then 
+        moveVector = Vector(kMoveXVector,-kMoveUpVector,kMoveZVector)
+    end
+    self.waypoint = self:GetOrigin() + moveVector
 end
 /*
 function FrontDoor:ShowOpeningEffects()

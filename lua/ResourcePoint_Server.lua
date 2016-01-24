@@ -18,9 +18,9 @@ function ResourcePoint:AutoDrop()
       
           local powerpoint = GetPowerPointForLocation(self:GetLocationName())
           if powerpoint ~= nil then 
-           if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled()then 
+           if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() then 
               self:SpawnResourceTowerForTeamModified(1, kTechId.Extractor)
-           elseif powerpoint:GetIsDisabled() then                                                  --avg
+           elseif powerpoint:GetIsDisabled() or  powerpoint:GetIsSocketed() then                                      
               local infestation = GetEntitiesWithMixinWithinRange("Infestation", self:GetOrigin(), 7) 
               if #infestation >= 1 then
                self:SpawnResourceTowerForTeamModified(2, kTechId.Harvester)

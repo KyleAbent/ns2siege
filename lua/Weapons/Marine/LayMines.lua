@@ -98,7 +98,7 @@ function LayMines:GetDropMapName()
 end
 
 function LayMines:GetHUDSlot()
-    return 4
+    return 5
 end
 
 function LayMines:OnTag(tagName)

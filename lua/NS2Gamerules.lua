@@ -1820,8 +1820,33 @@ end
 function NS2Gamerules:GetIsSuddenDeath()
 return self.issuddendeath
 end
-function NS2Gamerules:ClearLocations()
-         self.mainrooms = Shared.GetTime()
+function NS2Gamerules:GetLocationWithMostMixedPlayers()
+--so far v1.23 shows this works okay except for picking empty res rooms for some reason -.-
+Print("GetLocationWithMostMixedPlayers")
+
+local team1avgorigin = Vector(0, 0, 0)
+local marines = 1
+local team2avgorigin = Vector(0, 0, 0)
+local aliens = 1
+local neutralavgorigin = Vector(0, 0, 0)
+
+            for _, marine in ientitylist(Shared.GetEntitiesWithClassname("Marine")) do
+            if marine:GetIsAlive() and not marine:isa("Commander") then marines = marines + 1 team1avgorigin = team1avgorigin + marine:GetOrigin() end
+             end
+             
+           for _, alien in ientitylist(Shared.GetEntitiesWithClassname("Alien")) do
+            if alien:GetIsAlive() and not alien:isa("Commander") then aliens = aliens + 1 team2avgorigin = team2avgorigin + alien:GetOrigin() end 
+             end
+             --v1.23 added check to make sure room isnt empty
+         neutralavgorigin =  team1avgorigin + team2avgorigin
+         neutralavgorigin =  neutralavgorigin / (marines+aliens) --better as a table i know
+         Print("neutralavgorigin is %s", neutralavgorigin)
+     local nearest = GetNearest(neutralavgorigin, "Location", nil, function(ent) local powerpoint = GetPowerPointForLocation(ent.name) return ent:MakeSureRoomIsntEmpty() and powerpoint ~= nil and not (not self.siegedoorsopened  and string.find(ent.name, "Siege") or string.find(ent.name, "siege") ) end)
+    if nearest then
+    Print("nearest is %s", nearest.name)
+        return nearest
+    end
+
 end
 function NS2Gamerules:GetCombatEntitiesCount()
             local combatentities = 1
@@ -1857,8 +1882,6 @@ function NS2Gamerules:MainRoomSD()
                              hive:MarineOrders() 
                              break
                         end
-                              self.mainrooms = Shared.GetTime()
-                              self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds)
                              return true
 end
 
@@ -1866,7 +1889,6 @@ function NS2Gamerules:PickMainRoom(force)
   //Kyle Abent ns2siege 11.22 kyleabent@gmail.com
     if not self:GetGameStarted() then return  end //pregame bug fix? because at start of round says self.mainrooms = shared.gettime //12.5
     // Print("Main room step 1")
-       if not self.doorsopened or (self.mainrooms + kMainRoomPickEveryXSeconds) > Shared.GetTime() then return true end 
         //    Print("Main room step 2")
                  if self:GetIsSuddenDeath() then
                      self:MainRoomSD()
@@ -1874,9 +1896,7 @@ function NS2Gamerules:PickMainRoom(force)
                      return true
                  end
           
-     local locations = EntityListToTable(Shared.GetEntitiesWithClassname("Location"))
-     for i = 1, #locations do //
-        local location = locations[i]
+
                       //Setting main room to siege is lame. Turns out. 
               // if self.siegedoorsopened then
                        //   if string.find(location.name, "Siege") or string.find(location.name, "siege") then 
@@ -1889,11 +1909,8 @@ function NS2Gamerules:PickMainRoom(force)
                        //     return true //or break? meh.
                        //   end
                 //end //siege
-              if self:GetCombatEntitiesCountInRoom(location) >=  ( self:GetCombatEntitiesCount() * kPercentofInCombatToQualify ) then  
-                  self.mainrooms = Shared.GetTime() //Prevents 2 rooms being picked at once?
-                   self:AddTimedCallback(NS2Gamerules.ClearLocations, kMainRoomPickEveryXSeconds) // Clears and says is ready for another
+                local location = self:GetLocationWithMostMixedPlayers()
                       local entities = location:GetEntitiesInTrigger()
-                      local shouldbreak = 0
                       //     Print("Main room step 4")
                   if entities then
                   
@@ -1912,8 +1929,6 @@ function NS2Gamerules:PickMainRoom(force)
                     end
                  self:TriggerZedTime()
                   end
-             end//room check
-      end //locations do
       return true
 end
 function NS2Gamerules:TriggerZedTime()
@@ -1981,7 +1996,7 @@ if self.doorsopened == true then return end
 local frontdoornearestmarinewithpower =  nil
     
  for _, frontdoor in ientitylist(Shared.GetEntitiesWithClassname("FrontDoor")) do
-      local nearest = GetNearest(self:GetOrigin(), "Location", nil, function(ent) local powerpoint = GetPowerPointForLocation(ent.name) return powerpoint ~= nil and powerpoint:GetIsBuilt() end)
+      local nearest = GetNearest(self:GetOrigin(), "Location", nil, function(ent) local powerpoint = GetPowerPointForLocation(ent.name) return powerpoint ~= nil and powerpoint:GetIsBuilt() and ent:MakeSureRoomIsntEmpty() end)
        if nearest then
         frontdoornearestmarinewithpower = nearest:GetOrigin()
         break
@@ -2029,7 +2044,7 @@ function NS2Gamerules:OpenFrontDoors()
                 frontdoor.isvisible = false
                 end
                 
-              self:AddTimedCallback(NS2Gamerules.PickMainRoom, 5)
+              self:AddTimedCallback(NS2Gamerules.PickMainRoom, 10)
                 
               for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
               StartSoundEffectForPlayer(NS2Gamerules.kFrontDoorSound, player)

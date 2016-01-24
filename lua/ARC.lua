@@ -75,7 +75,7 @@ ARC.kMaxYaw                 = 180
 ARC.kCapsuleHeight = .05
 ARC.kCapsuleRadius = .5
 ARC.MaxLevel = 99
-ARC.GainXP = 0.66
+ARC.GainXP = 0.792
 ARC.ScaleSize = 1.3
 
 ARC.kMode = enum( {'Stationary', 'Moving', 'Targeting', 'Destroyed'} )

@@ -188,6 +188,14 @@ end
     function Location:SetMainRoom()
     self.mainroom = true
     end
+    function Location:MakeSureRoomIsntEmpty()
+                     local entities = self:GetEntitiesInTrigger()
+                     for i = 1, #entities do
+                     local ent = entities[i]
+                     if ent:isa("Player") and ent:GetIsAlive() and not ent:isa("Commander") then return true end
+                     end
+                     return false
+    end
     function Location:Intensify()
     
                       Print("check 5 complete")

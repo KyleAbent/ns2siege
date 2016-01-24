@@ -76,7 +76,11 @@ function SiegeDoor:Reset()
 end
 
 function SiegeDoor:CreatePath(onUpdate) 
- self.waypoint = self:GetOrigin() + Vector(kMoveXVector,kMoveUpVector,kMoveZVector)
+     local moveVector = Vector(kMoveXVector,kMoveUpVector,kMoveZVector)
+    if self.direction == 1 then 
+        moveVector = Vector(kMoveXVector,-kMoveUpVector,kMoveZVector)
+    end
+    self.waypoint = self:GetOrigin() + moveVector
 end
 
 /*

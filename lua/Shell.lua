@@ -192,30 +192,26 @@ function Shell:OnConstructionComplete()
         self:AddTimedCallback(function()  self:SpawnandStealEggs() end, 30)
   end
   function Shell:SpawnandStealEggs()
-  
-     local hiveorigin = nil
           for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
               hive:PerformActivation(kTechId.ShiftHatch, nil, normal, commander)
-              hiveorigin = hive:GetOrigin()
               break
         end
-     
-   
-        local eggs = GetEntitiesWithinRange("Egg", hiveorigin, 12)
-        
-        if not eggs or #eggs == 0 then return end
-        
-        for i = 1, Clamp(math.random(#eggs / 2, #eggs), 1, 4)  do
-        local egg = eggs[i]
+        local numberofeggsfaraway = {}
+                  for _, egg in ientitylist(Shared.GetEntitiesWithClassname("Egg")) do
+                   if self:GetDistance(egg) >= 7 then 
+                    table.insert(numberofeggsfaraway,egg)
+                   end
+              end
+        if #numberofeggsfaraway == 0 then return end
+        for i = 1, Clamp(#numberofeggsfaraway * 0.25, 1, 4) do
+        local egg = numberofeggsfaraway[i]
         egg:SetOrigin(self:FindFreeSpace())
-        
         end
 
   end
-      function Shell:FindFreeSpace()
-    
-        for index = 1, 20 do
-           local extents = Vector(1,1,1)
+      function Shell:FindFreeSpace()    
+        for index = 1, 100 do
+           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
            local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
            local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 7, EntityFilterAll())
         

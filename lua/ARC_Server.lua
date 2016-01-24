@@ -34,9 +34,8 @@ function ARC:UpdateMoveOrder(deltaTime)
     ASSERT(currentOrder)
     
     self:SetMode(ARC.kMode.Moving)  
-    local scale = 1
     local moveSpeed = ( self:GetIsInCombat() or self:GetGameEffectMask(kGameEffect.OnInfestation) ) and ARC.kCombatMoveSpeed or ARC.kMoveSpeed 
-    
+    moveSpeed = ConditionalValue(self:GetIsSiegeEnabled() and self:GetIsInSiege(), moveSpeed * 2, moveSpeed)
       
     local maxSpeedTable = { maxSpeed = moveSpeed }
     self:ModifyMaxSpeed(maxSpeedTable)
@@ -120,7 +119,7 @@ function ARC:UpdateSmoothAngles(deltaTime)
     self.forwardTrackPitchDegrees = Slerp(self.forwardTrackPitchDegrees, self.desiredForwardTrackPitchDegrees, kTrackPitchSmoothSpeed * deltaTime)
 
 end
-/*
+
 function ARC:GetIsSiegeEnabled()
             local gameRules = GetGamerules()
             if gameRules then
@@ -130,7 +129,7 @@ function ARC:GetIsSiegeEnabled()
             end
             return false
 end
-*/
+
 function ARC:GetLocationName()
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
