@@ -1,3 +1,4 @@
+kHiveMoveUpVector = 0
 kLightMode = enum( {'Normal', 'NoPower', 'LowPower', 'Damaged', 'MainRoom', } )
 //kGorgeCost = 10
 //kLerkCost = 20
@@ -29,7 +30,7 @@ kAlienRegenerationCombatModifier = .7
 
 kBeaconDelay = 16
 kCreditsPerRoundCap = 200
-kCreditMultiplier = 2
+kCreditMultiplier = 1
 kSBCooldown = 30
 kDynamicBuildSpeed = 1
 kActivePlayers = 0
@@ -123,9 +124,9 @@ nano = 1min15s-11min (brutal right?)
 
 /////////////min///////////////
 
-kSecondMarkToUnlockCatPackTechMin  = 300 // front/side door average
-kSecondMarkToUnlockNanoTechMin   = 300 // front/side door average
-kSecondMarkToUnlockPhaseTechMin  = 75 // some teaams and maps need this early
+//kSecondMarkToUnlockCatPackTechMin  = 300 // front/side door average
+//kSecondMarkToUnlockNanoTechMin   = 300 // front/side door average
+//kSecondMarkToUnlockPhaseTechMin  = 75 // some teaams and maps need this early
 kWeapons1SecondUnlockMin   = 60 
 kWeapons2SecondUnlockMin   = 330
 kWeapons3SecondUnlockMin   = 490 
@@ -133,6 +134,7 @@ kArmor1SecondUnlockMin   = 60
 kArmor2SecondUnlockMin   = 360 
 kArmor3SecondUnlockMin   = 450
 kRifleClipSecondUnlockMin   = 480
+/*
 kMinuteMarkToUnlockMinesMin   = 15
 kMinuteMarkToUnlockGrenadesMin   = 45
 kMinuteMarkToUnlockShotgunsMin   = 60
@@ -140,6 +142,7 @@ kMinuteMarkToUnlockHeavyRifleMin   = 780
 kMinuteMarkToUnlockAAMin   = 60
 kJetpackMinuteUnlockTimeMin   = 60
 kExoSuitMinuteUnlockTimeMin   = 60
+*/
 //////////////////////////////max////////////////////
 kSecondMarkToUnlockCatPackTechMax  = 660
 kSecondMarkToUnlockNanoTechMax  = 660
@@ -179,7 +182,7 @@ kSideDoorTime = 300
 kMarineRespawnProtection = 5.06
 kFrontDoorTime = 300 //6 min
 kSiegeDoorTime = 900 // 20 min
-kTimeAfterSiegeOpeningToEnableSuddenDeath = 480
+kTimeAfterSiegeOpeningToEnableSuddenDeath = 300
 
 kAlienTeamInitialTres = 60
 kMarineTeamInitialTres = 60

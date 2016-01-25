@@ -155,7 +155,7 @@ AddMixinNetworkVars(ParasiteMixin, networkVars)
 local function SetupWithInitialSettings(self)
         self:SetModel(kUnsocketedSocketModelName, kUnsocketedAnimationGraph)
         
-        self.lightMode = kLightMode.Normal
+        self.lightMode = kLightMode.NoPower
         self.timeOfDestruction = 0
         self.buildFraction = 0
         self.constructionComplete = false
@@ -416,11 +416,20 @@ if Server then
 
 function PowerPoint:SetMainRoom()
 self:AttackDefendWayPoint()
+if self:GetIsSiegeEnabled() then self:GetEnemyTeam():DeployPhaseCannons(self:GetOrigin()) end
 self:SetLightMode(kLightMode.MainRoom)
 self:AddTimedCallback(function() self:SetLightMode(kLightMode.Normal) end, 10)
 end
 
-
+function PowerPoint:GetIsSiegeEnabled()
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+            return false
+end
 function PowerPoint:AttackDefendWayPoint()
   //Yesterday had this every 10 seconds basically. Lets try every 30 instead. Less DDoss on Client/Server ?
 SendTeamMessage(self:GetTeam(), kTeamMessageTypes.MainRoom, self:GetLocationId())
@@ -550,6 +559,7 @@ if Server then
         PowerUp(self)
         
        // self:UpdateMiniMap()
+       if self:GetIsInSiegeRoom() then self.nanoShielded = true end
         
     end
     
@@ -695,7 +705,7 @@ if Server then
         self.timeOfDestruction = Shared.GetTime()
       // self:UpdateMiniMap()
     end
-    
+
         function PowerPoint:UpdateMiniMap()
     
 
@@ -799,6 +809,11 @@ function PowerPoint:GetLocationName()
         local locationName = location and location:GetName() or ""
         return locationName
 end
+           function PowerPoint:GetIsInSiegeRoom()
+           if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
+             return false
+           end
+
     function PowerPoint:OnUpdate(deltaTime)
 
         self:AddAttackTime(-0.1)

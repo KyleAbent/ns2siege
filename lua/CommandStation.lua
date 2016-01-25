@@ -40,8 +40,6 @@ CommandStation.kCommandStationKillConstant = 1.05
 
 
 //Siege
-CommandStation.UnlockCatPatTime = 0
-CommandStation.UnlockNanoTime = 0
 local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_marine")
 
 if Server then
@@ -103,13 +101,6 @@ function CommandStation:OnInitialized()
     end
     
     InitMixin(self, IdleMixin)
-    self:Generate()
-end
-function CommandStation:Generate()
-if CommandStation.UnlockCatPatTime ~= 0 then return end
-CommandStation.UnlockCatPatTime = math.random(kSecondMarkToUnlockCatPackTechMin, kSecondMarkToUnlockCatPackTechMax)
-CommandStation.UnlockNanoTime = math.random(kSecondMarkToUnlockNanoTechMin, kSecondMarkToUnlockNanoTechMax)
-Print("CatPack: %s, Nano: %s", CommandStation.UnlockCatPatTime, CommandStation.UnlockNanoTime )
 end
 
 function CommandStation:GetIsWallWalkingAllowed()

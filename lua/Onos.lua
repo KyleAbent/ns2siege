@@ -691,11 +691,11 @@ function Onos:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoin
 
 local damage = 1
 
-    if doer:isa("Rifle") and GetHasTech(attacker, kTechId.HeavyRifleTech) then
-    damage = damage * math.random(kOnifleDamageBonusMin, kOnifleDamageBonusMax)
+  //  if doer:isa("Rifle") and GetHasTech(attacker, kTechId.HeavyRifleTech) then
+  //  damage = damage * math.random(kOnifleDamageBonusMin, kOnifleDamageBonusMax)
   //  elseif doer:isa("MiniGun") then
   //  damage = damage * 1.07
-    end
+   // end
     
     if hitPoint ~= nil then
 
@@ -706,9 +706,9 @@ local damage = 1
     
          damage =  damage * kBoneShieldDamageReduction
          self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )
-         elseif self:GetIsSiege() then
-         damage =  damage * (kBoneShieldDamageReduction/2)
-         self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )      
+         //elseif self:GetIsSiege() then
+         //damage =  damage * (kBoneShieldDamageReduction/2)
+         //self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )      
          end
     end
     

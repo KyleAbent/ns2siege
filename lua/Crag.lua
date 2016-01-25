@@ -333,9 +333,9 @@ function Crag:TryHeal(target)
     heal = heal * self:GetCragsInRange()/3 + heal
     heal = heal * (self.level/100) + heal
     
-    if self:GetIsSiege() and self:IsInRangeOfHive() and target:isa("Hive") or target:isa("Crag") then
-       heal = heal * kMapStatsCragStacks
-    end
+   // if self:GetIsSiege() and self:IsInRangeOfHive() and target:isa("Hive") or target:isa("Crag") then
+   //    heal = heal * kMapStatsCragStacks
+   // end
     
     if target:GetHealthScalar() ~= 1 and (not target.timeLastCragHeal or target.timeLastCragHeal + Crag.kHealInterval <= Shared.GetTime()) then
        local amountHealed = target:AddHealth(heal)
@@ -347,6 +347,7 @@ function Crag:TryHeal(target)
     end
    
 end
+/*
 function Crag:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
     if self:GetIsSiege() and attacker:isa("ARC") and attacker:GetIsInSiege() then 
     
@@ -358,6 +359,7 @@ function Crag:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoin
           
     end
 end
+*/
 function Crag:GetIsSiege()
         if Server then
             local gameRules = GetGamerules()

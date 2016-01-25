@@ -163,6 +163,8 @@ if Server then
             self.sideopened = false
             self.siegedoorsopened = false
             self.iszedtime = false
+            self.setuppowernodecount = 0
+            self.siegepowernodecount = 0
             self.lastexploitcheck = Shared.GetTime()
             self:CreateFirstShiftHive()
             self:AddTimedCallback(NS2Gamerules.CollectResources, kResourceTowerResourceInterval) 
@@ -252,6 +254,8 @@ if Server then
         self.teamsReady = false
         self.tournamentMode = false
         self.doorsopened = false
+        self.setuppowernodecount = 0
+        self.siegepowernodecount = 0
         self.siegedoorsopened = false
         self.iszedtime = false
         self.alreadyhookeddoors = false
@@ -1822,7 +1826,7 @@ return self.issuddendeath
 end
 function NS2Gamerules:GetLocationWithMostMixedPlayers()
 --so far v1.23 shows this works okay except for picking empty res rooms for some reason -.-
-Print("GetLocationWithMostMixedPlayers")
+//Print("GetLocationWithMostMixedPlayers")
 
 local team1avgorigin = Vector(0, 0, 0)
 local marines = 1
@@ -1840,10 +1844,12 @@ local neutralavgorigin = Vector(0, 0, 0)
              --v1.23 added check to make sure room isnt empty
          neutralavgorigin =  team1avgorigin + team2avgorigin
          neutralavgorigin =  neutralavgorigin / (marines+aliens) --better as a table i know
-         Print("neutralavgorigin is %s", neutralavgorigin)
+     //    Print("neutralavgorigin is %s", neutralavgorigin)
      local nearest = GetNearest(neutralavgorigin, "Location", nil, function(ent) local powerpoint = GetPowerPointForLocation(ent.name) return ent:MakeSureRoomIsntEmpty() and powerpoint ~= nil and not (not self.siegedoorsopened  and string.find(ent.name, "Siege") or string.find(ent.name, "siege") ) end)
     if nearest then
-    Print("nearest is %s", nearest.name)
+   // Print("nearest is %s", nearest.name)
+
+   
         return nearest
     end
 
@@ -2029,8 +2035,38 @@ end
            Print("No valid spot found for auto armory drop!")
            return origin
     end
+function NS2Gamerules:CountNodes()
+local built = 0
+local unbuilt = 0
+                 for index, powerpoint in ientitylist(Shared.GetEntitiesWithClassname("PowerPoint")) do
+                 if not powerpoint:GetIsInSiegeRoom() then
+                   if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() then
+                     built = built + 1
+                   elseif powerpoint:GetIsDisabled() or powerpoint:GetIsSocketed() then
+                     unbuilt = unbuilt + 1
+                   end
+                   end
+                end
+                
+                if self.setuppowernodecount == 0 then
+                self.setuppowernodecount = math.abs(built/unbuilt)
+                end
+                
+                if self.siegedoorsopened then
+                  self.siegepowernodecount = math.abs(built/unbuilt) 
+                end
+                
+                Print("unbuilt = %s, built = %s, setuppowernodecount = %s, siegepowernodecount = %s,", unbuilt, built, self.setuppowernodecount, self.siegepowernodecount)
+               // return built
+               
+               if not self.siegedoorsopened then return false end
+               
+               return self.siegedoorsopened, self.setuppowernodecount, self.siegepowernodecount 
+
+end
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
+ self:CountNodes()
  
                  SendTeamMessage(self.team1, kTeamMessageTypes.FrontDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.FrontDoor)
@@ -2114,14 +2150,17 @@ function NS2Gamerules:SwitchObservatoryToSiegeMode()
 end
 function NS2Gamerules:OpenSiegeDoors()
  self.siegedoorsopened = true
- 
+ //self:CountNodes()
   
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
-               self:AddTimedCallback(NS2Gamerules.SwitchShadesToSiegeMode, kShadeInkCooldown)
+              // self:AddTimedCallback(NS2Gamerules.SwitchShadesToSiegeMode, kShadeInkCooldown)
+              //self:AddTimedCallback(NS2Gamerules.CountNodes, 30)
                self:AddTimedCallback(NS2Gamerules.SwitchCragsToSiegeMode, kHealWaveCooldown)
                self:AddTimedCallback(NS2Gamerules.SwitchObservatoryToSiegeMode, kSiegeObsAutoScanCooldown)
-                 
+
+            //self:AddTimedCallback(self.team1.OperationTurtleDefense, kSiegeObsAutoScanCooldown)
+                
                for index, siegedoor in ientitylist(Shared.GetEntitiesWithClassname("SiegeDoor")) do
                 siegedoor.driving = true
                 siegedoor.isvisible = false

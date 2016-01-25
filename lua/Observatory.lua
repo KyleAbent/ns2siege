@@ -58,7 +58,6 @@ Observatory.kDistressBeaconRange = kDistressBeaconRange
 Observatory.kDetectionRange = 22 // From NS1 
 
 ///Siege Random Automatic Passive Time Researches
-Observatory.kRandomnlyGeneratedTimeToUnlock = 0
 
 local kAnimationGraph = PrecacheAsset("models/marine/observatory/observatory.animation_graph")
 
@@ -76,7 +75,6 @@ AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CorrodeMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
-AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
@@ -613,48 +611,6 @@ function Observatory:UpdatePassive()
    commander.isBotRequestedAction = true
    commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
 end
-if Server then
-function Observatory:UpdateResearch(deltaTime)
- if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
-   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-    local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
-    if researchNode then
-        local gameRules = GetGamerules()
-        local projectedminutemarktounlock = 60
-        local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
-
-        if researchNode:GetTechId() == kTechId.PhaseTech then
-           projectedminutemarktounlock = Observatory.kRandomnlyGeneratedTimeToUnlock
-         end
-               
-        local progress = Clamp(currentroundlength / projectedminutemarktounlock, 0, 1)
-        //Print("%s", progress)
-        if progress ~= self.researchProgress then
-        
-            self.researchProgress = progress
-
-            researchNode:SetResearchProgress(self.researchProgress)
-            
-            local techTree = self:GetTeam():GetTechTree()
-            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
-            
-            // Update research progress
-            if self.researchProgress == 1 then
-
-                // Mark this tech node as researched
-                researchNode:SetResearched(true)
-                
-                techTree:QueueOnResearchComplete(self.researchingId, self)
-                
-            end
-        
-        end
-        
-    end 
-    self.timeLastUpdateCheck = Shared.GetTime()
-end
-end
-end//server
 function Observatory:ScanAtOrigin()
          CreateEntity( Scan.kMapName, self:GetOrigin(), 1)
          self.lastscantime = Shared.GetTime()

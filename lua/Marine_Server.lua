@@ -21,6 +21,15 @@ function Marine:GetLocationName()
         local locationName = location and location:GetName() or ""
         return locationName
 end
+function Marine:GetIsSiegeEnabled()
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+            return false
+end
 function Marine:GetIsInSiege()
 if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
 return false

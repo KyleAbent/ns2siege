@@ -98,6 +98,48 @@ end
 function AlienTeam:GetEggCount()
     return self.eggCount or 0
 end
+ if Server then
+function AlienTeam:DeployPhaseCannons(powerorigin)
+
+          Print("Phase Cannons Deploying!")
+            local gameRules = GetGamerules()
+            if gameRules then
+                  local issiege, setupcount, siegecount = gameRules:CountNodes()
+                   Print("issiege = %s, setupcount = %s, siegecount = %s", issiege, setupcount, siegecount)
+
+           
+         if issiege then //and siegecount >= setupcount then
+           local chance = (siegecount/setupcount) * 100
+             local number = math.random(chance, 100)
+                Print("chance is %s!, number is %s", chance, number)
+              if chance >= number then
+                  self:FirePhaseCannons(powerorigin)
+              end
+         end
+             
+            return issiege
+         end
+                        
+                        return false
+end
+function AlienTeam:FirePhaseCannons(powerorigin)
+              powerorigin = GetGroundAtPosition(powerorigin, nil, PhysicsMask.AllButPCs, Vector(1,1,1))
+                CreateEntityForTeam(kTechId.Contamination, powerorigin, 2, nil)
+                CreateEntityForTeam(kTechId.NutrientMist, powerorigin, 2, nil)
+              //  CreateEntityForTeam(kTechId.Shell,self:FindFreeSpace(powerorigin), 2, nil)
+              //  CreateEntityForTeam(kTechId.Whip, self:FindFreeSpace(powerorigin), 2, nil)
+              //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
+              //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
+              //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
+              //  CreateEntityForTeam(kTechId.Shift, self:FindFreeSpace(powerorigin), 2, nil)
+end
+function AlienTeam:ScanForHostiles(powerorigin, threatlevel)
+    
+    Print("Origin is %s, Threat Level is %s", origin, threatlevel)
+
+end
+end //of server
+
 
 local function SortByBioMassAdd(ent1, ent2)
     

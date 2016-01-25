@@ -62,12 +62,6 @@ gArmoryHealthHeight = 1.4
 // Players can use menu and be supplied by armor inside this range
 Armory.kResupplyUseRange = 2.5
 
-///Siege
-Armory.MinesTime = 0
-Armory.GrenadesTime = 0
-Armory.ShotGunTime = 0 
-Armory.AATime = 0
-Armory.HeavyRifleTime = 0
 
 Armory.kSentryGainXp =  0.06
 //Armory.kSentryLoseXp = 0.06
@@ -223,24 +217,6 @@ function Armory:OnInitialized()
     end
     
     InitMixin(self, IdleMixin)
-    self:Generate()
-end
-function Armory:Generate()
-if Armory.MinesTime ~= 0 then return end
-Armory.MinesTime = math.random(kMinuteMarkToUnlockMinesMin, kMinuteMarkToUnlockMinesMax)
-Armory.GrenadesTime = math.random(kMinuteMarkToUnlockGrenadesMin, kMinuteMarkToUnlockGrenadesMax)
-Armory.ShotGunTime = math.random(kMinuteMarkToUnlockShotgunsMin, kMinuteMarkToUnlockShotgunsMax)
-Armory.AATime = math.random(kMinuteMarkToUnlockAAMin, kMinuteMarkToUnlockAAMax)
-Armory.HeavyRifleTime =  math.random(kMinuteMarkToUnlockHeavyRifleMin, kMinuteMarkToUnlockHeavyRifleMax)
-Print("Mines: %s, Grenades: %s, Shotgun: %s, AA: %s, HR: %s", Armory.MinesTime, Armory.GrenadesTime, Armory.ShotGunTime, Armory.AATime, Armory.HeavyRifleTime )
-end
-function Armory:Reset()
-Armory.MinesTime = math.random(kMinuteMarkToUnlockMinesMin, kMinuteMarkToUnlockMinesMax)
-Armory.GrenadesTime = math.random(kMinuteMarkToUnlockGrenadesMin, kMinuteMarkToUnlockGrenadesMax)
-Armory.ShotGunTime = math.random(kMinuteMarkToUnlockShotgunsMin, kMinuteMarkToUnlockShotgunsMax)
-Armory.AATime = math.random(kMinuteMarkToUnlockAAMin, kMinuteMarkToUnlockAAMax)
-Armory.HeavyRifleTime =  math.random(kMinuteMarkToUnlockHeavyRifleMin, kMinuteMarkToUnlockHeavyRifleMax)
-Print("Mines: %s, Grenades: %s, Shotgun: %s, AA: %s, HR: %s", Armory.MinesTime, Armory.GrenadesTime, Armory.ShotGunTime, Armory.AATime, Armory.HeavyRifleTime )
 end
 function Armory:GetCanBeUsed(player, useSuccessTable)
 
@@ -429,11 +405,6 @@ function Armory:OnUpdate(deltaTime)
 
     if Client then
         self:UpdateArmoryWarmUp()
-    elseif Server then
-   //  if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
-   //     self:UpdatePassive()
-   //     self.timeLastUpdatePassiveCheck = Shared.GetTime()
-   //  end
     end
     
     if GetIsUnitActive(self) and self.deployed then
@@ -448,33 +419,6 @@ function Armory:OnUpdate(deltaTime)
     
     ScriptActor.OnUpdate(self, deltaTime)
     
-end
-function Armory:UpdatePassive()
-   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-    if GetHasTech(self, kTechId.AdvancedArmoryUpgrade) or not  GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
-    local commander = GetCommanderForTeam(1)
-    if not commander then return end
-    
-
-    local techid = nil
-    
-    if not GetHasTech(self, kTechId.MinesTech) then
-    techid = kTechId.MinesTech
-    elseif GetHasTech(self, kTechId.MinesTech) and not GetHasTech(self, kTechId.GrenadeTech) then
-    techid = kTechId.GrenadeTech
-    elseif GetHasTech(self, kTechId.GrenadeTech) and not GetHasTech(self, kTechId.ShotgunTech) then
-    techid = kTechId.ShotgunTech
-    elseif GetHasTech(self, kTechId.ShotgunTech) and not GetHasTech(self, kTechId.AdvancedArmoryUpgrade) then
-    techid = kTechId.AdvancedArmoryUpgrade   
-    elseif GetHasTech(self, kTechId.AdvancedArmoryUpgrade) then
-    techid = kTechId.HeavyRifleTech   
-    else
-       return  
-    end
-    
-   local techNode = commander:GetTechTree():GetTechNode( techid ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
 end
 function Armory:GetReceivesStructuralDamage()
     return true

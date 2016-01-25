@@ -376,7 +376,7 @@ function Shade:OnUpdate(deltaTime)
 end
 function Shade:OnScan()
                
-     if self:GetIsBuilt() and not self:GetIsOnFire() and self:GetCanTrigger() then
+     if self:GetIsBuilt() and not self:GetIsOnFire() and self:GetCanTrigger() and self:GetHasShadeHive() then
                  local number = math.random(self.level, 100)
                  if number >= 99 then self:TriggerInk() end
      end     

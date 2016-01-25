@@ -175,19 +175,6 @@ function PrototypeLab:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         
     end
-    self:Generate()
-end
-function PrototypeLab:Generate()
-if PrototypeLab.kJetpackTime ~= 0 then return end
-PrototypeLab.kJetpackTime = math.random(kJetpackMinuteUnlockTimeMin, kJetpackMinuteUnlockTimeMax)
-PrototypeLab.kExoTime = math.random(kExoSuitMinuteUnlockTimeMin, kExoSuitMinuteUnlockTimeMax)
-Print("JP: %s, Exo: %s", PrototypeLab.kJetpackTime, PrototypeLab.kExoTime)
-end
-function PrototypeLab:Reset()
-if PrototypeLab.kJetpackTime ~= 0 then return end
-PrototypeLab.kJetpackTime = math.random(kJetpackMinuteUnlockTimeMin, kJetpackMinuteUnlockTimeMax)
-PrototypeLab.kExoTime = math.random(kExoSuitMinuteUnlockTimeMin, kExoSuitMinuteUnlockTimeMax)
-Print("JP: %s, Exo: %s", PrototypeLab.kJetpackTime, PrototypeLab.kExoTime)
 end
 function PrototypeLab:GetTechButtons(techId)
     return { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
@@ -260,11 +247,6 @@ function PrototypeLab:OnUpdate(deltaTime)
 
     if Client then
         self:UpdatePrototypeLabWarmUp()
-    elseif Server then
-        if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
-        self:UpdatePassive()
-        self.timeLastUpdatePassiveCheck = Shared.GetTime()
-        end
     end
     if GetIsUnitActive(self) and self.deployed then
     
@@ -326,76 +308,6 @@ end//client
 function PrototypeLab:GetIsStunAllowed()
     return  self:GetLastStunTime() + 16 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
-function PrototypeLab:UpdatePassive()
-   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-       if GetHasTech(self, kTechId.ExosuitTech) or not GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
-       
-    local commander = GetCommanderForTeam(1)
-    if not commander then return end
-    
-
-    local techid = nil
-    
-    if not GetHasTech(self, kTechId.JetpackTech) then
-    techid = kTechId.JetpackTech
-    elseif GetHasTech(self, kTechId.JetpackTech) and not GetHasTech(self, kTechId.ExosuitTech) then
-    techid = kTechId.ExosuitTech
-    else
-       return  
-    end
-    
-   local techNode = commander:GetTechTree():GetTechNode( techid ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
-   
-end
-if Server then
-function PrototypeLab:UpdateResearch(deltaTime)
- if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
-   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-    local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
-    if researchNode then
-        local gameRules = GetGamerules()
-        local projectedminutemarktounlock = 60
-        local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
-
-        if researchNode:GetTechId() == kTechId.JetpackTech then
-           projectedminutemarktounlock = PrototypeLab.kJetpackTime
-        elseif researchNode:GetTechId() == kTechId.ExosuitTech then
-          projectedminutemarktounlock = PrototypeLab.kExoTime
-        end
-
-       
-        local progress = Clamp(currentroundlength / projectedminutemarktounlock, 0, 1)
-        //Print("%s", progress)
-        
-        if progress ~= self.researchProgress then
-        
-            self.researchProgress = progress
-
-            researchNode:SetResearchProgress(self.researchProgress)
-            
-            local techTree = self:GetTeam():GetTechTree()
-            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
-            
-            // Update research progress
-            if self.researchProgress == 1 then
-
-                // Mark this tech node as researched
-                researchNode:SetResearched(true)
-                
-                techTree:QueueOnResearchComplete(self.researchingId, self)
-                
-            end
-        
-        end
-        
-    end 
-
-end
-self.timeLastUpdateCheck = Shared.GetTime()
-end
-end // server
 function PrototypeLab:GetItemList(forPlayer)
 
     

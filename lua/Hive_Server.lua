@@ -796,13 +796,7 @@ function Hive:UpdateAliensWeaponsManually() ///Seriously this makes more sense t
    end
 end
 function Hive:AutoUpgrade()
-        if GetSpurLevel(2) == 0 then  
-           self:UpgradeToTechId(kTechId.ShiftHive)
-           local team = self:GetTeam()
-           if team then
-           team:OnUpgradeChamberConstructed(self)
-           end
-        elseif GetShellLevel(2) == 0  then
+        if GetShellLevel(2) == 0  then
            self:UpgradeToTechId(kTechId.CragHive)
            local team = self:GetTeam()
            if team then
@@ -819,7 +813,7 @@ function Hive:AutoUpgrade()
 end
 function Hive:OnConstructionComplete()
 
-    self.bioMassLevel = 4
+    self.bioMassLevel = 4   
 
          local commander = self:GetTeam():GetCommander()
        if commander ~= nil then
@@ -849,6 +843,9 @@ function Hive:OnConstructionComplete()
         team:OnHiveConstructed(self)
     end
     self:UpdateAliensWeaponsManually()
+    
+    --cheap maphack to raise height in ns2_epicsiege ;)
+   self:SetOrigin(self:GetOrigin() + Vector(0,kHiveMoveUpVector,0) )
     
 end
 

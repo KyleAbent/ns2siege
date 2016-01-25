@@ -240,6 +240,7 @@ function Egg:UpdateToGorgeEgg()
    return false
 end
 function Egg:UpdateToLerkEgg()
+ if self:GetIsInSiege() then return true end
     local commander = GetCommanderForTeam(2)
     if not commander then
       return true
@@ -250,6 +251,7 @@ function Egg:UpdateToLerkEgg()
       return false
 end
 function Egg:UpdateToFadeEgg()
+ if self:GetIsInSiege() then return true end
     local commander = GetCommanderForTeam(2)
     if not commander then
       return true
@@ -260,6 +262,7 @@ function Egg:UpdateToFadeEgg()
       return false
 end
 function Egg:UpdateToOnosEgg()
+ if self:GetIsInSiege() then return true end
     local commander = GetCommanderForTeam(2)
     if not commander then
       return true
@@ -269,6 +272,10 @@ function Egg:UpdateToOnosEgg()
    commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
       return false
 end
+end
+function Egg:GetIsInSiege() --return true because sometimes the eggs may be re-beaconed outside of siege?
+if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
+return false
 end
 function Egg:OnResearchComplete(techId)
     

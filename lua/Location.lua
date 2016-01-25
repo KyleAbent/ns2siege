@@ -213,8 +213,27 @@ end
                   return success
     
     end
+    function Location:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
     function Location:OnTriggerEntered(entity, triggerEnt)
         ASSERT(self == triggerEnt)
+          if self:GetIsSetup() then
+            if entity:GetTeamNumber() == 1 then
+               local powerPoint = GetPowerPointForLocation(self.name)
+                 if powerPoint ~= nil and not powerPoint:GetIsBuilt() then
+                   powerPoint:SetConstructionComplete()
+                 end
+            end
+          end
         if entity.SetLocationName then
             //Log("%s enter loc %s ('%s') from '%s'", entity, self, self:GetName(), entity:GetLocationName())
             // only if we have no location do we set the location here
