@@ -13,7 +13,7 @@ kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject',
                            'PowerPointUnderAttack', 'Beacon', 'AutoBeacon', 'NoCommander', 'TeamsUnbalanced',
                            'TeamsBalanced', 'GameStartCommanders', 'SideDoor', 'FrontDoor', 'SiegeDoor', 
                            'SuddenDeath', 'ZedTimeBegin', 'ZedTimeEnd', 'Weapons1Researching', 'Weapons2Researching', 
-                           'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', 'MainRoom', })
+                           'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', 'MainRoom', 'SiegeTime' })
 
 local kTeamMessages = { }
 
@@ -27,6 +27,9 @@ local researchStringGen = function(researchId, messageString) return string.form
 
 kTeamMessages[kTeamMessageTypes.MainRoom] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "%s is Main Room") end,
                                                        [kAlienTeamType] = function(data) return locationStringGen(data, "%s is Main Room") end } }
+                                                       
+kTeamMessages[kTeamMessageTypes.SiegeTime] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "Siege timer adjusted") end,
+                                                       [kAlienTeamType] = function(data) return locationStringGen(data, "Siege timer adjusted") end } }
 
 kTeamMessages[kTeamMessageTypes.PowerLost] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "POWER_LOST") end } }
 

@@ -525,6 +525,15 @@ local hives = 0
    
    return hives
 end
+function GetReversedRoundLengthToSiege()
+local level = 0.1
+ local gameRules = GetGamerules()
+ if not gameRules:GetGameStarted() then return 0 end 
+      local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
+      level = Clamp(kSiegeDoorTime/roundlength, 0.1, 1)
+      Print("GetReversedRoundLengthToSiege = %s", level)
+       return level 
+end
 function GetRoundLengthToSiege()
 local level = 1
  local gameRules = GetGamerules()
@@ -539,7 +548,7 @@ local level = 1
  local gameRules = GetGamerules()
  if not gameRules:GetGameStarted() then return 0 end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
-      level = Clamp(roundlength/kSiegeDoorTime+kTimeAfterSiegeOpeningToEnableSuddenDeath, 0.1, 1)
+      level = Clamp(roundlength/ (kSiegeDoorTime+kTimeAfterSiegeOpeningToEnableSuddenDeath), 0.1, 1)
       Print("GetRoundLengthToSuddenDeath = %s", level)
        return level 
 end

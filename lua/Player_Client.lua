@@ -3982,7 +3982,7 @@ function Player:OnUpdatePlayer(deltaTime)
         self:UpdateClientEffects(deltaTime, self:GetIsLocalPlayer())
     end
     
-    self:UpdateRookieMode()
+    //self:UpdateRookieMode()
     
     self:UpdateCommunicationStatus()
     
@@ -3994,33 +3994,6 @@ end
 
 -- The client is authoritative over our rookie state. It could be changed because
 -- we've been playing long enough, or because the user changed it in their options.
-function Player:UpdateRookieMode()
-
-    -- Only update for local player
-    if self:GetIsLocalPlayer() then
-
-        local time = Client.GetTime()
-        
-        -- Doesn't need to be updated too often, and don't want to resend message multiple times while waiting for update
-        if self.timeLastRookieModeUpdate == nil or (time > self.timeLastRookieModeUpdate + kRookieNetworkCheckInterval) then
-        
-            local name = self:GetName()
-            local isRookie = ScoreboardUI_IsPlayerRookie(self:GetName())
-            local optionsRookieMode = Client.GetOptionBoolean(kRookieOptionsKey, true)
-            
-            if isRookie ~= optionsRookieMode then
-
-                Client.SendNetworkMessage("SetRookieMode", BuildRookieMessage(optionsRookieMode), true)
-
-            end
-            
-            self.timeLastRookieModeUpdate = time    
-            
-        end
-        
-    end
-    
-end
 
 function Player:UpdateCommunicationStatus()
 

@@ -415,8 +415,8 @@ end
 if Server then
 
 function PowerPoint:SetMainRoom()
-self:AttackDefendWayPoint()
-if self:GetIsSiegeEnabled() then self:GetEnemyTeam():DeployPhaseCannons(self:GetOrigin()) end
+self:AttackDefendWayPoint()                         --Silly torpedos
+if self:GetIsSiegeEnabled() then self:GetEnemyTeam():DeployPhaseCannons(self:FindFreeSpace()) end
 self:SetLightMode(kLightMode.MainRoom)
 self:AddTimedCallback(function() self:SetLightMode(kLightMode.Normal) end, 10)
 end
@@ -483,6 +483,7 @@ if Server then
         self:StopSound(kAuxPowerBackupSound)
         self:TriggerEffects("fixed_power_up")
         self:SetPoweringState(true)
+        self:AddTimedCallback(PowerPoint.UpdateCountBuild, math.random(4,8)) 
         
     end
     
@@ -543,7 +544,16 @@ if Server then
     function PowerPoint:GetDestroyMapBlipOnKill()
         return false
     end
-    
+    function PowerPoint:GetFront()
+      //Siege 11.12 kyle abent =]
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+            return false
+end
     function PowerPoint:OnConstructionComplete()
 
         self:StopDamagedSound()
@@ -559,9 +569,79 @@ if Server then
         PowerUp(self)
         
        // self:UpdateMiniMap()
-       if self:GetIsInSiegeRoom() then self.nanoShielded = true end
-        
+       //if self:GetIsInSiegeRoom() then self.nanoShielded = true end
+       if self:GetIsSetup() then self:GameRulesBluePrints() end
     end
+            function PowerPoint:GameRulesBluePrints()
+                    if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+                  gameRules:SetupRoomBluePrint(GetLocationForPoint(self:GetOrigin()), self, self:GetRoomHasFrontDoor())
+                end
+                end
+            end
+            function PowerPoint:GetRoomHasFrontDoor()
+             
+                   if string.find(self:GetLocationName(), "front") or string.find(self:GetLocationName(), "Front") or
+                    GetLocationForPoint(self:GetOrigin()):GetHasFrontDoor() then return true end
+                    
+                    return false
+            
+            end
+        function PowerPoint:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+         end
+       function PowerPoint:UpdateCountBuild()
+           if Server then 
+              local gameRules = GetGamerules()
+              if gameRules then
+                 if self:GetFront() and not self:GetIsSiegeEnabled() then  
+                 gameRules:NodeBuiltFront(self)
+                 end
+               end
+          end
+          return false
+        end 
+              function PowerPoint:FindFreeSpace()    
+        for index = 1, 100 do
+           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then//and GetIsPointOnInfestation(spawnPoint) then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for phase cannon!")
+           return self:GetOrigin()
+    end
+       function PowerPoint:UpdateCountKill()
+           if Server then 
+              local gameRules = GetGamerules()
+              if gameRules then
+                  if self:GetFront() and not self:GetIsSiegeEnabled() then  
+                 gameRules:NodeKilledFront(self)
+                 end
+               end
+          end
+          return false
+        end 
     
     function PowerPoint:SetInternalPowerState(powerState)
     
@@ -704,6 +784,7 @@ if Server then
         self:AddTimedCallback(PlayAuxSound, 4)
         self.timeOfDestruction = Shared.GetTime()
       // self:UpdateMiniMap()
+        self:AddTimedCallback(PowerPoint.UpdateCountKill, math.random(4,8)) 
     end
 
         function PowerPoint:UpdateMiniMap()

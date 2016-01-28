@@ -65,7 +65,7 @@ Armory.kResupplyUseRange = 2.5
 
 Armory.kSentryGainXp =  0.06
 //Armory.kSentryLoseXp = 0.06
-Armory.kMaxLevel = 99
+Armory.kMaxLevel = 9001
 
 local kArmoryWeldGainXp =  0.45
 local kArmoryScaleSize = 1.8

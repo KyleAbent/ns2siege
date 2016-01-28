@@ -826,7 +826,7 @@ function Hive:OnConstructionComplete()
          
     if not GetGamerules():GetFrontDoorsOpen() then
 
-    self:AddTimedCallback(Hive.AutoUpgrade, 4)
+  //  self:AddTimedCallback(Hive.AutoUpgrade, 4)
     end
     
     // Play special tech point animation at same time so it appears that we bash through it.

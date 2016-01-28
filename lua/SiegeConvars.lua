@@ -30,7 +30,7 @@ kAlienRegenerationCombatModifier = .7
 
 kBeaconDelay = 16
 kCreditsPerRoundCap = 200
-kCreditMultiplier = 1
+kCreditMultiplier = 2
 kSBCooldown = 30
 kDynamicBuildSpeed = 1
 kActivePlayers = 0
@@ -167,7 +167,7 @@ kMoveUpVector = 10
 kMoveZVector = 0
 kMoveXVector = 0
 ///
-kResupplyCost = 10
+kResupplyCost = 5
 kFuncMoveableSpeed = 0.25
 kSiegeDoorSpeed = 0.25
 kFireBulletsCost = 5

@@ -100,7 +100,9 @@ function AlienTeam:GetEggCount()
 end
  if Server then
 function AlienTeam:DeployPhaseCannons(powerorigin)
-
+--So basically help the aliens out if marines defend too well and the game gets boring
+--By enabling this automatic script to base automatic entities spawning based on chance.
+--The chance is based on how well or not the marines and aliens played, in theory.
           Print("Phase Cannons Deploying!")
             local gameRules = GetGamerules()
             if gameRules then

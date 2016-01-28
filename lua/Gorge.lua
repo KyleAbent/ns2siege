@@ -32,6 +32,8 @@ class 'Gorge' (Alien)
 
 if Server then    
     Script.Load("lua/Gorge_Server.lua")
+elseif Client then
+    Script.Load("lua/Gorge_Client.lua", true)
 end
 
 local networkVars =

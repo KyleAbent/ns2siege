@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+
+----Hewavily modified within siege
+
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
 Script.Load("lua/ServerSponitor.lua")
@@ -128,16 +131,7 @@ if Server then
         end
 
     end
-     function NS2Gamerules:CreateFirstShiftHive()
-         
-        for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
-           hive:UpgradeToTechId(kTechId.ShiftHive)
-           local team = hive:GetTeam()
-           if team then
-           team:OnUpgradeChamberConstructed(hive)
-           end
-        end
-     end
+
     function NS2Gamerules:SetGameState(state)
     
         if state ~= self.gameState then
@@ -162,12 +156,12 @@ if Server then
             self.doorsopened = false
             self.sideopened = false
             self.siegedoorsopened = false
-            self.iszedtime = false
             self.setuppowernodecount = 0
-            self.siegepowernodecount = 0
+            self.setuppowernodecountbuilt = 0
+            self.lastnode = false
             self.lastexploitcheck = Shared.GetTime()
-            self:CreateFirstShiftHive()
             self:AddTimedCallback(NS2Gamerules.CollectResources, kResourceTowerResourceInterval) 
+
             
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
@@ -255,7 +249,8 @@ if Server then
         self.tournamentMode = false
         self.doorsopened = false
         self.setuppowernodecount = 0
-        self.siegepowernodecount = 0
+        self.setuppowernodecountbuilt= 0
+        self.lastnode = false
         self.siegedoorsopened = false
         self.iszedtime = false
         self.alreadyhookeddoors = false
@@ -1812,6 +1807,9 @@ function NS2Gamerules:OnUpdate(timePassed)
         ASSERT(type(playerId) == "number")
         return (table.find(self.bannedPlayers, playerId) ~= nil)
     end
+function NS2Gamerules:GetSetupNodeRatio()
+       return self.setuppowernodecountbuilt
+    end
 function NS2Gamerules:GetFrontDoorsOpen()
 return self.doorsopened
 end
@@ -1988,53 +1986,110 @@ function NS2Gamerules:CollectResources()
         self:AutoBuildResTowers()
            return true
 end
+
 function NS2Gamerules:AutoBuildResTowers()
 //if self.doorsopened == true then return end
   for _, respoint in ientitylist(Shared.GetEntitiesWithClassname("ResourcePoint")) do
          respoint:AutoDrop()
     end//
-   // self:AutoBuildArmory()
 end
 
-function NS2Gamerules:AutoBuildArmory()
---Only build armories in front automatically during setup? Just to test out how useful it may or may not be
-if self.doorsopened == true then return end
-local frontdoornearestmarinewithpower =  nil
-    
- for _, frontdoor in ientitylist(Shared.GetEntitiesWithClassname("FrontDoor")) do
-      local nearest = GetNearest(self:GetOrigin(), "Location", nil, function(ent) local powerpoint = GetPowerPointForLocation(ent.name) return powerpoint ~= nil and powerpoint:GetIsBuilt() and ent:MakeSureRoomIsntEmpty() end)
-       if nearest then
-        frontdoornearestmarinewithpower = nearest:GetOrigin()
-        break
-       end
- end
-          if frontdoornearestmarinewithpower ~= nil then
-               local armory = CreateEntity(Armory.kMapName, self:FindFreeSpace(frontdoornearestmarinewithpower), 1)    
-         end
-
-end
-    function NS2Gamerules:FindFreeSpace(origin)
-    
-        for index = 1, 100 do
-           local extents = Vector(1,1,1)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, .5, 24, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == GetLocationForPoint(origin)
-        
-           if spawnPoint ~= nil and sameLocation  then
-           return spawnPoint
-           end
-       end
-           Print("No valid spot found for auto armory drop!")
-           return origin
+    function NS2Gamerules:NodeBuiltFront(powerpoint)
+    --Kyle Abent =] based on almost 2 years of ns2siege gameplay observations this dynamic timer for all situations WIP
+                  local amount = 1
+               local built, unbuilt = self:CountCurrentNodes()       
+            local nearestdoor = GetNearestMixin(powerpoint:GetOrigin(), "Moveable", nil, function(ent) return ent:isa("FrontDoor")  end)
+                  Print("nearestdoor is %s", nearestdoor)
+                if nearestdoor then
+                      local distance = powerpoint:GetDistance(nearestdoor)
+                       Print("nearestdoor Distance is %s", distance)
+                       amount = Clamp(distance*4, 10, (built*30))
+                  end
+                  local gameRules = GetGamerules()
+                Print("NodeBuiltFront built = %s, unbuilt =%s", built, unbuilt)
+                local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
+                Print("gameLength == %s", gameLength)
+                local oldtimer = math.abs(kSiegeDoorTime - gameLength )
+                Print("oldtimer == %s", oldtimer)
+                Print("self.lastnode == %s", self.lastnode)
+                local percentage = (oldtimer * 0.35)/(self.setuppowernodecount-1)
+                Print("percentage == %s", percentage)
+                percentage = percentage/GetReversedRoundLengthToSiege()
+                Print("percentage == %s", percentage)
+                amount = ConditionalValue(self.lastnode == true,  math.abs(oldtimer-percentage), amount) --last node rules
+                Print("amount == %s", amount)
+             local subtractamount = math.round(math.abs(amount),0)
+             Shared.ConsoleCommand(string.format("sh_addsiegetime %s", subtractamount *  1))
+             SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, subtractamount *  1)
+             SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, subtractamount *  1)
+           
     end
+        function NS2Gamerules:SetupRoomBluePrint(location, powerpoint, hasfrontdoor)
+        
+
+          local spawnpoint = powerpoint:FindFreeSpace()
+                CreateEntity(Armory.kMapName, spawnpoint, 1)  
+           if hasfrontdoor then      
+                CreateEntity(Sentry.kMapName, spawnpoint, 1)  
+                CreateEntity(Sentry.kMapName,spawnpoint, 1)  
+                CreateEntity(Sentry.kMapName, spawnpoint, 1)  
+                CreateEntity(Sentry.kMapName, spawnpoint, 1)  
+                CreateEntity(Sentry.kMapName, spawnpoint, 1)  
+                CreateEntity(Sentry.kMapName, spawnpoint, 1)  
+                CreateEntity(Observatory.kMapName, spawnpoint, 1)  
+           end
+        
+        end
+    
+    
+    function NS2Gamerules:NodeKilledFront(powerpoint)
+    --Kyle Abent =] based on almost 2 years of ns2siege gameplay observations this dynamic timer for all situations WIP
+                  local amount = 1
+               local built, unbuilt = self:CountCurrentNodes()       
+            local nearestdoor = GetNearestMixin(powerpoint:GetOrigin(), "Moveable", nil, function(ent) return ent:isa("FrontDoor")  end)
+                  Print("nearestdoor is %s", nearestdoor)
+                if nearestdoor then
+                      local distance = powerpoint:GetDistance(nearestdoor)
+                       Print("nearestdoor Distance is %s", distance)
+                       amount = Clamp(distance*4, 10, (built*30))
+                  end
+                  local gameRules = GetGamerules()
+                Print("NodeBuiltFront built = %s, unbuilt =%s", built, unbuilt)
+                local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
+                Print("gameLength == %s", gameLength)
+                local oldtimer = math.abs(kSiegeDoorTime - gameLength )
+                Print("oldtimer == %s", oldtimer)
+                Print("self.lastnode == %s", self.lastnode)
+                local percentage = (oldtimer * 0.35)/(self.setuppowernodecount-1)
+                Print("percentage == %s", percentage)
+                percentage = percentage/GetReversedRoundLengthToSiege()
+                Print("percentage == %s", percentage)
+                amount = ConditionalValue(self.lastnode == true,  math.abs(oldtimer-percentage), amount) --last node rules
+                Print("amount == %s", amount)
+             local subtractamount = math.round(math.abs(amount),0)
+             Shared.ConsoleCommand(string.format("sh_addsiegetime %s", subtractamount * -  1))
+             SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, subtractamount * -  1)
+             SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, subtractamount *  - 1)
+    end
+    function NS2Gamerules:CountCurrentNodes()
+    local built = 0
+    local unbuilt = 0
+                 for index, powerpoint in ientitylist(Shared.GetEntitiesWithClassname("PowerPoint")) do
+                 if not powerpoint:GetIsInSiegeRoom() then
+                   if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() then
+                     built = built + 1
+                   elseif powerpoint:GetIsDisabled() or powerpoint:GetIsSocketed() then
+                     unbuilt = unbuilt + 1
+                   end
+                   end
+                end
+                if built <= 1 then self.lastnode = true
+                else
+                self.lastnode = false
+                end
+                return built, unbuilt
+    end
+
 function NS2Gamerules:CountNodes()
 local built = 0
 local unbuilt = 0
@@ -2048,8 +2103,11 @@ local unbuilt = 0
                    end
                 end
                 
-                if self.setuppowernodecount == 0 then
-                self.setuppowernodecount = math.abs(built/unbuilt)
+                if self.setuppowernodecountbuilt == 0 then
+                self.setuppowernodecountbuilt = built
+                end
+                 if self.setuppowernodecount == 0 then
+                self.setuppowernodecount = math.abs(built/unbuilt) 
                 end
                 
                 if self.siegedoorsopened then

@@ -254,16 +254,8 @@ end
 
 function Hive:GetTechButtons()
 
-    local techButtons = { kTechId.ShiftHatch, kTechId.None, kTechId.None, kTechId.None,
+    local techButtons = { kTechId.ShiftHatch, kTechId.UpgradeToCragHive, kTechId.UpgradeToShadeHive, kTechId.UpgradeToShiftHive,
                           kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-
-    if self:GetTechId() == kTechId.Hive then
-    
-        techButtons[5] = ConditionalValue(GetHiveTypeResearchAllowed(self, kTechId.UpgradeToCragHive), kTechId.UpgradeToCragHive, kTechId.None)
-        techButtons[6] = ConditionalValue(GetHiveTypeResearchAllowed(self, kTechId.UpgradeToShadeHive), kTechId.UpgradeToShadeHive, kTechId.None)
-        techButtons[7] = ConditionalValue(GetHiveTypeResearchAllowed(self, kTechId.UpgradeToShiftHive), kTechId.UpgradeToShiftHive, kTechId.None)
-    
-    end
    
     
     return techButtons

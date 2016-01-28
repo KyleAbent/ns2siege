@@ -20,6 +20,9 @@ function Plugin:Initialise()
 self:CreateCommands()
 self.Enabled = true
 self.GameStarted = false
+self.siegetimer = 0
+self.originalsiegetimer = 0
+self.nextuse = 0
 
 return true
 end
@@ -36,6 +39,52 @@ function Plugin:OnFrontDoor()
      Shine.ScreenText.End(6)
 return 
 end
+
+function Plugin:OnFirstThink() 
+ local neutralorigin = Vector(0, 0, 0)
+ local count = 0 
+ local time = kSiegeDoorTime
+     for _, tech in ientitylist(Shared.GetEntitiesWithClassname("TechPoint")) do
+              neutralorigin = neutralorigin + tech:GetOrigin()
+              count = count + 1
+     end
+     neutralorigin = neutralorigin/count
+     Print("neutralorigin is %s", neutralorigin)
+      local nearestdoor = GetNearestMixin(neutralorigin, "Moveable", nil, function(ent) return ent:isa("FrontDoor")  end)
+           Print("nearestdoor is %s", nearestdoor)
+        if nearestdoor then
+         --every 1 distance == 15 seconds?
+                local points = PointArray()
+                local isReachable = Pathing.GetPathPoints(neutralorigin, nearestdoor:GetOrigin(), points)
+                if isReachable then
+                    local distance = GetPointDistance(points)
+                    Print("Distance is %s, isReachable", distance)
+                    local time = Clamp(distance*15, 900, 1200)
+                    Print("time is %s", time)
+                else
+                    local distance = (neutralorigin-nearestdoor:GetOrigin()):GetLength()
+                     Print("Distance is %s, is not isReachable", distance)
+                     time = Clamp(distance*15, 900, 1200)
+                     Print("time is %s", time)
+                end      
+                
+      local nearestotherdoor = GetNearestMixin(nearestdoor:GetOrigin(), "Moveable", nil, function(ent) return ent:isa("SiegeDoor")  end)    
+
+                if nearestotherdoor then
+                    local distance = nearestdoor:GetDistance(nearestotherdoor)
+                    Print("to nearestotherdoor Distance is %s", distance)
+                    time = time + Clamp(distance*4, 200, 900)
+                    Print("time is %s", time)
+                end
+          end
+             kFrontDoorTime = Clamp(kFrontDoorTime, 300, 301)
+              time = Clamp(time,600, 1200)
+             kSiegeDoorTime = time
+             self.siegetimer = time
+               Print("time is %s", time)
+
+end
+
 function Plugin:OnSideDoor()
           if self:TimerExists(33) then self:DestroyTimer(33) end 
      Shine.ScreenText.End(97)
@@ -119,12 +168,23 @@ function Plugin:SetGameState( Gamerules, State, OldState )
           if self:TimerExists(33) then self:DestroyTimer(33) end
         self.GameStarted = true
         
+            if self.originalsiegetimer ~= 0 then
+            kSiegeDoorTime = self.originalsiegetimer
+           end
+           
            self:CreateTimer(30, kFrontDoorTime, 1, function ()  Gamerules:OpenFrontDoors() end)
           self:CreateTimer(31, kSiegeDoorTime, 1, function ()  Gamerules:OpenSiegeDoors() end)
           self:CreateTimer(32, kSiegeDoorTime + kTimeAfterSiegeOpeningToEnableSuddenDeath, 1, function () Gamerules:EnableSuddenDeath() end)
            
+           
         local DerpLength =  math.ceil( Shared.GetTime() + kFrontDoorTime - Shared.GetTime() )
        local SiegeLength =  math.ceil( Shared.GetTime() + kSiegeDoorTime - Shared.GetTime() )
+       
+       
+                  if self.originalsiegetimer == 0 then
+                 self.originalsiegetimer = kSiegeDoorTime
+                  end
+
 
 	 if  Shared.GetMapName() ~= "ns2_rockdownsiege2" then 
        Shine.ScreenText.Add( 6, {X = 0.40, Y = 0.75,Text = "Front Door(s) opens in %s",Duration = DerpLength,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 3,FadeIn = 0,} )
@@ -194,7 +254,41 @@ function Plugin:SetGameState( Gamerules, State, OldState )
      
 end
 
+function Plugin:AdjustTimer(Number)
+//Print("Adjust timer number is %s", Number)
+self:DestroyTimer(31)
+self:DestroyTimer(20)
+Shine.ScreenText.End(7)  
+Shine.ScreenText.End(81)  
+local gameRules = GetGamerules()
+local newtimer = 0
+if kSiegeDoorTime == self.originalsiegetimer then
+local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
+local oldtimer = math.abs(kSiegeDoorTime - gameLength )
+kSiegeDoorTime = oldtimer + (Number)
+ newtimer = kSiegeDoorTime
+else
+local calculation = kSiegeDoorTime + (Number)
+//Print("calculation is %s", calculation)
+local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
+calculation = Clamp(calculation, 1, self.originalsiegetimer - gameLength)
+//Print("originalsiegetimer is %s", self.originalsiegetimer)
+//Print("calculation is %s", calculation)
+kSiegeDoorTime = calculation
+ newtimer = kSiegeDoorTime
+//Print("kSiegeDoorTime timer number is %s", kSiegeDoorTime)
+//Print("newtimer timer number is %s", newtimer)
+end
+self:CreateTimer(31, newtimer, 1, function ()  gameRules:OpenSiegeDoors() end)
+Shine.ScreenText.Add( 7, {X = 0.60, Y = 0.95,Text = "Siege Door(s) opens in %s",Duration = newtimer,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0, Size = 3, FadeIn = 0,} ) 
 
+	   self:CreateTimer(20, newtimer + 1, 1, function ()
+	   if self.GameStarted then
+	   local SuddenDeathLength =  math.ceil( Shared.GetTime() + kTimeAfterSiegeOpeningToEnableSuddenDeath - Shared.GetTime() )
+	   Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.95,Text = "Sudden Death activates in %s",Duration = SuddenDeathLength,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 3,FadeIn = 0,} )
+	   end
+	   end)
+end
 function Plugin:Cleanup()
 	self:Disable()
 	self.BaseClass.Cleanup( self )    
@@ -203,6 +297,14 @@ end
 
 function Plugin:CreateCommands()
 
+local function AddSiegeTime( Client, Number, Boolean )
 
+ self:AdjustTimer(Number)
+end
+
+local AddSiegeTimeCommand = self:BindCommand( "sh_addsiegetime", "addsiegetime", AddSiegeTime )
+AddSiegeTimeCommand:AddParam{ Type = "number" }
+AddSiegeTimeCommand:AddParam{ Type = "boolean", Optional = true, Default = false }
+AddSiegeTimeCommand:Help( "adds timer to siegedoor and updates timer/countdown" )
 
 end
