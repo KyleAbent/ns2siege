@@ -134,7 +134,7 @@ kTechId = createTechIdEnum({
 
     // Alien structures 
       
-    'Hive', 'HiveHeal', 'CragHive', 'CragHiveTwo', 'ShadeHive', 'ControlledHallucination', 'ShiftHive','Harvester', 'PresBonus', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel', 'CommTunnel', 'EvolutionChamber',
+    'Hive', 'HiveHeal', 'CragHive', 'CragHiveTwo', 'ShadeHive', 'ControlledHallucination', 'ShiftHive', 'AttachedCyst', 'Harvester', 'PresBonus', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel', 'CommTunnel', 'EvolutionChamber',
     'GorgeEgg', 'LerkEgg', 'FadeEgg', 'OnosEgg',
     
     // Infestation upgrades

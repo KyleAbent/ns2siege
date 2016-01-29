@@ -41,18 +41,6 @@ ArmsLab.kMapName = "armslab"
 
 ArmsLab.kModelName = PrecacheAsset("models/marine/arms_lab/arms_lab.model")
 
-///Siege Random Automatic Passive Time Researches
-ArmsLab.Weapons1ResearchTime = 0
-ArmsLab.Weapons2ResearchTime = 0
-ArmsLab.Weapons3ResearchTime = 0
-ArmsLab.Armor1ResearchTime = 0
-ArmsLab.Armor2ResearchTime = 0
-ArmsLab.Armor3ResearchTime = 0
-ArmsLab.RifleClipResearchTime = 0
-
-
-ArmsLab.GainXP = .9
-
 
 local kAnimationGraph = PrecacheAsset("models/marine/arms_lab/arms_lab.animation_graph")
 
@@ -148,7 +136,7 @@ function ArmsLab:OnInitialized()
     end
     
     self:SetModel(ArmsLab.kModelName, kAnimationGraph)
-    self:GenerateResearchTimes()
+
 end
 function ArmsLab:OnResearchComplete(researchId)
  if researchId ~= kTechId.kRifleClipSecondUnlockMax then
@@ -157,20 +145,6 @@ function ArmsLab:OnResearchComplete(researchId)
         player:SetArmorAmount()
     end
  end
-end
-
-function ArmsLab:GenerateResearchTimes()
-    if ArmsLab.Weapons1ResearchTime ~= 0 then return end
-    ArmsLab.Weapons1ResearchTime = math.random(kWeapons1SecondUnlockMin, kWeapons1SecondUnlockMax)
-    ArmsLab.Weapons2ResearchTime = math.random(kWeapons2SecondUnlockMin, kWeapons2SecondUnlockMax)
-    ArmsLab.Weapons3ResearchTime = math.random(kWeapons3SecondUnlockMin, kWeapons3SecondUnlockMax)
-    ArmsLab.Armor1ResearchTime = math.random(kArmor1SecondUnlockMin, kArmor1SecondUnlockMax)
-    ArmsLab.Armor2ResearchTime = math.random(kArmor2SecondUnlockMin, kArmor2SecondUnlockMax)
-    ArmsLab.Armor3ResearchTime = math.random(kArmor3SecondUnlockMin, kArmor3SecondUnlockMax)
-    ArmsLab.RifleClipResearchTime = math.random(kRifleClipSecondUnlockMin, kRifleClipSecondUnlockMax)
-    Print("Times: W1 %s, W2 %s, W3 %s", ArmsLab.Weapons1ResearchTime,ArmsLab.Weapons2ResearchTime,ArmsLab.Weapons3ResearchTime)
-    Print("Times: A1 %s, A2 %s, A3 %s", ArmsLab.Armor1ResearchTime,ArmsLab.Armor2ResearchTime,ArmsLab.Armor3ResearchTime)
-    Print("rifle clip: %s", ArmsLab.RifleClipResearchTime)
 end
    
 function ArmsLab:GetArmsLabQualifications()
@@ -192,41 +166,6 @@ end
 function ArmsLab:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
 end
-  function ArmsLab:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-    
-    if self:GetIsResearching() then
-    
-    local w1time = string.TimeToString(ArmsLab.Weapons1ResearchTime)
-    local w2time = string.TimeToString(ArmsLab.Weapons2ResearchTime)
-    local w3time = string.TimeToString(ArmsLab.Weapons3ResearchTime)
-    local a1time = string.TimeToString(ArmsLab.Armor1ResearchTime)
-    local a2time = string.TimeToString(ArmsLab.Armor2ResearchTime)
-    local a3time = string.TimeToString(ArmsLab.Armor3ResearchTime)
-    local cliptime = string.TimeToString(ArmsLab.RifleClipResearchTime)
-
-
-    local currentresearchtimetounlock = 0
-      if self.researchingId == kTechId.Weapons1 then
-        currentresearchtimetounlock = w1time
-      elseif self.researchingId == kTechId.Weapons2 then
-        currentresearchtimetounlock = w2time
-      elseif self.researchingId == kTechId.Weapons3 then
-        currentresearchtimetounlock = w3time
-      elseif self.researchingId == kTechId.Armor1 then
-        currentresearchtimetounlock = a1time
-      elseif self.researchingId == kTechId.Armor2 then
-        currentresearchtimetounlock = a2time
-      elseif self.researchingId == kTechId.Armor3 then
-        currentresearchtimetounlock = a3time
-      elseif self.researchingId == kTechId.RifleClip then
-        currentresearchtimetounlock = cliptime
-      end
-      
-    unitName = string.format(Locale.ResolveString("%s"), currentresearchtimetounlock)
-  end
-return unitName
-end 
 function ArmsLab:OnConstructionComplete()
 self:AddTimedCallback(ArmsLab.UpdateManually, kMarineResearchDelay)
 end
@@ -290,23 +229,23 @@ function ArmsLab:UpdateResearch(deltaTime)
         local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
 
         if researchNode:GetTechId() == kTechId.Weapons1 then
-           projectedminutemarktounlock = ArmsLab.Weapons1ResearchTime
+           percentageofround = 0.30
         elseif researchNode:GetTechId() == kTechId.Weapons2 then
-          projectedminutemarktounlock =  ArmsLab.Weapons2ResearchTime
+           percentageofround = 0.60
         elseif researchNode:GetTechId() == kTechId.Weapons3 then
-          projectedminutemarktounlock =  ArmsLab.Weapons3ResearchTime
+           percentageofround = 0.70
         elseif researchNode:GetTechId() == kTechId.Armor1 then
-          projectedminutemarktounlock = ArmsLab.Armor1ResearchTime
+           percentageofround = 0.40
           elseif researchNode:GetTechId() == kTechId.Armor2 then
-          projectedminutemarktounlock = ArmsLab.Armor2ResearchTime
+           percentageofround = 0.50
          elseif researchNode:GetTechId() == kTechId.Armor3 then
-          projectedminutemarktounlock = ArmsLab.Armor3ResearchTime
+           percentageofround = 0.80
          elseif researchNode:GetTechId() == kTechId.RifleClip then
-          projectedminutemarktounlock = ArmsLab.RifleClipResearchTime
+          percentageofround = 0.90
         end
       
        
-        local progress = Clamp(currentroundlength / projectedminutemarktounlock, 0, 1)
+        local progress = Clamp( (currentroundlength/kSiegeDoorTime) / percentageofround, 0, 1)
         //Print("%s", progress)
         
         if progress ~= self.researchProgress then

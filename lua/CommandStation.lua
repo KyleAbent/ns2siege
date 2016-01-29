@@ -224,10 +224,18 @@ function CommandStation:GetTechAllowed(techId, techNode, player)
     return allowed, canAfford
     
 end 
-if Server then
-function CommandStation:OnConstructionComplete()
-self:AddTimedCallback(CommandStation.UpdateBeacons, kBeaconDelay)
+function CommandStation:OnUpdate(deltaTime)
+
+        if Server then
+             local time = ConditionalValue(self:GetIsInCombat(), kBeaconDelay / 2, kBeaconDelay)
+              time = ConditionalValue(self:GetIsSiege(), time / 2, time)
+            if self.timeOfLastbeaconcheck == nil or Shared.GetTime() > self.timeOfLastbeaconcheck + time then
+              self:UpdateBeacons()
+            end
+              self.timeOfLastbeaconcheck = Shared.GetTime()
+        end
 end
+if Server then
 function CommandStation:UpdateBeacons()
   local time = self:GetTeam():GetBeacons()
                     //So the auto beacon triggers infinite as long as health says so.  

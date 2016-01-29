@@ -23,12 +23,10 @@ MoveableMixin.networkVars =
     driving = "boolean",
 	savedOrigin = "vector",
     nextWaypoint = "vector",
-	cleaning = "boolean",
 }
 
 function MoveableMixin:__initmixin() 
     self.driving = false
-    self.cleaning = true
    if not self:isa("FuncMoveable") and not self:isa("func_train_nopushpull") then self.waypoint = self:GetOrigin() + Vector(0,10,0) end
 end
 
@@ -42,13 +40,6 @@ end
 
 function MoveableMixin:OnUpdate(deltaTime) 
 if Server then           
-   if not self.driving and self.cleaning then //and self:isa("SiegeDoor") then
-         if self:isa("FrontDoor") then
-           for _, cysts in ipairs(GetEntitiesForTeamWithinRange("Cyst", 2, self:GetOrigin(), 15)) do
-           DestroyEntity(cysts)
-           end 
-         end
-     end  
         if self.driving then self:UpdatePosition(deltaTime)end
   end
 end

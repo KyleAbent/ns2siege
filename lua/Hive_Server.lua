@@ -613,11 +613,7 @@ function Hive:GetIsEggBeaconOnField()
            if #shell >=1 then return true end
            return false
 end
-function Hive:GetEggBeaconLocation()
-      for _, shell in ientitylist(Shared.GetEntitiesWithClassname("Shell")) do 
-        return shell:GetOrigin()
-      end
-end
+
 function Hive:GenerateEggSpawns(hiveLocationName)
 
     PROFILE("Hive:GenerateEggSpawns")
@@ -635,7 +631,10 @@ function Hive:GenerateEggSpawns(hiveLocationName)
         // but too small for a Skulk and the Skulk would be stuck when spawned.
         local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
         local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), kEggMinRange, kEggMaxRange, EntityFilterAll())
+        local spawnpoint = self:GetModelOrigin()
+        spawnpoint = ConditionalValue(self:GetHasActiveEggBeacon(), self:GetEggBeaconLocation(), spawnpoint)
+        spawnpoint = ConditionalValue(self:HasKingCyst(), self:GetKingCystLocation(), spawnpoint)
+        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, spawnpoint, kEggMinRange, kEggMaxRange, EntityFilterAll())
         
         if spawnPoint ~= nil then
             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
@@ -678,7 +677,30 @@ function Hive:GenerateEggSpawns(hiveLocationName)
     end
     
 end
-
+function Hive:GetHasActiveEggBeacon()
+      local nearest = GetNearest(self:GetOrigin(), "Shell", nil, function(ent) return ent:GetIsBuilt()  end)
+      
+   if nearest then 
+   return true
+   end
+end
+function Hive:GetKingCystLocation()
+      for _, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do 
+       // return shell:GetOrigin()
+       if cyst.isking then return cyst:GetOrigin() end
+      end
+end
+function Hive:HasKingCyst()
+      for _, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do 
+       // return shell:GetOrigin()
+       if cyst.isking then return true end
+      end
+end
+function Hive:GetEggBeaconLocation()
+      for _, shell in ientitylist(Shared.GetEntitiesWithClassname("Shell")) do 
+        return shell:GetOrigin()
+      end
+end
 function Hive:OnLocationChange(locationName)
 
     CommandStructure.OnLocationChange(self, locationName)

@@ -279,13 +279,23 @@ kSiegeDoorTime = calculation
 //Print("kSiegeDoorTime timer number is %s", kSiegeDoorTime)
 //Print("newtimer timer number is %s", newtimer)
 end
+self:CreateNewTimers(newtimer)
 self:CreateTimer(31, newtimer, 1, function ()  gameRules:OpenSiegeDoors() end)
-Shine.ScreenText.Add( 7, {X = 0.60, Y = 0.95,Text = "Siege Door(s) opens in %s",Duration = newtimer,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0, Size = 3, FadeIn = 0,} ) 
 
+
+end
+function Plugin:CreateNewTimers(newtimer)
+                        for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+                        Shine.ScreenText.Add( 7, {X = 0.60, Y = 0.95,Text = "Siege Door(s) opens in %s",Duration = newtimer,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0, Size = 3, FadeIn = 0,} ) 
+                        end
+                        
 	   self:CreateTimer(20, newtimer + 1, 1, function ()
 	   if self.GameStarted then
 	   local SuddenDeathLength =  math.ceil( Shared.GetTime() + kTimeAfterSiegeOpeningToEnableSuddenDeath - Shared.GetTime() )
-	   Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.95,Text = "Sudden Death activates in %s",Duration = SuddenDeathLength,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 3,FadeIn = 0,} )
+	       for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+	       Shine.ScreenText.Add( 81, {X = 0.40, Y = 0.95,Text = "Sudden Death activates in %s",Duration = SuddenDeathLength,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 3,FadeIn = 0,} )
+           end
+
 	   end
 	   end)
 end

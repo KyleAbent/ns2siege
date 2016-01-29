@@ -86,18 +86,20 @@ end
         GetEffectManager():TriggerEffects("spit_hit", { effecthostcoords = self:GetCoords() })
         
         local cysts = GetEntitiesWithinRange("Cyst", self:GetOrigin(), kCystRedeployRange)
-        local attatchedcysts = GetEntitiesWithinRange("AttachedCyst", self:GetOrigin(), kCystRedeployRange)
-        
-        if #cysts == 0 and ( #attatchedcysts == 0 or #attatchedcysts <= 4) then
+        if #cysts == 0 then
           --enforce ground
-        local origin = GetGroundAtPointWithCapsule(self:GetOrigin(), Vector(.25,.25,.25),  PhysicsMask.CystBuild, EntityFilterOne(self))
+           //for i = 1, #20 do
+        local origin = self:GetOrigin() //GetGroundAtPointWithCapsule(self:GetOrigin(), Vector(.25,.25,.25),  PhysicsMask.CystBuild, EntityFilterOne(self))
+        //   if origin then break end
+           //end
            if origin then
-                        if self:GetDistance(self:GetOwner())<= 8 then
-                           local cyst = CreateEntity(Cyst.kMapName, origin, 2)
-                          // local adjustz = self:GetOrigin().y - player:GetViewAngles():GetCoords().zAxis 
-                          // cyst:SetAngles(Angles(adjustz,0,0))    
-                        end    
-           end 
+
+             local player = self:GetOwner()
+             local cyst = CreateEntity(Cyst.kMapName, origin, 2, extraValues)
+              cyst:SetAngles(Angles(self:GetOrigin().y - player:GetOrigin().y,0,0))
+                         
+
+           end
            
         end   
         DestroyEntity(self)

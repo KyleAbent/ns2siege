@@ -115,7 +115,7 @@ function AlienTeam:DeployPhaseCannons(powerorigin)
              local number = math.random(chance, 100)
                 Print("chance is %s!, number is %s", chance, number)
               if chance >= number then
-                  self:FirePhaseCannons(powerorigin)
+                  self:FirePhaseCannons(powerorigin, chance)
               end
          end
              
@@ -124,16 +124,52 @@ function AlienTeam:DeployPhaseCannons(powerorigin)
                         
                         return false
 end
-function AlienTeam:FirePhaseCannons(powerorigin)
-              powerorigin = GetGroundAtPosition(powerorigin, nil, PhysicsMask.AllButPCs, Vector(1,1,1))
-                CreateEntityForTeam(kTechId.Contamination, powerorigin, 2, nil)
-                CreateEntityForTeam(kTechId.NutrientMist, powerorigin, 2, nil)
+function AlienTeam:FirePhaseCannons(powerpoint)
+              if Server then
+                   local gameRules = GetGamerules()
+                 if gameRules then
+                  local issiege, setupcount, siegecount = gameRules:CountNodes()
+
+
+             local chance = (siegecount/setupcount) * 100                 
+                
+             local contaminationroll = math.random(chance, 100)
+              if chance >= contaminationroll then
+                CreateEntityForTeam(kTechId.Contamination, powerpoint:FindFreeSpace(), 2, nil)
+              end
+              
+                local mistroll = math.random(chance, 100)
+              if chance >= mistroll then
+                CreateEntityForTeam(kTechId.NutrientMist, powerpoint:FindFreeSpace(), 2, nil)
+              end
+                local rupturerull = math.random(chance, 100)
+              if chance >= rupturerull then
+                CreateEntityForTeam(kTechId.Rupture, powerpoint:FindFreeSpace(), 2, nil)
+              end
+                local bonewallroll1 = math.random(chance, 100)
+              if chance >= bonewallroll1 then
+                CreateEntityForTeam(kTechId.BoneWall, powerpoint:FindFreeSpace(), 2, nil)
+              end
+                local bonewallroll1 = math.random(chance, 100)
+              if chance >= bonewallroll1 then
+                CreateEntityForTeam(kTechId.BoneWall, powerpoint:FindFreeSpace(), 2, nil)
+              end
+                local bonewallroll1 = math.random(chance, 100)
+              if chance >= bonewallroll1 then
+                CreateEntityForTeam(kTechId.BoneWall, powerpoint:FindFreeSpace(), 2, nil)
+              end
+                local bonewallroll1 = math.random(chance, 100)
+              if chance >= bonewallroll1 then
+                CreateEntityForTeam(kTechId.BoneWall, powerpoint:FindFreeSpace(), 2, nil)
+              end
               //  CreateEntityForTeam(kTechId.Shell,self:FindFreeSpace(powerorigin), 2, nil)
               //  CreateEntityForTeam(kTechId.Whip, self:FindFreeSpace(powerorigin), 2, nil)
               //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
               //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
               //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
               //  CreateEntityForTeam(kTechId.Shift, self:FindFreeSpace(powerorigin), 2, nil)
+                 end
+           end
 end
 function AlienTeam:ScanForHostiles(powerorigin, threatlevel)
     

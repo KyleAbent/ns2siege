@@ -1808,7 +1808,7 @@ function NS2Gamerules:OnUpdate(timePassed)
         return (table.find(self.bannedPlayers, playerId) ~= nil)
     end
 function NS2Gamerules:GetSetupNodeRatio()
-       return self.setuppowernodecountbuilt
+       return self.setuppowernodecount
     end
 function NS2Gamerules:GetFrontDoorsOpen()
 return self.doorsopened
@@ -1914,6 +1914,7 @@ function NS2Gamerules:PickMainRoom(force)
                        //   end
                 //end //siege
                 local location = self:GetLocationWithMostMixedPlayers()
+                if not location then return true end
                       local entities = location:GetEntitiesInTrigger()
                       //     Print("Main room step 4")
                   if entities then
@@ -2012,7 +2013,7 @@ end
                 local oldtimer = math.abs(kSiegeDoorTime - gameLength )
                 Print("oldtimer == %s", oldtimer)
                 Print("self.lastnode == %s", self.lastnode)
-                local percentage = (oldtimer * 0.35)/(self.setuppowernodecount-1)
+                local percentage = (oldtimer * 0.35)/(self.setuppowernodecountbuilt-1)
                 Print("percentage == %s", percentage)
                 percentage = percentage/GetReversedRoundLengthToSiege()
                 Print("percentage == %s", percentage)
@@ -2134,7 +2135,6 @@ function NS2Gamerules:OpenFrontDoors()
      end
                  for index, frontdoor in ientitylist(Shared.GetEntitiesWithClassname("FrontDoor")) do
                 frontdoor.driving = true
-                frontdoor.cleaning = false
                 frontdoor.isvisible = false
                 end
                 
@@ -2166,7 +2166,6 @@ function NS2Gamerules:OpenSideDoors()
  self.sideopened = true
                  for index, sidedoor in ientitylist(Shared.GetEntitiesWithClassname("SideDoor")) do
                 sidedoor.driving = true
-                sidedoor.cleaning = false
                 sidedoor.isvisible = false
                 end
                 /*

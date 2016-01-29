@@ -416,7 +416,7 @@ if Server then
 
 function PowerPoint:SetMainRoom()
 self:AttackDefendWayPoint()                         --Silly torpedos
-if self:GetIsSiegeEnabled() then self:GetEnemyTeam():DeployPhaseCannons(self:FindFreeSpace()) end
+if self:GetIsSiegeEnabled() then self:GetEnemyTeam():DeployPhaseCannons(self) end
 self:SetLightMode(kLightMode.MainRoom)
 self:AddTimedCallback(function() self:SetLightMode(kLightMode.Normal) end, 10)
 end
@@ -582,8 +582,8 @@ end
             end
             function PowerPoint:GetRoomHasFrontDoor()
              
-                   if string.find(self:GetLocationName(), "front") or string.find(self:GetLocationName(), "Front") or
-                    GetLocationForPoint(self:GetOrigin()):GetHasFrontDoor() then return true end
+                 ///  if string.find(self:GetLocationName(), "front") or string.find(self:GetLocationName(), "Front") or
+                  //  GetLocationForPoint(self:GetOrigin()):GetHasFrontDoor() then return true end
                     
                     return false
             
