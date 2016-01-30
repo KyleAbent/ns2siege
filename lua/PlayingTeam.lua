@@ -539,13 +539,12 @@ function PlayingTeam:GetHasTeamLost()
     if GetGamerules():GetGameStarted() and not Shared.GetCheatsEnabled() then
     
         // Team can't respawn or last Command Station or Hive destroyed
-        local activePlayers = self:GetHasActivePlayers()
+     //   local activePlayers = self:GetHasActivePlayers()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
         local numAliveCommandStructures = self:GetNumAliveCommandStructures()
         
-        if  (not activePlayers and not abilityToRespawn) or
+        if  (not abilityToRespawn) or
             (numAliveCommandStructures == 0) or
-            (self:GetNumPlayers() == 0) or 
             self:GetHasConceded() then
             
             return true
@@ -649,20 +648,20 @@ end
  * Transform player to appropriate team respawn class and respawn them at an appropriate spot for the team.
  * Pass nil origin/angles to have spawn entity chosen.
  */
-function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName, isbeacon)
+function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName, isbeacon, isroundstart)
 
     local spawnMapName = self.respawnEntity
     
          local currentmod = nil
          
-        if isbeacon then
+        if isbeacon or (isroundstart and player:GetTeamNumber() == 1 ) then
     
          if GetGamerules():GetIsSuddenDeath() then
              mapName = Exo.kMapName
              currentmod = SD
-         elseif GetGamerules():GetSiegeDoorsOpen() then
+         elseif GetGamerules():GetSiegeDoorsOpen() or isroundstart then
               mapName = JetpackMarine.kMapName
-              currentmod = siege
+              if not isroundstart then currentmod = siege end
          end
     
     end
@@ -729,7 +728,8 @@ function PlayingTeam:ReplaceRespawnAllPlayers()
 		
 		local playerId = playerIds[ i ]
         local player = Shared.GetEntity(playerId)
-        self:ReplaceRespawnPlayer(player, nil, nil)
+        self:ReplaceRespawnPlayer(player, nil, nil, Gorge.kMapName, false, true)
+
 
     end
     
@@ -1100,7 +1100,15 @@ function PlayingTeam:GetCommander()
 
     return nil
 end
+function PlayingTeam:GetHasPlayer()
 
+    local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+    if players and #players > 0 then
+        return true
+    end    
+
+    return false
+end
 function PlayingTeam:PlayCommanderSound(soundName)
 
     local commander = self:GetCommander()

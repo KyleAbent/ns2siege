@@ -503,7 +503,7 @@ function LiveMixin:Kill(attacker, doer, point, direction)
         end
       if self:GetTeamNumber() == 1 then 
       if self:isa("Player")  then
-        if attacker and attacker:isa("Alien") and GetHasHungerUpgrade(attacker) then
+        if attacker and attacker:isa("Alien") and attacker:isa("Player") and GetHasHungerUpgrade(attacker) then
                   local duration = 8
          if attacker:isa("Onos") then
               duration = duration * .5

@@ -335,7 +335,8 @@ function Marine:OnInitialized()
         
         self:AddTimedCallback(UpdateNanoArmor, 1)
         if self:GetIsAlive() and self:GetTeamNumber() == 1 and not self:isa("JetpackMarine") then
-       self:AddTimedCallback(function()  self:ActivateNanoShield() end, 0.06)
+       //self:AddTimedCallback(function()  self:ActivateNanoShield() end, 0.06)
+       self:AddTimedCallback(function()  self:GlowColor(3, kMarineRespawnProtection) end, 0.06)
        self:AddTimedCallback(function()  self.spawnprotection = false end, kMarineRespawnProtection)
        end
     elseif Client then

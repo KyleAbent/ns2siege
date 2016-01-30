@@ -746,6 +746,7 @@ end
 obs.ignorelimit = true
 obs:SetOwner(Player)
 obs.iscreditstructure = true
+Player:GetTeam():RemoveSupplyUsed(kObservatorySupply)
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
    self.BuyUsersTimer[Client] = Shared.GetTime() + 5
    Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -884,6 +885,7 @@ end
 //pg.isGhostStructure = false
 pg.iscreditstructure = true
 //pg.channel = 2
+Player:GetTeam():RemoveSupplyUsed(kPhaseGateSupply)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 10
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 

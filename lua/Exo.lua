@@ -70,6 +70,7 @@ local networkVars =
     hasNano = "boolean",
 	armorBonus = "float (0 to 2045 by 1)",
 	lastnano = "private time",
+	    spawnprotection = "boolean",
 }
 
 Exo.kMapName = "exo"
@@ -230,6 +231,7 @@ function Exo:OnCreate()
     self.creationTime = Shared.GetTime()
     self.timeLastBeacon = Shared.GetTime()
     self.lastnano = Shared.GetTime()
+    self.spawnprotection = false
     
     if Server then
     
@@ -293,7 +295,7 @@ function Exo:InitExoModel()
 
 end
 function Exo:GetCanBeacon()
-    return (self.timeLastBeacon + (kBeaconDelay*2 )) < Shared.GetTime()
+    return (self.timeLastBeacon + 16) < Shared.GetTime()
 end
 function Exo:TriggerBeacon(location)
      local locationto = location      
@@ -302,6 +304,18 @@ function Exo:TriggerBeacon(location)
              end      
            self:SetOrigin(locationto)
            self.lastbeacontime = Shared.GetTime()
+           self.spawnprotection = true
+           self:AddTimedCallback(function()  self:GlowColor(3, kMarineRespawnProtection) end, 0.06)
+           self:AddTimedCallback(function()  self.spawnprotection = false end, kMarineRespawnProtection)
+end
+function Exo:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
+
+    if hitPoint ~= nil and self.spawnprotection then 
+    
+        damageTable.damage = 0
+        
+    end
+
 end
 function Exo:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords

@@ -537,7 +537,11 @@ end
 function GetRoundLengthToSiege()
 local level = 1
  local gameRules = GetGamerules()
- if not gameRules:GetGameStarted() then return 0 end 
+ if not gameRules:GetGameStarted() then 
+   return 0 
+  elseif gameRules.siegedoorsopened then
+   return 1
+  end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
       level = Clamp(roundlength/kSiegeDoorTime, 0.1, 1)
       Print("GetRoundLengthToSiege = %s", level)
@@ -546,7 +550,11 @@ end
 function GetRoundLengthToSuddenDeath()
 local level = 1
  local gameRules = GetGamerules()
- if not gameRules:GetGameStarted() then return 0 end 
+ if not gameRules:GetGameStarted() then 
+   return 0 
+  elseif gameRules.issuddendeath then
+   return 1
+  end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
       level = Clamp(roundlength/ (kSiegeDoorTime+kTimeAfterSiegeOpeningToEnableSuddenDeath), 0.1, 1)
       Print("GetRoundLengthToSuddenDeath = %s", level)

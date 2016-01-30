@@ -21,6 +21,16 @@ local kExoViewMaterialGreen = PrecacheAsset("Glow/green/exoview_green.material")
 local kViewMaterialGreen = PrecacheAsset("Glow/green/view_green.material")
 ----------------------Glow Green----------------------
 
+
+----------------------Glow Yellow(MarineRespawn Protection?)----------------------
+PrecacheAsset("Glow/yellow/GlowTP.surface_shader")
+PrecacheAsset("Glow/yellow/GlowViewMarine.surface_shader")
+PrecacheAsset("Glow/yellow/GlowViewExo.surface_shader")
+local kMaterialYellow = PrecacheAsset("Glow/yellow/yellow.material")
+local kExoViewMaterialYellow = PrecacheAsset("Glow/yellow/exoview_yellow.material")
+local kViewMaterialYellow = PrecacheAsset("Glow/yellow/view_yellow.material")
+----------------------Glow Green----------------------
+
 GlowMixin.overrideFunctions =
 {
 }
@@ -36,7 +46,7 @@ GlowMixin.optionalCallbacks =
 GlowMixin.networkVars =
 {
     Glowing = "boolean",
-    Color = "float (1 to 2 by 1)",
+    Color = "float (1 to 3 by 1)",
 }
 
 function GlowMixin:__initmixin()
@@ -175,6 +185,8 @@ if Client then
             material:SetMaterial(kMaterialPurple)
             elseif self.Color == 2 then
             material:SetMaterial(kMaterialGreen)
+            elseif self.Color == 3 then
+            material:SetMaterial(kMaterialYellow)
             end
 
             local viewMaterial = Client.CreateRenderMaterial()
@@ -184,12 +196,16 @@ if Client then
                 viewMaterial:SetMaterial(kExoViewMaterialPurple)
                 elseif self.Color == 2 then
                  viewMaterial:SetMaterial(kExoViewMaterialGreen)
+                elseif self.Color == 3 then
+                 viewMaterial:SetMaterial(kExoViewMaterialYellow)
                  end
             else
                 if self.Color == 1 then
                 viewMaterial:SetMaterial(kViewMaterialPurple)
                 elseif self.Color == 2 then
                 viewMaterial:SetMaterial(kViewMaterialGreen)
+                elseif self.Color == 3 then
+                viewMaterial:SetMaterial(kViewMaterialYellow)
                 end
             end    
             

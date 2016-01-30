@@ -227,12 +227,18 @@ end
 function CommandStation:OnUpdate(deltaTime)
 
         if Server then
-             local time = ConditionalValue(self:GetIsInCombat(), kBeaconDelay / 2, kBeaconDelay)
+             local time = kBeaconDelay 
+            //  Print("time = %s", time)
+              time = ConditionalValue(self:GetIsInCombat(), time / 2, time)
+            //  Print("time = %s", time)
               time = ConditionalValue(self:GetIsSiege(), time / 2, time)
-            if self.timeOfLastbeaconcheck == nil or Shared.GetTime() > self.timeOfLastbeaconcheck + time then
+             // Print("time = %s", time)
+            if self.timeOfLastbeaconcheck == nil or Shared.GetTime() < self.timeOfLastbeaconcheck + time then
               self:UpdateBeacons()
+            //  Print("timeOfLastbeaconcheck = %s", self.timeOfLastbeaconcheck)
             end
               self.timeOfLastbeaconcheck = Shared.GetTime()
+             // Print("timeOfLastbeaconcheck = %s", self.timeOfLastbeaconcheck)
         end
 end
 if Server then

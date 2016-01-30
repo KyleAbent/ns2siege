@@ -239,17 +239,15 @@ function Cyst:UpdateKings()
         end
         local averageorigin = Vector(0,0,0)
           local nearestfrontdoor = GetNearest(self:GetOrigin(), "FrontDoor", nil)
-                averageorigin = averageorigin + nearestfrontdoor:GetOrigin()
           local nearestsiegedoor = GetNearest(self:GetOrigin(), "FrontDoor", nil)  
-                averageorigin = averageorigin + nearestsiegedoor:GetOrigin()
           local nearestpowernode = GetNearest(self:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt()  end)  
-                averageorigin = averageorigin + nearestpowernode:GetOrigin()
           local nearestcc = GetNearest(self:GetOrigin(), "CommandStation", nil, function(ent) return ent:GetIsBuilt()  end)
+   if nearestfrontdoor and nearestsiegedoor and nearestpowernode and nearestcc then
+                averageorigin = averageorigin + nearestfrontdoor:GetOrigin()
+                averageorigin = averageorigin + nearestsiegedoor:GetOrigin()
+                averageorigin = averageorigin + nearestpowernode:GetOrigin()
                 averageorigin = averageorigin + nearestcc:GetOrigin()
-     //     local nearesthive = GetNearest(self:GetOrigin(), "Hive", nil, function(ent) return ent:GetIsBuilt()  end)
-                averageorigin = averageorigin //+ nearesthive:GetOrigin()
                 averageorigin = averageorigin / 4 
-   if nearestcc and nearestfrontdoor then      
          local nearestcctocyst = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
               if nearestcctocyst then
                       nearestcctocyst.isking = true

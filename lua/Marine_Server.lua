@@ -42,6 +42,9 @@ function Marine:TriggerBeacon(location)
              end      
            self:SetOrigin(locationto)
            self.lastbeacontime = Shared.GetTime()
+           self.spawnprotection = true
+           self:AddTimedCallback(function()  self:GlowColor(3, kMarineRespawnProtection) end, 0.06)
+           self:AddTimedCallback(function()  self.spawnprotection = false end, kMarineRespawnProtection)
 end
 function Marine:OnConstructTarget(target)
     UpdateUnitStatusPercentage(self, target)

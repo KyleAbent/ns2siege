@@ -13,7 +13,7 @@
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
 Script.Load("lua/ServerSponitor.lua")
-Script.Load("lua/PlayerRanking.lua")
+
 
 if Client then
     Script.Load("lua/NS2ConsoleCommands_Client.lua")
@@ -218,7 +218,7 @@ if Server then
         self.sponitor = ServerSponitor()
         self.sponitor:Initialize(self)
         
-        self.playerRanking = PlayerRanking()
+
         
         self.techPointRandomizer = Randomizer()
         self.techPointRandomizer:randomseed(Shared.GetSystemTime())
@@ -1017,23 +1017,7 @@ if Server then
         return self.rookieMode
     end
     
-    function NS2Gamerules:UpdatePlayerSkill()
-        
-        local kTime = Shared.GetTime()
-        if not self.nextTimeUpdatePlayerSkill or kTime > self.nextTimeUpdatePlayerSkill then
 
-            self.nextTimeUpdatePlayerSkill = kTime + 10
-
-            local averageSkill = self.playerRanking:GetAveragePlayerSkill()
-            UpdateTag("P_S", math.floor(averageSkill))
-
-            self.gameInfo:SetAveragePlayerSkill(averageSkill)
-
-        end
-
-        self.playerRanking:OnUpdate()
-
-    end
 
     function NS2Gamerules:UpdateNumPlayersForScoreboard()
         
@@ -1133,8 +1117,8 @@ function NS2Gamerules:OnUpdate(timePassed)
             
             if self:GetMapLoaded() then
             
-                self:CheckGameStart()
-                self:CheckGameEnd()
+
+
                 
                 self:UpdatePregame(timePassed)
                 self:UpdateToReadyRoom()
@@ -1157,7 +1141,7 @@ function NS2Gamerules:OnUpdate(timePassed)
                 CheckForNoCommander(self, self.team2, "AlienCommander")
                 KillEnemiesNearCommandStructureInPreGame(self, timePassed)
                 
-                self:UpdatePlayerSkill()
+
                 self:UpdateNumPlayersForScoreboard()
                 self:UpdatePerfTags(timePassed)
                 self:UpdateCustomNetworkSettings()
@@ -1214,22 +1198,10 @@ function NS2Gamerules:OnUpdate(timePassed)
 
             if winningTeam then
                 self.sponitor:OnEndMatch(winningTeam)
-                self.playerRanking:EndGame(winningTeam)
             end
-            TournamentModeOnGameEnd()
 
         end
         
-    end
-    
-    function NS2Gamerules:OnTournamentModeEnabled()
-        self.tournamentMode = true
-        self.sponitor.tournamentMode = true
-    end
-    
-    function NS2Gamerules:OnTournamentModeDisabled()
-        self.tournamentMode = false
-        self.sponitor.tournamentMode = false
     end
     
     function NS2Gamerules:DrawGame()
@@ -1410,6 +1382,7 @@ function NS2Gamerules:OnUpdate(timePassed)
                 
                 if newTeamNumber == kTeam1Index or newTeamNumber == kTeam2Index then
                     newPlayer:SetEntranceTime()
+                     self:CheckGameStart()
                 elseif newPlayer:GetEntranceTime() then
                     newPlayer:SetExitTime()
                 end
@@ -1465,10 +1438,10 @@ function NS2Gamerules:OnUpdate(timePassed)
         if self:GetGameState() == kGameState.NotStarted or self:GetGameState() == kGameState.PreGame then
         
             // Start pre-game when both teams have commanders or when once side does if cheats are enabled
-            local team1Commander = self.team1:GetCommander()
-            local team2Commander = self.team2:GetCommander()
+            local team1hasplayer = self.team1:GetHasPlayer()
+            local team2hasplayer = self.team2:GetHasPlayer()
             
-            if ((team1Commander and team2Commander) or Shared.GetCheatsEnabled()) and (not self.tournamentMode or self.teamsReady) then
+            if ((team1hasplayer and team2hasplayer) or Shared.GetCheatsEnabled())  then
             
                 if self:GetGameState() == kGameState.NotStarted then
                     self:SetGameState(kGameState.PreGame)
@@ -1479,14 +1452,7 @@ function NS2Gamerules:OnUpdate(timePassed)
                 if self:GetGameState() == kGameState.PreGame then
                     self:SetGameState(kGameState.NotStarted)
                 end
-                
-                if (not team1Commander or not team2Commander) and not self.nextGameStartMessageTime or Shared.GetTime() > self.nextGameStartMessageTime then
-                
-                    SendTeamMessage(self.team1, kTeamMessageTypes.GameStartCommanders)
-                    SendTeamMessage(self.team2, kTeamMessageTypes.GameStartCommanders)
-                    self.nextGameStartMessageTime = Shared.GetTime() + kGameStartMessageInterval
-                    
-                end
+               
                 
             end
             
@@ -1554,7 +1520,9 @@ function NS2Gamerules:OnUpdate(timePassed)
         return false, false
         
     end
-    
+        function NS2Gamerules:CheckGameEndInAMoment()
+          self:AddTimedCallback(NS2Gamerules.CheckGameEnd, 1)
+        end
     function NS2Gamerules:CheckGameEnd()
 
         PROFILE("NS2Gamerules:CheckGameEnd")
@@ -1616,7 +1584,7 @@ function NS2Gamerules:OnUpdate(timePassed)
             end
 
         end
-
+            return false
     end
 
     function NS2Gamerules:GetCountingDown()
@@ -1684,7 +1652,6 @@ function NS2Gamerules:OnUpdate(timePassed)
                 
                 self:SetGameState(kGameState.Started)
                 self.sponitor:OnStartMatch()
-                self.playerRanking:StartGame()
                 
             end
             
@@ -2028,8 +1995,40 @@ end
         function NS2Gamerules:SetupRoomBluePrint(location, powerpoint, hasfrontdoor)
         
 
-          local spawnpoint = powerpoint:FindFreeSpace()
-                CreateEntity(Armory.kMapName, spawnpoint, 1)  
+                local armoryspawnpoint = powerpoint:FindFreeSpace()
+                local armory = CreateEntity(Armory.kMapName, armoryspawnpoint, 1)  
+                  if armory then
+                  armory:GetTeam():RemoveSupplyUsed(kArmorySupply)
+                  end
+                
+                local observatoryspawnpoint = powerpoint:FindFreeSpace()
+                local phasegatespawnpoint = powerpoint:FindFreeSpace()
+                local roboticsspawnpoint = powerpoint:FindFreeSpace()
+                local nearestobs = GetEntitiesForTeamWithinRange("Observatory", 1, observatoryspawnpoint, Observatory.kDetectionRange)
+                local nearestphasegate = GetEntitiesForTeamWithinRange("PhaseGate", 1, phasegatespawnpoint, Observatory.kDetectionRange*2)
+                local nearestrobotics = GetEntitiesForTeamWithinRange("RoboticsFactory", 1, roboticsspawnpoint, Observatory.kDetectionRange*2.75)
+
+                if #nearestobs == 0 then
+                 local observatory = CreateEntity(Observatory.kMapName, observatoryspawnpoint, 1)  
+                     if observatory then
+                     observatory:GetTeam():RemoveSupplyUsed(kObservatorySupply)
+                     end
+                end
+                
+                if #nearestrobotics == 0 then
+                 local roboticsfactory = CreateEntity(RoboticsFactory.kMapName, roboticsspawnpoint, 1)  
+                     if roboticsfactory then
+                        roboticsfactory:GetTeam():RemoveSupplyUsed(kRoboticsFactorySupply)
+                     end
+                end
+                
+               if #nearestphasegate == 0 then
+                 local phasegate = CreateEntity(PhaseGate.kMapName, phasegatespawnpoint, 1)  
+                     if phsaegate then
+                     phsaegate:GetTeam():RemoveSupplyUsed(kPhaseGateSupply)
+                     end
+                end
+                
            if hasfrontdoor then      
                 CreateEntity(Sentry.kMapName, spawnpoint, 1)  
                 CreateEntity(Sentry.kMapName,spawnpoint, 1)  
