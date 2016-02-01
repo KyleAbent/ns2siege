@@ -74,7 +74,7 @@ Shade.kCloakUpdateRate = 0.2
 
 Shade.MaxLevel = 99
 Shade.ScaleSize = 2
-Shade.GainXP = 1
+Shade.GainXP = 0.8
 
 local networkVars = { 
     moving = "boolean",

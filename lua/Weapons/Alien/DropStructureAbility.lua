@@ -13,10 +13,7 @@ Script.Load("lua/Weapons/Alien/GorgeTunnelAbility.lua")
 Script.Load("lua/Weapons/Alien/WebsAbility.lua")
 Script.Load("lua/Weapons/Alien/BabblerEggAbility.lua")
 
-Script.Load("lua/Weapons/Alien/WhipAbility.lua")
-Script.Load("lua/Weapons/Alien/CragAbility.lua")
-Script.Load("lua/Weapons/Alien/ShiftAbility.lua")
-Script.Load("lua/Weapons/Alien/ShadeAbility.lua")
+
 
 class 'DropStructureAbility' (Ability)
 

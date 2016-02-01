@@ -53,18 +53,18 @@ function Plugin:OnFirstThink()
       local nearestdoor = GetNearestMixin(neutralorigin, "Moveable", nil, function(ent) return ent:isa("FrontDoor")  end)
            Print("nearestdoor is %s", nearestdoor)
         if nearestdoor then
-         --every 1 distance == 15 seconds?
+         --every 1 distance == 8 seconds?
                 local points = PointArray()
                 local isReachable = Pathing.GetPathPoints(neutralorigin, nearestdoor:GetOrigin(), points)
                 if isReachable then
                     local distance = GetPointDistance(points)
                     Print("Distance is %s, isReachable", distance)
-                    local time = Clamp(distance*15, 900, 1200)
+                    local time = Clamp(distance*8, 900, 1200)
                     Print("time is %s", time)
                 else
                     local distance = (neutralorigin-nearestdoor:GetOrigin()):GetLength()
                      Print("Distance is %s, is not isReachable", distance)
-                     time = Clamp(distance*15, 900, 1200)
+                     time = Clamp(distance*8, 900, 1200)
                      Print("time is %s", time)
                 end      
                 

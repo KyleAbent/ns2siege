@@ -115,6 +115,7 @@ local networkVars =
     
     isHallucination = "boolean",
     hallucinatedClientIndex = "integer",
+    timeElectrifyEnds = "private time",
     
     creationTime = "time",
     spawnprotection = "boolean",

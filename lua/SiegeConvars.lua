@@ -1,3 +1,4 @@
+kSentryBatteryHealth = 1200
 kHiveMoveUpVector = 0
 kLightMode = enum( {'Normal', 'NoPower', 'LowPower', 'Damaged', 'MainRoom', } )
 //kGorgeCost = 10

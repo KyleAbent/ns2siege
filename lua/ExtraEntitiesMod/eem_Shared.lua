@@ -1,4 +1,5 @@
 Script.Load("lua/SiegeConvars.lua")
+Script.Load("lua/Weapons/Marine/LayStructures.lua")
 Script.Load("lua/SiegeMod/unstuck.lua")
 Script.Load("lua/SiegeMod/FrontDoor.lua")
 Script.Load("lua/SiegeMod/SideDoor.lua")

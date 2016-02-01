@@ -606,6 +606,8 @@ local function SpawnCommandStructure(techPoint, teamNumber)
     assert(commandStructure ~= nil)
     commandStructure:SetConstructionComplete()
     
+    techPoint:SpawnOtherHives() -- I want 3 hives at start not 1 darnit!
+    
     // Use same align as tech point.
     local techPointCoords = techPoint:GetCoords()
     techPointCoords.origin = commandStructure:GetOrigin()

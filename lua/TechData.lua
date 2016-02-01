@@ -626,6 +626,15 @@ function BuildTechData()
         
         { [kTechDataId] = kTechId.MinesTech,   [kTechDataCostKey] = kMineResearchCost, [kTechDataResearchTimeKey] = kMineResearchTime, [kTechDataDisplayName] = "MINES"},
         { [kTechDataId] = kTechId.LayMines,    [kTechDataMapName] = LayMines.kMapName,         [kTechDataPointValue] = kLayMinesPointValue,   [kTechDataMaxHealth] = kMarineWeaponHealth,   [kTechDataDisplayName] = "MINE",   [kTechDataModel] = Mine.kModelName,      [kTechDataCostKey] = kMineCost },
+         { [kTechDataId] = kTechId.LayStructures,  
+       [kTechDataMapName] = LayStructures.kMapName,   
+        [kTechDataPointValue] = 5,   
+      [kTechDataMaxHealth] = 150,  
+       [kTechDataDisplayName] = "BLUEPRINTS",  
+     [kTechDataModel] = Builder.kModelName,   
+      [kTechDataCostKey] = 10 },
+      
+      
         { [kTechDataId] = kTechId.Mine,        [kTechDataMapName] = Mine.kMapName,             [kTechDataHint] = "MINE_HINT", [kTechDataDisplayName] = "MINE", [kTechDataEngagementDistance] = kMineDetonateRange, [kTechDataMaxHealth] = kMineHealth, [kTechDataTooltipInfo] = "MINE_TOOLTIP",  [kTechDataMaxArmor] = kMineArmor, [kTechDataModel] = Mine.kModelName, [kTechDataPointValue] = kMinePointValue, },
 
         { [kTechDataId] = kTechId.WelderTech,  [kTechDataCostKey] = kWelderTechResearchCost,     [kTechDataResearchTimeKey] = kWelderTechResearchTime, [kTechDataDisplayName] = "RESEARCH_WELDER", [kTechDataHotkey] = Move.F, [kTechDataTooltipInfo] =  "WELDER_TECH_TOOLTIP"},

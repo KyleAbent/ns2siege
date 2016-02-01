@@ -354,7 +354,42 @@ function RoboticsFactory:GetPositionForEntity(entity)
     return Coords.GetLookIn( origin, direction )
 
 end
+if Server then
+   function RoboticsFactory:GetIsFront()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
+function RoboticsFactory:GetCanBeUsedConstructed(byPlayer)
+  return not self:GetIsFront() 
+end
+function RoboticsFactory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
+    // Play flavor sounds when using MAC.
+    if Server then
+    
+        local time = Shared.GetTime()
+        
+       // if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + 4)) then
+        
+           local laystructure = player:GiveItem(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.RoboticsFactory)
+           laystructure:SetMapName(RoboticsFactory.kMapName)
+           DestroyEntity(self)
+           // self.timeOfLastUse = time
+            
+      //  end
+       //self:PlayerUse(player) 
+    end
+    
+end
+end
 function RoboticsFactory:ManufactureEntity()
 
     local mapName = LookupTechData(self.researchId, kTechDataMapName)    
@@ -461,7 +496,7 @@ if Server then
     end
     
     function RoboticsFactory:OnConstructionComplete()    
-    
+       self:UpgradeToTechId(kTechId.ARCRoboticsFactory)
         self:AddTimedCallback(RoboticsFactory.Deploy, 3)      
         if self.arcFactory then
             self:UpgradeToTechId(kTechId.ARCRoboticsFactory)

@@ -481,6 +481,7 @@ function MarineTeam:InitTechTree()
     self.techTree:AddTargetedActivation(kTechId.DropFlamethrower,    kTechId.None)
     self.techTree:AddResearchNode(kTechId.MinesTech,            kTechId.Armory,           kTechId.None)
     self.techTree:AddTargetedBuyNode(kTechId.LayMines,          kTechId.None,        kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.LayStructures,          kTechId.None,        kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.DropMines,      kTechId.None,        kTechId.None)
     
     self.techTree:AddTargetedBuyNode(kTechId.Welder,          kTechId.Armory,        kTechId.None)

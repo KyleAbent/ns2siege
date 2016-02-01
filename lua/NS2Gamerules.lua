@@ -1521,68 +1521,30 @@ function NS2Gamerules:OnUpdate(timePassed)
         
     end
         function NS2Gamerules:CheckGameEndInAMoment()
-          self:AddTimedCallback(NS2Gamerules.CheckGameEnd, 1)
+          self:AddTimedCallback(NS2Gamerules.CheckGameEnd, 4)
         end
     function NS2Gamerules:CheckGameEnd()
 
         PROFILE("NS2Gamerules:CheckGameEnd")
         
-        if self:GetGameStarted() and self.timeGameEnded == nil and not Shared.GetCheatsEnabled() and not self.preventGameEnd then
+        if self:GetGameStarted() and not Shared.GetCheatsEnabled() then
 
             local time = Shared.GetTime()
-            if not self.timeDrawWindowEnds or time < self.timeDrawWindowEnds then
 
-                local team1Lost = self.team1Lost or self.team1:GetHasTeamLost()
-                local team2Lost = self.team2Lost or self.team2:GetHasTeamLost()
-
-                if team1Lost or team2Lost then
-            
-                    -- After a team has entered a loss condition, they can not recover
-                    self.team1Lost = team1Lost
-                    self.team2Lost = team2Lost
-
-                    -- Continue checking for a draw for kDrawGameWindow seconds
-                    if not self.timeDrawWindowEnds then
-                        self.timeDrawWindowEnds = time + kDrawGameWindow
-                    end
-                    
-                else
-                    -- Check for auto-concede if neither team lost.
-                    if not self.timeNextAutoConcedeCheck or self.timeNextAutoConcedeCheck < time then
-                        
-                        team1Lost, team2Lost = CheckAutoConcede(self)
-                        if team2Lost then
-                            self:EndGame( self.team1 )
-                        elseif team1Lost then
-                            self:EndGame( self.team2 )
-                        end
-                        
-                        self.timeNextAutoConcedeCheck = time + kGameEndAutoConcedeCheckInterval
-                    end
-                    
-                end
-
-            else
-
-                if self.team2Lost and self.team1Lost then
-                    
-                    -- It's a draw
-                    self:DrawGame()
-                    
-                elseif self.team2Lost then
+                local team1Lost = self.team1:GetHasTeamLost()
+                local team2Lost = self.team2:GetHasTeamLost()  
+  
+                if team2Lost then
 
                     -- Still no draw after kDrawGameWindow, count the win
                     self:EndGame( self.team1 )
 
-                elseif self.team1Lost then
+                elseif team1Lost then
 
                     -- Still no draw after kDrawGameWindow, count the win
                     self:EndGame( self.team2 )
                     
                 end
-
-            end
-
         end
             return false
     end
@@ -2212,7 +2174,7 @@ function NS2Gamerules:OpenSiegeDoors()
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
               // self:AddTimedCallback(NS2Gamerules.SwitchShadesToSiegeMode, kShadeInkCooldown)
               //self:AddTimedCallback(NS2Gamerules.CountNodes, 30)
-               self:AddTimedCallback(NS2Gamerules.SwitchCragsToSiegeMode, kHealWaveCooldown)
+              // self:AddTimedCallback(NS2Gamerules.SwitchCragsToSiegeMode, kHealWaveCooldown)
                self:AddTimedCallback(NS2Gamerules.SwitchObservatoryToSiegeMode, kSiegeObsAutoScanCooldown)
 
             //self:AddTimedCallback(self.team1.OperationTurtleDefense, kSiegeObsAutoScanCooldown)

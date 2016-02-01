@@ -468,7 +468,42 @@ local function SpawnPlayer(self)
     return false
 
 end
+if Server then
+   function InfantryPortal:GetIsFront()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
+function InfantryPortal:GetCanBeUsedConstructed(byPlayer)
+  return not self:GetIsFront() 
+end
+function InfantryPortal:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
+    // Play flavor sounds when using MAC.
+    if Server then
+    
+        local time = Shared.GetTime()
+        
+       // if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + 4)) then
+        
+           local laystructure = player:GiveItem(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.InfantryPortal)
+           laystructure:SetMapName(InfantryPortal.kMapName)
+           DestroyEntity(self)
+           // self.timeOfLastUse = time
+            
+      //  end
+       //self:PlayerUse(player) 
+    end
+    
+end
+end
 function InfantryPortal:GetIsWallWalkingAllowed()
     return false
 end 

@@ -73,4 +73,8 @@ function PhaseGateUserMixin:OnPhaseGateEntry(destinationOrigin)
     if HasMixin(self, "SmoothedRelevancy") then
         self:StartSmoothedRelevancy(destinationOrigin)
     end
+    
+    if self:isa("Fade") then
+          self:SetElectrified(4)
+    end
 end

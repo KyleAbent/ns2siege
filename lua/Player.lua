@@ -828,16 +828,32 @@ function Player:PerformUseTrace()
     return nil, Vector(0, 0, 0)
     
 end
-
+if Server then
+   function Player:GetIsFront()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
+end
 function Player:UseTarget(entity, timePassed)
 
     assert(entity)
     
     local useSuccessTable = { useSuccess = false } 
     if entity.OnUse then
-    
+        
         useSuccessTable.useSuccess = true
+        if (entity.OnUseDuringSetup and not self:GetIsFront() and entity:GetIsBuilt()) then
+        entity:OnUseDuringSetup(self, timePassed, useSuccessTable)
+        else
         entity:OnUse(self, timePassed, useSuccessTable)
+        end
         
     end
     

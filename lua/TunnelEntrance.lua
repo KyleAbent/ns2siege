@@ -61,6 +61,7 @@ local networkVars = {
     destLocationId = "entityid",
     //otherSideInfested = "boolean"
     movedbycommander = "boolean",
+    isexit = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -175,6 +176,7 @@ function TunnelEntrance:OnCreate()
     self.destLocationId = Entity.invalidId
     self.movedbycommander = false
     //self.otherSideInfested = false
+    self.isexit = false
 end
 
 function TunnelEntrance:OnInitialized()
@@ -385,6 +387,7 @@ end
                     tunnelent:SetOwner(self:GetOwner())
                     tunnelent:SetConstructionComplete()
                     self:GetOwner():TunnelGood(self:GetOwner())
+                    self.isexit = true
                  return tunnelent
                end
            self:GetOwner():TunnelFailed(self:GetOwner())
@@ -393,7 +396,9 @@ end
     
     end
     
-    
+    function TunnelEntrance:GetIsExit()
+    return self.isexit
+    end
     function TunnelEntrance:OnTeleportEnd()
     
         local tunnel = Shared.GetEntity(self.tunnelId)

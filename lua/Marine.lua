@@ -514,7 +514,17 @@ function Marine:GetHasHMG()
     
     return hmg
 end
-
+function Marine:GetIsBuilding()
+        local weapon = self:GetActiveWeapon()
+        local building = false
+    if (weapon) then
+        if (weapon:isa("LayStructures")) then
+            building = true
+        end
+    end
+    
+    return building
+end
 function Marine:GetNanoShieldOffset()
     return Vector(0, -0.1, 0)
 end

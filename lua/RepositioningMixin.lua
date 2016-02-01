@@ -59,6 +59,7 @@ function RepositioningMixin:Check()
            local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
         
            if spawnPoint ~= nil and sameLocation and ( self:GetTeamNumber() == 2 and GetIsPointOnInfestation(spawnPoint) or self:GetTeamNumber() == 1 ) then
+                  if self:isa("Whip") then self:RepositionTimer() end
                   self:AddTimedCallback(function () self:GiveOrder(kTechId.Move, nil, spawnPoint) end, 1)
                   return
                   // Print("Order Given to unstuck")

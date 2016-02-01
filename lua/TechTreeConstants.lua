@@ -93,7 +93,7 @@ kTechId = createTechIdEnum({
     'MACEMP', 'Welding',
     
     // Weapons 
-    'Rifle', 'Pistol', 'Shotgun', 'HeavyRifle', 'HeavyMachineGun', 'Claw', 'Minigun', 'Railgun', 'GrenadeLauncher', 'Flamethrower', 'Axe', 'LayMines', 'Welder', 'ExoNanoArmor', 'ExoFlamer', 'ExoWelder',
+    'Rifle', 'Pistol', 'Shotgun', 'HeavyRifle', 'HeavyMachineGun', 'Claw', 'Minigun', 'Railgun', 'GrenadeLauncher', 'Flamethrower', 'Axe', 'LayMines', 'LayStructures', 'Welder', 'ExoNanoArmor', 'ExoFlamer', 'ExoWelder',
     
     // Armor
     'Jetpack', 'JetpackFuelTech', 'JetpackArmorTech', 'Exosuit', 'ExosuitLockdownTech', 'ExosuitUpgradeTech',

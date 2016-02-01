@@ -724,29 +724,16 @@ self:NotifyCredits(Client, "Three credit obs per player at the moment.", true)
 return
 end
 
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Observatory) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-
 
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
-local obs = CreateEntity(Observatory.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
- obs:SetConstructionComplete()
- else
-  self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
-obs.isGhostStructure = false
-end
-obs.ignorelimit = true
-obs:SetOwner(Player)
-obs.iscreditstructure = true
-Player:GetTeam():RemoveSupplyUsed(kObservatorySupply)
+
+           local laystructure = Player:GiveItem(LayStructures.kMapName)
+           Player:SetActiveWeapon(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.Observatory)
+           laystructure:SetMapName(Observatory.kMapName)
+           laystructure:SetIsCreditStructure(true)
+           
    Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
    self.BuyUsersTimer[Client] = Shared.GetTime() + 5
    Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -785,31 +772,20 @@ if self:GetPlayerCreditsInfo(Client) < CreditCost then
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
 end
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
+
  if self:HasLimitOf(Player, string.format("Armory"), 1, 5) then 
 self:NotifyCredits(Client, "Five Credit Armories Max. Deleting 1 to spawn another", true)
 end
-if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Armory) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
+
 
 
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
-local armory = CreateEntity(Armory.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
- armory:SetConstructionComplete()
- else
-  self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
-armory.isGhostStructure = false
-end
-armory:SetOwner(Player)
-armory.iscreditstructure = true
-Player:GetTeam():RemoveSupplyUsed(kArmorySupply)
+           local laystructure = Player:GiveItem(LayStructures.kMapName)
+           Player:SetActiveWeapon(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.Armory)
+           laystructure:SetMapName(Armory.kMapName)
+           laystructure:SetIsCreditStructure(true)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 10
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -824,29 +800,18 @@ if self:GetPlayerCreditsInfo(Client) < CreditCost then
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
 end
-if self:HasLimitOf(Player, string.format("Sentry"), 1, 1) then 
+if self:HasLimitOf(Player, string.format("Sentry"), 1, 1, 3) then 
 self:NotifyCredits(Client, "One credit sentry per player at the moment.", true)
 return
-end
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- 
-if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Sentry) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
 end
 
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
-local sentry = CreateEntity(Sentry.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-//sentry:SetConstructionComplete()
-sentry.isGhostStructure = false
-sentry.iscreditstructure = true
-sentry.ignorelimit = true
-sentry:SetOwner(Player)
-Player:GetTeam():RemoveSupplyUsed(kSentrySupply)
+           local laystructure = Player:GiveItem(LayStructures.kMapName)
+           Player:SetActiveWeapon(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.Sentry)
+           laystructure:SetMapName(Sentry.kMapName)
+           laystructure:SetIsCreditStructure(true)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 15
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -862,30 +827,14 @@ self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchas
 return
 end
 
-
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.PhaseGate) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-
-
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
-local pg = CreateEntity(PhaseGate.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
-  pg:SetConstructionComplete()
- else
-  self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
- pg.isGhostStructure = false
-end
-//pg.isGhostStructure = false
-pg.iscreditstructure = true
-//pg.channel = 2
-Player:GetTeam():RemoveSupplyUsed(kPhaseGateSupply)
+           local laystructure = Player:GiveItem(LayStructures.kMapName)
+           Player:SetActiveWeapon(LayStructures.kMapName)
+           Player:SetActiveWeapon(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.PhaseGate)
+           laystructure:SetMapName(PhaseGate.kMapName)
+           laystructure:SetIsCreditStructure(true)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 10
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -905,30 +854,14 @@ if self:HasLimitOf(Player, string.format("InfantryPortal"), 1, 2) then
 self:NotifyCredits(Client, "Two Credit IPS Max. Deleting 1 to spawn another", true)
 end
 
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.InfantryPortal) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-
 
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
-local ip = CreateEntity(InfantryPortal.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
-  ip:SetConstructionComplete()
- else
-  self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
-ip.isGhostStructure = false
-end
-ip.iscreditstructure = true
-ip.creditstructre = true
-ip.ParentId = Player:GetId()
-ip.level = 50
-ip:SetOwner(Player)
+           local laystructure = Player:GiveItem(LayStructures.kMapName)
+           Player:SetActiveWeapon(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.InfantryPortal)
+           laystructure:SetMapName(InfantryPortal.kMapName)
+           laystructure:SetIsCreditStructure(true)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 10
 Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
@@ -943,29 +876,19 @@ if self:GetPlayerCreditsInfo(Client) < CreditCost then
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
 end
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
+
   if self:HasLimitOf(Player, string.format("RoboticsFactory"), 1, 3) then 
 self:NotifyCredits(Client, "Three Credit Robos Max. Deleting 1 to spawn another", true)
 end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.RoboticsFactory) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
+
 if Client:GetUserId() ~= "25542592" then self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost end
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
-local robo = CreateEntity(RoboticsFactory.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
-  robo:SetConstructionComplete()
- else
-  self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
-robo.isGhostStructure = false
-end
-//robo.isGhostStructure = false
-robo.iscreditstructure = true
-robo:SetOwner(Player)
+           local laystructure = Player:GiveItem(LayStructures.kMapName)
+           Player:SetActiveWeapon(RoboticsFactory.kMapName)
+           laystructure:SetTechId(kTechId.RoboticsFactory)
+           laystructure:SetMapName(RoboticsFactory.kMapName)
+           laystructure:SetIsCreditStructure(true)
+           
 Player:GetTeam():RemoveSupplyUsed(kRoboticsFactorySupply)
 Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
 self.BuyUsersTimer[Client] = Shared.GetTime() + 15

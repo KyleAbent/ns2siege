@@ -554,8 +554,14 @@ if Server then
             end
             return false
 end
+    function PowerPoint:UpdateCystKing()
+       local nearestcyst = GetNearestMixin(self:GetOrigin(), "Cyst", 2, function(ent) return ent:GetIsBuilt() end)
+         if nearestcyst then
+             nearestcyst:UpdateKings()
+        end
+    end
     function PowerPoint:OnConstructionComplete()
-
+        self:UpdateCystKing()
         self:StopDamagedSound()
         
         self.health = kPowerPointHealth
@@ -785,6 +791,7 @@ end
         self.timeOfDestruction = Shared.GetTime()
       // self:UpdateMiniMap()
         self:AddTimedCallback(PowerPoint.UpdateCountKill, math.random(4,8)) 
+        self:UpdateCystKing()
     end
 
         function PowerPoint:UpdateMiniMap()

@@ -213,6 +213,27 @@ local kYExtents = 0.1 * self:GetLevelPercentage()
 local crouchshrink = 0
      return Vector(kXZExtents, kYExtents, kXZExtents)
 end
+ function Cyst:FindFreeSpace()    
+        for index = 1, 100 do
+           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation and GetIsPointOnInfestation(spawnPoint) then
+           return spawnPoint
+           end
+        end
+        Print("No valid spot found for kingcyst magnetize")
+        return self:GetOrigin()
+end
 function Cyst:Derp()
                 self:UpdateModelCoords()
                 self:UpdatePhysicsModel()
@@ -243,19 +264,28 @@ function Cyst:UpdateKings()
           local nearestpowernode = GetNearest(self:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt()  end)  
           local nearestcc = GetNearest(self:GetOrigin(), "CommandStation", nil, function(ent) return ent:GetIsBuilt()  end)
    if nearestfrontdoor and nearestsiegedoor and nearestpowernode and nearestcc then
-                averageorigin = averageorigin + nearestfrontdoor:GetOrigin()
-                averageorigin = averageorigin + nearestsiegedoor:GetOrigin()
+                averageorigin = ConditionalValue(self:GetIsSiegeEnabled(), averageorigin + nearestsiegedoor:GetOrigin(), averageorigin + nearestfrontdoor:GetOrigin() )
                 averageorigin = averageorigin + nearestpowernode:GetOrigin()
                 averageorigin = averageorigin + nearestcc:GetOrigin()
-                averageorigin = averageorigin / 4 
+                averageorigin = averageorigin / 3 
          local nearestcctocyst = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
               if nearestcctocyst then
                       nearestcctocyst.isking = true
+                      nearestcctocyst:ActivateMagnetize()
                       nearestcctocyst.wasking = false
                       nearestcctocyst:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) 
                  end
        end
 
+end
+function Cyst:GetIsSiegeEnabled()
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+            return false
 end
 function Cyst:SetKing(whom)
    self.king = true
@@ -263,9 +293,20 @@ end
 function Cyst:GetHealthbarOffset()
     return 0.5
 end 
+function Cyst:ActivateMagnetize()
+                      self:AddTimedCallback(Cyst.Magnetize, 8)
+end
+function Cyst:Magnetize()
+          for index, Tunnel in ipairs(GetEntitiesForTeam("TunnelEntrance", 2)) do
+               if Tunnel:GetIsBuilt() and Tunnel:GetIsExit() then 
+               Tunnel:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
+                end
+          end
+          return self.isking
+end
   function Cyst:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-        if self.isking then
+        if self.isking == true then
             unitName = string.format(Locale.ResolveString("King Cyst"))
         else
         unitName = string.format(Locale.ResolveString("Cyst"))

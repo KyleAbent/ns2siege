@@ -153,22 +153,24 @@ function GetSentryBatteryInRoom(origin)
 
     local location = GetLocationForPoint(origin)
     local locationName = location and location:GetName() or nil
+    local numInRoom = 0
+    local validRoom = false
     
     if locationName then
     
-        local batteries = Shared.GetEntitiesWithClassname("SentryBattery")
-        for b = 0, batteries:GetSize() - 1 do
+        validRoom = true
         
-            local battery = batteries:GetEntityAtIndex(b)
+        for index, battery in ientitylist(Shared.GetEntitiesWithClassname("SentryBattery")) do
+        
             if battery:GetLocationName() == locationName then
-                return battery
+                numInRoom = numInRoom + 1
             end
             
         end
         
     end
     
-    return nil
+    return validRoom and numInRoom < 3
     
 end
 

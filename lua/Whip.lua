@@ -441,6 +441,9 @@ function Whip:OnUpdate(deltaTime)
             self.timeLastMoveUpdateCheck = Shared.GetTime()
         end
        */ 
+       if self.moving and not self.waitingForEndAttack then
+            self.waitingForEndAttack = self.moving
+       end
         self:UpdateRootState()           
         self:UpdateOrders(deltaTime)
         
@@ -931,7 +934,8 @@ end
               end//
   end
                    
-
+function Whip:RepositionTimer()
+end
 function Whip:OnAttackHit(target)
 
     if target and self.slapping then

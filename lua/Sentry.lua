@@ -748,7 +748,40 @@ if Server then
         end
     
     end
+    function Sentry:GetIsFront()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
+function Sentry:GetCanBeUsedConstructed(byPlayer)
+  return not self:GetIsFront() 
+end
+function Sentry:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
+    // Play flavor sounds when using MAC.
+    if Server then
+    
+        local time = Shared.GetTime()
+        
+       // if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + 4)) then
+        
+           local laystructure = player:GiveItem(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.Sentry)
+           laystructure:SetMapName(Sentry.kMapName)
+           DestroyEntity(self)
+           // self.timeOfLastUse = time
+            
+      //  end
+       //self:PlayerUse(player) 
+    end
+    
+end
 elseif Client then
 
     local function UpdateAttackEffects(self, deltaTime)

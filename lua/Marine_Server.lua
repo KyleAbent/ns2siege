@@ -200,7 +200,7 @@ end
 function Marine:InitWeapons()
 
     Player.InitWeapons(self)
-    
+    //self:GiveItem(LayStructures.kMapName)
     self:GiveItem(Rifle.kMapName)
     self:GiveItem(Pistol.kMapName)
     self:GiveItem(Axe.kMapName)
