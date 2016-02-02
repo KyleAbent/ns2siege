@@ -1967,7 +1967,7 @@ end
                 local phasegatespawnpoint = powerpoint:FindFreeSpace()
                 local roboticsspawnpoint = powerpoint:FindFreeSpace()
                 local nearestobs = GetEntitiesForTeamWithinRange("Observatory", 1, observatoryspawnpoint, Observatory.kDetectionRange)
-                local nearestphasegate = GetEntitiesForTeamWithinRange("PhaseGate", 1, phasegatespawnpoint, Observatory.kDetectionRange*2)
+                local nearestphasegate = GetEntitiesForTeamWithinRange("PhaseGate", 1, phasegatespawnpoint, Observatory.kDetectionRange*2.75)
                 local nearestrobotics = GetEntitiesForTeamWithinRange("RoboticsFactory", 1, roboticsspawnpoint, Observatory.kDetectionRange*2.75)
 
                 if #nearestobs == 0 then

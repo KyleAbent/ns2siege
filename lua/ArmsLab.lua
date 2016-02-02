@@ -227,21 +227,21 @@ function ArmsLab:UpdateResearch(deltaTime)
         local gameRules = GetGamerules()
         local projectedminutemarktounlock = 60
         local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
-
+        local percentageofround = 1
         if researchNode:GetTechId() == kTechId.Weapons1 then
-           percentageofround = 0.30
+           percentageofround = 0.15
         elseif researchNode:GetTechId() == kTechId.Weapons2 then
-           percentageofround = 0.60
+           percentageofround = 0.30
         elseif researchNode:GetTechId() == kTechId.Weapons3 then
-           percentageofround = 0.70
-        elseif researchNode:GetTechId() == kTechId.Armor1 then
-           percentageofround = 0.40
-          elseif researchNode:GetTechId() == kTechId.Armor2 then
            percentageofround = 0.50
+        elseif researchNode:GetTechId() == kTechId.Armor1 then
+           percentageofround = 0.25
+          elseif researchNode:GetTechId() == kTechId.Armor2 then
+           percentageofround = 0.40
          elseif researchNode:GetTechId() == kTechId.Armor3 then
-           percentageofround = 0.80
+           percentageofround = 0.60
          elseif researchNode:GetTechId() == kTechId.RifleClip then
-          percentageofround = 0.90
+          percentageofround = 0.85
         end
       
        

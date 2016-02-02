@@ -9,7 +9,7 @@ local kDropModelName = PrecacheAsset("models/marine/welder/builder.model")
 local kHeldModelName = PrecacheAsset("models/marine/welder/builder.model")
 
 local kViewModels = GenerateMarineViewModelPaths("welder")
-local kAnimationGraph = PrecacheAsset("models/marine/welder/welder_view.animation_graph")
+local kAnimationGraph = PrecacheAsset("models/marine/welder/laystructure_view.animation_graph")
 
 local kPlacementDistance = 4
 local kNumStructures = 1
@@ -21,6 +21,7 @@ local networkVars =
     techId = "string (128)",
     mapname = "string (128)",
     tellstructuretocredit = "boolean",
+    originalposition = "vector",
 }
 
 AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
@@ -39,6 +40,7 @@ function LayStructures:OnCreate()
     self.droppingStructure = false
     self.techId = kTechId.Armory
     self.mapname = Armory.kMapName
+    self.originalposition = Vector(0,0,0)
     
 end
 
@@ -293,9 +295,9 @@ end
 
 function LayStructures:Dropped(prevOwner)
 
-    Weapon.Dropped(self, prevOwner)
+    //Weapon.Dropped(self, prevOwner)
     
-    self:SetModel(kDropModelName)
+   DestroyEntity(self)
     
 end
 local kExtents = Vector(1, 1, 1) // 0.5 to account for pathing being too high/too low making it hard to palce tunnels

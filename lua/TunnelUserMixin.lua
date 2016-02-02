@@ -41,8 +41,8 @@ end
 
 local function GetNearbyTunnelEntrance(self)
 
-    local tunnelEntrances = GetEntitiesWithinRange("TunnelEntrance", self:GetOrigin(), 1.3)
-    local commtunnelEntrances = GetEntitiesWithinRange("CommTunnel", self:GetOrigin(), 1.3)
+    local tunnelEntrances = GetEntitiesWithinRange("TunnelEntrance", self:GetOrigin(), 1.5) --1.5 for cystking?
+    local commtunnelEntrances = GetEntitiesWithinRange("CommTunnel", self:GetOrigin(), 1.5)
     if #tunnelEntrances > 0 or #commtunnelEntrances > 0 then
         return tunnelEntrances[1] or commtunnelEntrances[1]
     end

@@ -237,7 +237,7 @@ if Server then
             return false
 end
 function PhaseGate:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() 
+  return not self:GetIsFront() and not  byPlayer:GetWeaponInHUDSlot(5)
 end
 function PhaseGate:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
@@ -251,6 +251,7 @@ function PhaseGate:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
            local laystructure = player:GiveItem(LayStructures.kMapName)
            laystructure:SetTechId(kTechId.PhaseGate)
            laystructure:SetMapName(PhaseGate.kMapName)
+           laystructure.originalposition = self:GetOrigin()
            DestroyEntity(self)
            // self.timeOfLastUse = time
             

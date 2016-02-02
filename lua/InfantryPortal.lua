@@ -422,7 +422,35 @@ end
 function InfantryPortal:OnReplace(newStructure)
     newStructure.queuedPlayerId = self.queuedPlayerId
 end
+function InfantryPortal:CheckSpaceAboveForSpawn()
 
+    local startPoint = self:GetOrigin() 
+    local endPoint = startPoint + Vector(0.35, 0.95, 0.35)
+    
+    return GetWallBetween(startPoint, endPoint, self)
+    
+end
+              function InfantryPortal:FindFreeSpace()    
+        for index = 1, 100 do
+           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then//and GetIsPointOnInfestation(spawnPoint) then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for phase cannon!")
+           return self:GetOrigin()
+    end
 // Spawn player on top of IP. Returns true if it was able to, false if way was blocked.
 local function SpawnPlayer(self)
 
@@ -433,7 +461,7 @@ local function SpawnPlayer(self)
         
         // Spawn player on top of IP
         local spawnOrigin = self:GetAttachPointOrigin("spawn_point")
-        
+        spawnOrigin = ConditionalValue(self:CheckSpaceAboveForSpawn(), self:FindFreeSpace(), spawnOrigin)
         local success, player = team:ReplaceRespawnPlayer(queuedPlayer, spawnOrigin, queuedPlayer:GetAngles())
         if success then
 
@@ -481,7 +509,7 @@ if Server then
             return false
 end
 function InfantryPortal:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() 
+  return not self:GetIsFront() and not byPlayer:GetWeaponInHUDSlot(5)
 end
 function InfantryPortal:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
@@ -495,6 +523,7 @@ function InfantryPortal:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
            local laystructure = player:GiveItem(LayStructures.kMapName)
            laystructure:SetTechId(kTechId.InfantryPortal)
            laystructure:SetMapName(InfantryPortal.kMapName)
+           laystructure.originalposition = self:GetOrigin()
            DestroyEntity(self)
            // self.timeOfLastUse = time
             

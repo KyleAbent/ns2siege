@@ -189,6 +189,7 @@ local function SpawnBaseEntities(self, techPoint)
         local MacPoint2 = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, 12 )
         local MacPoint3 = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, 12 )
         local PrototypeLabPoint = GetRandomBuildPosition( kTechId.PrototypeLab, techPointOrigin, 12 )
+        local PhaseGatePoint = GetRandomBuildPosition( kTechId.PhaseGate, techPointOrigin, 12 )
   
     CreateEntity(InfantryPortal.kMapName, IPspawnPoint1, self:GetTeamNumber())
     CreateEntity(InfantryPortal.kMapName, IPspawnPoint2, self:GetTeamNumber())
@@ -198,6 +199,7 @@ local function SpawnBaseEntities(self, techPoint)
     CreateEntity(MAC.kMapName, MacPoint2, self:GetTeamNumber())
     CreateEntity(MAC.kMapName, MacPoint3, self:GetTeamNumber())
     CreateEntity(PrototypeLab.kMapName, PrototypeLabPoint, self:GetTeamNumber())
+    CreateEntity(PhaseGate.kMapName, PhaseGatePoint, self:GetTeamNumber())
         
     
 end

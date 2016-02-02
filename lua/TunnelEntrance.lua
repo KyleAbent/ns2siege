@@ -442,14 +442,14 @@ end
         self.connected = tunnel ~= nil and not tunnel:GetIsDeadEnd()
         self.beingUsed = self.timeLastInteraction + 0.1 > Shared.GetTime()  
         self.destLocationId = ComputeDestinationLocationId(self)
-        
+     /*   
         if not self.timeLastMoveUpdateCheck or self.timeLastMoveUpdateCheck + 15 < Shared.GetTime() then 
             if self:CheckSpaceAboveForJump() then 
             self:MoveToUnstuck()
             end
             self.timeLastMoveUpdateCheck = Shared.GetTime()
         end
-        
+       */ 
         
         local destructionAllowedTable = { allowed = true }
         if self.GetDestructionAllowed then
@@ -563,7 +563,31 @@ if Server then
         self:TriggerEffects("tunnel_exit_3D")
     end
 
-end   
+end 
+if Server then
+              function TunnelEntrance:FindFreeSpawn() 
+         if not self:CheckSpaceAboveForJump() then Print("Valid spot - not finding free spawn")  return self:GetOrigin() + Vector(0, 0.2, 0) end
+        for index = 1, 25 do
+           local extents = LookupTechData(kTechId.Onos, kTechDataMaxExtents, nil)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 12, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then//and GetIsPointOnInfestation(spawnPoint) then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for tunnel exit!")
+           return self:GetOrigin() + Vector(0, 0.2, 0)
+    end 
+end
 function TunnelEntrance:CheckSpaceAboveForJump()
 
     local startPoint = self:GetOrigin() 

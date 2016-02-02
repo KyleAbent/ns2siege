@@ -203,9 +203,7 @@ function Cyst:GetInfestationGrowthRate()
     return Cyst.kInfestationGrowthDuration
 end
 function Cyst:OnConstructionComplete()
-
-self:UpdateKings()
-  
+    self:UpdateKings()
 end
 function Cyst:GetExtentsOverride()
 local kXZExtents = 0.2 * self:GetLevelPercentage()
@@ -246,28 +244,29 @@ function Cyst:OnKill(attacker, doer, point, direction)
 if self.isking then self:SetIsVisible(false) self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
 self:UpdateKings()
 end
-function Cyst:UpdateKings()
-    self.wasking = self.isking
-    self.isking = false
-
-      
-
-       
+if Server then
+function Cyst:UpdateKings()   
         local nearestking = GetNearest(self:GetOrigin(), "Cyst", nil, function(ent) return ent.isking == true end)
-        if nearestking then      
-                      nearestking.isking = false
-                      nearestking.wasking = not nearestking.isking
+        if nearestking then   
+                      nearestking.wasking = nearestking.isking   
+                      nearestking.isking = not nearestking.wasking
         end
         local averageorigin = Vector(0,0,0)
+         
           local nearestfrontdoor = GetNearest(self:GetOrigin(), "FrontDoor", nil)
-          local nearestsiegedoor = GetNearest(self:GetOrigin(), "FrontDoor", nil)  
-          local nearestpowernode = GetNearest(self:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt()  end)  
-          local nearestcc = GetNearest(self:GetOrigin(), "CommandStation", nil, function(ent) return ent:GetIsBuilt()  end)
-   if nearestfrontdoor and nearestsiegedoor and nearestpowernode and nearestcc then
-                averageorigin = ConditionalValue(self:GetIsSiegeEnabled(), averageorigin + nearestsiegedoor:GetOrigin(), averageorigin + nearestfrontdoor:GetOrigin() )
+          local nearestsiegedoor = GetNearest(self:GetOrigin(), "SiegeDoor", nil)  
+          local nearestpowernode = nil
+          local frontorsiegedoor = ConditionalValue(self:GetIsSiegeEnabled(), nearestsiegedoor, nearestfrontdoor )      
+        
+          if frontorsiegedoor then
+            nearestpowernode = GetNearest(frontorsiegedoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt()  end)  
+          end
+          
+
+   if frontorsiegedoor and nearestpowernode then
+                averageorigin = averageorigin + frontorsiegedoor:GetOrigin()
                 averageorigin = averageorigin + nearestpowernode:GetOrigin()
-                averageorigin = averageorigin + nearestcc:GetOrigin()
-                averageorigin = averageorigin / 3 
+                averageorigin = averageorigin / 2
          local nearestcctocyst = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
               if nearestcctocyst then
                       nearestcctocyst.isking = true
@@ -286,6 +285,7 @@ function Cyst:GetIsSiegeEnabled()
                end
             end
             return false
+end
 end
 function Cyst:SetKing(whom)
    self.king = true

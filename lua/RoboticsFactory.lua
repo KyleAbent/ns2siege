@@ -367,7 +367,7 @@ if Server then
             return false
 end
 function RoboticsFactory:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() 
+  return not self:GetIsFront() and not byPlayer:GetWeaponInHUDSlot(5)
 end
 function RoboticsFactory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
@@ -381,6 +381,7 @@ function RoboticsFactory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
            local laystructure = player:GiveItem(LayStructures.kMapName)
            laystructure:SetTechId(kTechId.RoboticsFactory)
            laystructure:SetMapName(RoboticsFactory.kMapName)
+           laystructure.originalposition = self:GetOrigin()
            DestroyEntity(self)
            // self.timeOfLastUse = time
             

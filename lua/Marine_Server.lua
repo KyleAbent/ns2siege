@@ -501,6 +501,12 @@ function Marine:DropAllWeapons()
 end
 function Marine:PreOnKill(attacker, doer, point, direction)
 if self.modelsize ~= 1 then self.modelsize = 1 end
+
+      if self:GetIsBuilding() then  
+        local weapon = self:GetWeaponInHUDSlot(5)
+           local structure = CreateEntity(weapon:GetDropMapName(), weapon.originalposition, 1)
+           structure:SetConstructionComplete()
+       end
 end
 function Marine:OnKill(attacker, doer, point, direction)
     

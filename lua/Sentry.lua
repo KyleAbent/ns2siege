@@ -760,7 +760,7 @@ if Server then
             return false
 end
 function Sentry:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() 
+  return not self:GetIsFront() and not  byPlayer:GetWeaponInHUDSlot(5)
 end
 function Sentry:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
@@ -774,6 +774,7 @@ function Sentry:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
            local laystructure = player:GiveItem(LayStructures.kMapName)
            laystructure:SetTechId(kTechId.Sentry)
            laystructure:SetMapName(Sentry.kMapName)
+           laystructure.originalposition = self:GetOrigin()
            DestroyEntity(self)
            // self.timeOfLastUse = time
             
