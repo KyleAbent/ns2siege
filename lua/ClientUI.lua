@@ -80,6 +80,7 @@ local kMiscPreloads = {
     'GUIIncrementBar',
     'GUIList',
     'GUIMarineBuyMenu',
+    'GUIMarineCreditMenu',
     'GUIMarineTeamMessage',
     'GUIMinimapButtons',
     'GUIParticleSystem',

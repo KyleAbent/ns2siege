@@ -215,6 +215,7 @@ local networkVars =
     viewModelId = "private entityid",
     
     resources = "private float (0 to " .. kMaxPersonalResources .." by 0.01)",
+    credits = "private float (0 to 999999 by 0.01)",
     teamResources = "private float (0 to " .. kMaxTeamResources .." by 0.01)",
     gameStarted = "private boolean",
     countingDown = "private boolean",
@@ -381,6 +382,7 @@ function Player:OnCreate()
     self.pushTime = 0
     self.gravity = 0
     self.buildspeed = .1
+    self.credits = 0
     
 end
 
@@ -992,7 +994,13 @@ function Player:GetResources()
     end
 
 end
-
+function Player:GetCredits()
+  if not self.timeoflast or self.timeoflast + 8 < Shared.GetTime() then
+   Shared.ConsoleCommand(string.format("sh_generate")) 
+    self.timeoflast = Shared.GetTime()
+    end
+return self.credits
+end
 -- Returns player mass in kg
 function Player:GetMass()
     return Player.kMass
@@ -1004,6 +1012,10 @@ end
 
 function Player:GetDisplayResources()
     return self:GetResources()    
+end
+
+function Player:GetDisplayCredits()
+    return self:GetCredits()    
 end
 
 function Player:GetPersonalResources()

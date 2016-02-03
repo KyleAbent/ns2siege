@@ -325,6 +325,13 @@ function MarineBuy_GetDisplayName(techId)
         return ""
     end
 end
+function MarineBuy_GetCreditCosts(techId)
+    if techId ~= nil then
+        return LookupTechData(techId, kTechDataCreditCostKey, 0)
+    else
+        return 0
+    end
+end
 
 function MarineBuy_GetCosts(techId)
     if techId ~= nil then

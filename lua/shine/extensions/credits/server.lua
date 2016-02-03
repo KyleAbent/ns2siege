@@ -20,6 +20,8 @@ Shine.Hook.SetupClassHook( "NS2Gamerules", "ResetGame", "OnReset", "PassivePost"
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyMist", "BecauseFuckSpammingCommanders", "Replace" )
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyMed", "BuyMed", "Replace" )
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyAmmo", "BuyAmmo", "Replace" )
+Shine.Hook.SetupClassHook( "Marine", "TellMarine", "ToDropBlue", "Replace" )
+Shine.Hook.SetupClassHook( "Marine", "UpdateCredits", "ToAmount", "Replace" )
 
 
 
@@ -40,6 +42,23 @@ self.PlayerSpentAmount = {}
 return true
 end
 
+function Plugin:ToAmount(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+        local credits = self:GetPlayerCreditsInfo(Client)
+        Print("User has %s credits", credits)
+        local Player = Client:GetControllingPlayer()
+        Player.credits = math.round(credits, 2)
+end
+function Plugin:ToDropBlue(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+if player:GetHasLayStructure() then
+ self:NotifyBuy( Client, "Laystructure (hudslot 5) already active. Drop the blueprint before continuing.", true, player:GetResources())
+end
+end
 function Plugin:GenereateTotalCreditAmount()
 local credits = 0
 Print("%s users", table.Count(self.CreditData.Users))
@@ -54,6 +73,7 @@ function Plugin:BuyMed(player)
  local client = player:GetClient()
 local controlling = client:GetControllingPlayer()
 local Client = controlling:GetClient()
+
 
         if player:GetResources() == 0 then
         self:NotifyBuy( Client, "Medpack costs 1 resource, you have %s resources. Purchase invalid.", true, player:GetResources())
@@ -367,20 +387,8 @@ end
  if Client:GetIsVirtual() then return end
  
  self:AdjustBuildSpeed()
- /*
-  if Client then
-  Sabot.SendChatMessage("/help")
-   end
-   */
-
-/*
-self:NotifyCredits( Client, "Hi! Welcome To Siege! Around here, we run a custom Plugin titled Credits. ", true )
-self:NotifyCredits( Client, "What Are Credits? Credits are points that allow you to purchase in game items, in return for playing Siege!", true )
-self:NotifyCredits( Client, "It's simple, really. 10 in game score = 1 credit. You earn score by killing enemies, building structures, basically playing the game", true )
-self:NotifyCredits( Client, "At the end of each round, there's a credit bonus based on how well your team performed.. and sometimes there's double credit weekends.", true )
-self:NotifyCredits( Client, "To spend credits, press M and click Cerdits, or bind a key to sh_buy <item> - This message will go away once you start spending! Thanks & Enjoy Siege :D", true )
-*/
-
+ 
+   Client.credits = self:GetPlayerCreditsInfo(Client)
   if GetGamerules():GetGameStarted() then
 
   Shine.ScreenText.Add( "Credits", {X = 0.20, Y = 0.85,Text = string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ),Duration = 1800,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 3,FadeIn = 0,}, Client )
@@ -389,6 +397,7 @@ self:NotifyCredits( Client, "To spend credits, press M and click Cerdits, or bin
 end
     
  end
+
  function Plugin:SaveAllCredits()
                local Players = Shine.GetAllPlayers()
               for i = 1, #Players do
@@ -844,7 +853,7 @@ return
 end
 
 if String == "InfantryPortal" then
-CreditCost = 20
+CreditCost = 10
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
 self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
 return
@@ -2196,9 +2205,11 @@ end
 local SaveCreditsCommand = self:BindCommand("sh_savecredits", "savecredits", SaveCreditsCmd)
 SaveCreditsCommand:Help("sh_savecredits saves all credits online")
 
-
 local function Generate( Client )
-self:AdjustBuildSpeed()
+        local credits = self:GetPlayerCreditsInfo(Client)
+        Print("User has %s credits", credits)
+        local Player = Client:GetControllingPlayer()
+        Player.credits = math.round(credits, 2)
 end
 
 local GenerateCommand = self:BindCommand( "sh_generate", "generate", Generate )

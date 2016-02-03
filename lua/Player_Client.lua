@@ -317,7 +317,7 @@ function PlayerUI_OnRequestSelected()
 end
 
 function Player:GetBuyMenuIsDisplaying()
-    return self.buyMenu ~= nil
+    return self.buyMenu ~= nil or self.creditMenu ~= nil
 end
 
 function PlayerUI_GetBuyMenuDisplaying()
@@ -1434,6 +1434,17 @@ function PlayerUI_GetPlayerResources()
     return 0
     
 end
+function PlayerUI_GetPlayerCredits()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player:GetDisplayCredits()
+    end
+    
+    return 0
+    
+end
+
 
 --[[
  * Returns a float instead of integer to define a change of the value.
@@ -1689,7 +1700,7 @@ end
 
 function Player:UpdateCrossHairText(entity)
 
-    if self.buyMenu ~= nil then
+    if self.buyMenu ~= nil or self.creditMenu ~= nil then
         self.crossHairText = nil
         self.crossHairHealth = 0
         self.crossHairMaturity = 0
@@ -2412,11 +2423,12 @@ function Player:DestroyGUI()
 
     if Client then
     
-        if self.buyMenu then
+        if self.buyMenu or self.creditMenu then
         
             GetGUIManager():DestroyGUIScript(self.buyMenu)
             MouseTracker_SetIsVisible(false)
             self.buyMenu = nil
+            self.creditMenu =nil
             
         end
         
@@ -2438,10 +2450,21 @@ function Player:CloseMenu()
         self.timeClosedMenu = Shared.GetTime()
         
         return true
+    elseif self.creditMenu then
+        GetGUIManager():DestroyGUIScript(self.creditMenu)
+        self.creditMenu = nil
+        MouseTracker_SetIsVisible(false)
         
+        self:TriggerEffects("marine_buy_menu_close")
+        
+        -- Quick work-around to not fire weapon when closing menu.
+        self.timeClosedMenu = Shared.GetTime()
+       //Print("credmenu true")  
+        return true  
     end
    
     return false
+   
     
 end
 
@@ -4048,7 +4071,7 @@ function Player:OnUpdateRender()
     if self:GetIsLocalPlayer() then
     
 
-        local blurEnabled = self.buyMenu ~= nil
+        local blurEnabled = self.buyMenu ~= nil or self.creditMenu ~= nil
         self:SetBlurEnabled(blurEnabled)
         
         self.lastOnUpdateRenderTime = self.lastOnUpdateRenderTime or Shared.GetTime()

@@ -514,6 +514,15 @@ function Marine:GetHasHMG()
     
     return hmg
 end
+function Marine:GetHasLayStructure()
+        local weapon = self:GetWeaponInHUDSlot(5)
+        local builder = false
+    if (weapon) then
+            builder = true
+    end
+    
+    return builder
+end
 function Marine:GetIsBuilding()
         local weapon = self:GetActiveWeapon()
         local building = false

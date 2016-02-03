@@ -24,6 +24,7 @@ kTechDataMapName                        = "mapname"
 kTechDataModel                          = "model"
 // TeamResources, resources or energy
 kTechDataCostKey                        = "costkey"
+kTechDataCreditCostKey                  = "creditcostkey"
 kTechDataBuildTime                      = "buildtime"
 // If an entity has this field, it's treated as a research node instead of a build node
 kTechDataResearchTimeKey                = "researchTime"
@@ -626,13 +627,61 @@ function BuildTechData()
         
         { [kTechDataId] = kTechId.MinesTech,   [kTechDataCostKey] = kMineResearchCost, [kTechDataResearchTimeKey] = kMineResearchTime, [kTechDataDisplayName] = "MINES"},
         { [kTechDataId] = kTechId.LayMines,    [kTechDataMapName] = LayMines.kMapName,         [kTechDataPointValue] = kLayMinesPointValue,   [kTechDataMaxHealth] = kMarineWeaponHealth,   [kTechDataDisplayName] = "MINE",   [kTechDataModel] = Mine.kModelName,      [kTechDataCostKey] = kMineCost },
-         { [kTechDataId] = kTechId.LayStructures,  
+    
+      { [kTechDataId] = kTechId.LayStructures,  
        [kTechDataMapName] = LayStructures.kMapName,   
         [kTechDataPointValue] = 5,   
       [kTechDataMaxHealth] = 150,  
-       [kTechDataDisplayName] = "BLUEPRINTS",  
+       [kTechDataDisplayName] = "Armory BluePrint",  
      [kTechDataModel] = Builder.kModelName,   
+      [kTechDataCreditCostKey] = 12,   
+      [kTechDataCostKey] = 0 },
+
+      { [kTechDataId] = kTechId.LayStructureObs,  
+       [kTechDataMapName] = LayStructures.kMapName,   
+        [kTechDataPointValue] = 5,   
+      [kTechDataMaxHealth] = 150,  
+       [kTechDataDisplayName] = "Observatiry Blueprint",  
+     [kTechDataModel] = Builder.kModelName,   
+      [kTechDataCreditCostKey] = 12, 
+      [kTechDataCostKey] = 0 },
+      
+      { [kTechDataId] = kTechId.LayStructureSentry,  
+       [kTechDataMapName] = LayStructures.kMapName,   
+        [kTechDataPointValue] = 5,   
+      [kTechDataMaxHealth] = 150,  
+       [kTechDataDisplayName] = "Sentry BluePrint",  
+     [kTechDataModel] = Builder.kModelName,   
+      [kTechDataCreditCostKey] = 8,   
+      [kTechDataCostKey] = 0 },
+      
+      { [kTechDataId] = kTechId.LayStructureRobo,  
+       [kTechDataMapName] = LayStructures.kMapName,   
+        [kTechDataPointValue] = 5,   
+      [kTechDataMaxHealth] = 150,  
+       [kTechDataDisplayName] = "Robotics Factory BluePrint",  
+     [kTechDataModel] = Builder.kModelName,   
+      [kTechDataCreditCostKey] = 10,   
       [kTechDataCostKey] = 10 },
+      
+      { [kTechDataId] = kTechId.LayStructurePG,  
+       [kTechDataMapName] = LayStructures.kMapName,   
+        [kTechDataPointValue] = 5,   
+      [kTechDataMaxHealth] = 150,  
+       [kTechDataDisplayName] = "PhaesGate BluePrint",  
+     [kTechDataModel] = Builder.kModelName,   
+      [kTechDataCreditCostKey] = 15,   
+      [kTechDataCostKey] = 0 },
+
+
+      { [kTechDataId] = kTechId.LayStructureIP,  
+       [kTechDataMapName] = LayStructures.kMapName,   
+        [kTechDataPointValue] = 5,   
+      [kTechDataMaxHealth] = 150,  
+       [kTechDataDisplayName] = "InfatryPortal BluePrint",  
+     [kTechDataModel] = Builder.kModelName,   
+      [kTechDataCreditCostKey] = 10,   
+      [kTechDataCostKey] = 0 },
       
       
         { [kTechDataId] = kTechId.Mine,        [kTechDataMapName] = Mine.kMapName,             [kTechDataHint] = "MINE_HINT", [kTechDataDisplayName] = "MINE", [kTechDataEngagementDistance] = kMineDetonateRange, [kTechDataMaxHealth] = kMineHealth, [kTechDataTooltipInfo] = "MINE_TOOLTIP",  [kTechDataMaxArmor] = kMineArmor, [kTechDataModel] = Mine.kModelName, [kTechDataPointValue] = kMinePointValue, },

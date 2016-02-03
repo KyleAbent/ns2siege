@@ -94,7 +94,7 @@ kTechId = createTechIdEnum({
     
     // Weapons 
     'Rifle', 'Pistol', 'Shotgun', 'HeavyRifle', 'HeavyMachineGun', 'Claw', 'Minigun', 'Railgun', 'GrenadeLauncher', 'Flamethrower', 'Axe', 'LayMines', 'LayStructures', 'Welder', 'ExoNanoArmor', 'ExoFlamer', 'ExoWelder',
-    
+    'LayStructureIP', 'LayStructurePG', 'LayStructureRobo', 'LayStructureSentry', 'LayStructureObs', 
     // Armor
     'Jetpack', 'JetpackFuelTech', 'JetpackArmorTech', 'Exosuit', 'ExosuitLockdownTech', 'ExosuitUpgradeTech',
     

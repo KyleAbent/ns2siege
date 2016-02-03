@@ -337,7 +337,7 @@ local function BuyExo(self, techId)
 
         if spawnPoint then
         
-            self:AddResources(-GetCostForTech(techId))
+           if deductres then self:AddResources(-GetCostForTech(techId)) end
             local weapons = self:GetWeapons()
             for i = 1, #weapons do            
                 weapons[i]:SetParent(nil)            
@@ -378,7 +378,7 @@ kIsExoTechId = { [kTechId.Exosuit] = true, [kTechId.DualMinigunExosuit] = true,
 function Marine:AttemptToBuy(techIds)
 
     local techId = techIds[1]
-    
+    local deductres = true
                if techId == kTechId.JumpPack then
                 StartSoundEffectForPlayer(Marine.activatedsound, self)
             //    self:AddResources(-GetCostForTech(techId))
@@ -394,12 +394,33 @@ function Marine:AttemptToBuy(techIds)
               elseif techId == kTechId.HeavyArmor then
                self.heavyarmor = true
                  self:SetArmorAmount()
+              elseif techId == kTechId.LayStructureIP then
+                self:DelayStructureTo(kTechId.LayStructureIP, kTechId.InfantryPortal, InfantryPortal.kMapName)
+                deductres = false
+                return true
+              elseif techId == kTechId.LayStructures then
+                self:DelayStructureTo(kTechId.LayStructures, kTechId.Armory, Armory.kMapName)
+                deductres = false
+                return true
+              elseif techId == kTechId.LayStructurePG then
+                self:DelayStructureTo(kTechId.LayStructurePG, kTechId.PhaseGate, PhaseGate.kMapName)
+                deductres = false
+                return true
+              elseif techId == kTechId.LayStructureRobo then
+                self:DelayStructureTo(kTechId.LayStructureRobo, kTechId.RoboticsFactory, RoboticsFactory.kMapName)
+                deductres = false
+                 return true
+              elseif techId == kTechId.LayStructureSentry then
+                self:DelayStructureTo(kTechId.LayStructureSentry, kTechId.Sentry, Sentry.kMapName)
+                deductres = false
+                return true
+              elseif techId == kTechId.LayStructureObs then
+                self:DelayStructureTo(kTechId.LayStructureObs, kTechId.Observatory, Observatory.kMapName)
+                deductres = false
                 return true
                end
                 
-    local hostStructure = GetHostStructureFor(self, techId)
 
-    if hostStructure then
     
         local mapName = LookupTechData(techId, kTechDataMapName)
         
@@ -434,13 +455,31 @@ function Marine:AttemptToBuy(techIds)
             
         end
         
-    end
     
     return false
     
 end
-
+function Marine:DelayStructureTo(boughtid, techid, mapname)
+    if not self:GetHasLayStructure() then
+           local laystructure = self:GiveItem(LayStructures.kMapName)
+           self:SetActiveWeapon(LayStructures.kMapName)
+           laystructure:SetTechId(techid)
+           laystructure:SetMapName(mapname)
+           laystructure:SetIsCreditStructure(true)
+           local CreditCost = LookupTechData(boughtid, kTechDataCreditCostKey, 0)
+           Shared.ConsoleCommand(string.format("sh_addcredits %s -%s false", self:GetName(), CreditCost)) 
+   else
+     self:TellMarine(self)
+   end
+    self:UpdateCredits(self)
+end
 // special threatment for mines and welders
+function Marine:TellMarine(self)
+
+end
+function Marine:UpdateCredits(self)
+
+end
 function Marine:GiveItem(itemMapName)
 
     local newItem = nil
