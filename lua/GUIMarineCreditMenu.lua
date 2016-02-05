@@ -36,40 +36,7 @@ GUIMarineCreditMenu.kPanelTitleHeight = GUIScale(35)
 
 
 
-GUIMarineCreditMenu.kExoSlotData = {
-   /* [kExoModuleSlots.PowerSupply] = {
-        label = "POWER SUPPLY",--label = "EXO_MODULESLOT_POWERSUPPLY", 
-        xp = 0, yp = 0, anchorX = GUIItem.Left, gap = GUIMarineCreditMenu.kModuleButtonGap,
-        makeButton = function(self, moduleType, moduleTypeData, offsetX, offsetY)
-            return self:MakePowerModuleButton(moduleType, moduleTypeData, offsetX, offsetY)
-        end,
-    },*/
-    StatusPanel = { -- the one that shows weight and power usage
-        label = nil,
-        xp = 0, yp = 0, anchorX = GUIItem.Left,
-    },
-    [kExoModuleSlots.LeftArm] = {
-        label = "LEFT ARM",--label = "EXO_MODULESLOT_RIGHT_ARM",
-        xp = 0, yp = 0.08, anchorX = GUIItem.Left, gap = GUIMarineCreditMenu.kModuleButtonGap*0.5,
-        makeButton = function(self, moduleType, moduleTypeData, offsetX, offsetY)
-            return self:MakeWeaponModuleButton(moduleType, moduleTypeData, offsetX, offsetY, kExoModuleSlots.LeftArm)
-        end,
-    },
-    [kExoModuleSlots.RightArm] = {
-        label = "RIGHT ARM",--label = "EXO_MODULESLOT_LEFT_ARM",
-        xp = 1, yp = 0.08, anchorX = GUIItem.Right, gap = GUIMarineCreditMenu.kModuleButtonGap*0.5,
-        makeButton = function(self, moduleType, moduleTypeData, offsetX, offsetY)
-            return self:MakeWeaponModuleButton(moduleType, moduleTypeData, offsetX, offsetY, kExoModuleSlots.RightArm)
-        end,
-    },
-  [kExoModuleSlots.Utility] = {
-        label = "UTILITY",--label = "EXO_MODULESLOT_UTILITY",
-        xp = 0.23, yp = 0.62, anchorX = GUIItem.Left, gap = GUIMarineCreditMenu.kModuleButtonGap,
-        makeButton = function(self, moduleType, moduleTypeData, offsetX, offsetY)
-            return self:MakeUtilityModuleButton(moduleType, moduleTypeData, offsetX, offsetY)
-        end,
-    },
-}
+
 
 
 
@@ -85,6 +52,7 @@ GUIMarineCreditMenu.kButtonTexture = "ui/marine_buymenu_button.dds"
 GUIMarineCreditMenu.kMenuSelectionTexture = "ui/marine_buymenu_selector.dds"
 GUIMarineCreditMenu.kScanLineTexture = "ui/menu/scanLine_big.dds"
 GUIMarineCreditMenu.kArrowTexture = "ui/menu/arrow_horiz.dds"
+GUIMarineCreditMenu.kSmallIcons = "ui/creditmenu.dds"
 
 GUIMarineCreditMenu.kFont = Fonts.kAgencyFB_Small
 
@@ -395,7 +363,7 @@ function GUIMarineCreditMenu:_InitializeItemButtons()
         graphicItem:SetSize(GUIMarineCreditMenu.kMenuIconSize)
         graphicItem:SetAnchor(GUIItem.Middle, GUIItem.Top)
         graphicItem:SetPosition(Vector(-GUIMarineCreditMenu.kMenuIconSize.x/ 2, GUIMarineCreditMenu.kIconTopOffset + (GUIMarineCreditMenu.kMenuIconSize.y) * k - GUIMarineCreditMenu.kMenuIconSize.y, 0))
-        graphicItem:SetTexture(kInventoryIconsTexture)
+        graphicItem:SetTexture(GUIMarineCreditMenu.kSmallIcons)
         graphicItem:SetTexturePixelCoordinates(GetSmallIconPixelCoordinates(itemTechId))
         
         local graphicItemActive = GUIManager:CreateGraphicItem()

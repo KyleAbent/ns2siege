@@ -230,46 +230,23 @@ function Egg:UpdateManually()
 end
 if Server then
 function Egg:UpdateToGorgeEgg()
-    local commander = GetCommanderForTeam(2)
-    if not commander then
-      return true
-      end
-   local techNode = commander:GetTechTree():GetTechNode( kTechId.GorgeEgg ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
+   local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.GorgeEgg ) 
+         self:SetResearching(techNode, self)
    return false
 end
 function Egg:UpdateToLerkEgg()
- if self:GetIsInSiege() then return true end
-    local commander = GetCommanderForTeam(2)
-    if not commander then
-      return true
-      end
-   local techNode = commander:GetTechTree():GetTechNode( kTechId.LerkEgg ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
+   local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.LerkEgg ) 
+         self:SetResearching(techNode, self)
       return false
 end
 function Egg:UpdateToFadeEgg()
- if self:GetIsInSiege() then return true end
-    local commander = GetCommanderForTeam(2)
-    if not commander then
-      return true
-      end
    local techNode = commander:GetTechTree():GetTechNode( kTechId.FadeEgg ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
+         self:SetResearching(techNode, self)
       return false
 end
 function Egg:UpdateToOnosEgg()
- if self:GetIsInSiege() then return true end
-    local commander = GetCommanderForTeam(2)
-    if not commander then
-      return true
-      end
    local techNode = commander:GetTechTree():GetTechNode( kTechId.OnosEgg ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
+         self:SetResearching(techNode,self)
       return false
 end
 end

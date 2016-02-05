@@ -472,7 +472,10 @@ function Alien:OnKill(attacker, doer, point, direction)
         return // so it doesnt go to the death bonus. Kinda meant for them to be player only.
     end
 
-
+    if self:GetIsSiege() then
+           self:TriggerEffects("xenocide", {effecthostcoords = Coords.GetTranslation(self:GetOrigin())})
+           CreateEntity(Rupture.kMapName, self:GetOrigin(), self:GetTeamNumber())
+    end
     
 end
 function Alien:GetIsSiege()

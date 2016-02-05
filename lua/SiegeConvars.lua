@@ -1,3 +1,4 @@
+kLeapEnergyCost = 20
 kSentryBatteryHealth = 1200
 kHiveMoveUpVector = 0
 kLightMode = enum( {'Normal', 'NoPower', 'LowPower', 'Damaged', 'MainRoom', } )
@@ -14,7 +15,7 @@ kOnosEggCost = 0
 kMatureVeilHealth = 2000
 kFireFlameCloudDamagePerSecond = 24
 kExosuitCost = 10
-kARCArmor = 250
+kARCArmor = 25
 CCSiegeBeaconDelay = 10
 kParasitesToDisable = 4
 kFadeGravityMod = 1

@@ -450,7 +450,7 @@ function MainRoomLightWorker:Run()
 
     PROFILE("MainRoomLightWorker:Run")
         local randomcolor = Color(math.random(0,255)/255, math.random(0,255)/255, math.random(0,255)/255, 1)
-     if self.timeofdisco == nil or (self.timeofdisco + 1) < Shared.GetTime() then
+     if self.timeofdisco == nil or (self.timeofdisco + 4) < Shared.GetTime() then
              for renderLight,_ in pairs(self.activeLights) do
             local color = nil
               color = randomcolor

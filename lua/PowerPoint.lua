@@ -447,7 +447,8 @@ SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.MainRoom, self:GetLocatio
       
           for _, player in ipairs(GetEntitiesWithinRange("Marine", self:GetOrigin(), 999)) do
         if player:GetIsAlive() and not player:isa("Commander") then
-           player:GiveOrder(kTechId.Defend, self:GetId(), self:GetOrigin(), nil, true, true)
+           local order = self:GetIsBuilt() and kTechId.Defend or kTechId.Build
+           player:GiveOrder(order, self:GetId(), self:GetOrigin(), nil, true, true)
         end
               
     end   // Create marine order
@@ -576,7 +577,7 @@ end
         
        // self:UpdateMiniMap()
        //if self:GetIsInSiegeRoom() then self.nanoShielded = true end
-       if self:GetIsSetup() then self:GameRulesBluePrints() end
+       if self:GetIsSetup() or (self:GetIsInSiegeRoom() and self:GetIsSiegeEnabled() ) then self:GameRulesBluePrints() end
     end
             function PowerPoint:GameRulesBluePrints()
                     if Server then

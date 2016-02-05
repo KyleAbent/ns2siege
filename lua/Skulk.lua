@@ -384,6 +384,10 @@ function Skulk:PreUpdateMove(input, runningPrediction)
 
     if self.leaping and Shared.GetTime() > self.timeOfLeap + kLeapTime then
         self.leaping = false
+        
+            if self:GetActiveWeapon():GetHUDSlot() == 1 and not self:GetActiveWeapon().primaryAttacking then
+              self:GetActiveWeapon():Attack(self)
+               end
     end
     
     self.currentWallWalkingAngles = self:GetAnglesFromWallNormal(self.wallWalkingNormalGoal or Vector.yAxis) or self.currentWallWalkingAngles

@@ -65,7 +65,7 @@ Armory.kResupplyUseRange = 2.5
 
 Armory.kSentryGainXp =  0.06
 //Armory.kSentryLoseXp = 0.06
-Armory.kMaxLevel = 9001
+Armory.kMaxLevel = 99
 
 local kArmoryWeldGainXp =  0.45
 local kArmoryScaleSize = 1.8
@@ -237,7 +237,11 @@ function Armory:GetMaxLevel()
 return Armory.kMaxLevel
 end
 function Armory:GetAddXPAmount()
-return self:GetIsSetup() and kArmoryWeldGainXp * 4 or kArmoryWeldGainXp
+local bonus = self:GetLevel()/self:GetMaxLevel()
+local experience = kArmoryWeldGainXp
+      experience = ConditionalValue(self:GetIsSetup(), experience * 4, experience)
+      experience = experience * bonus + experience
+return  experience
 end
 function Armory:GetIsSetup()
         if Server then
@@ -271,7 +275,7 @@ function Armory:AddXP(amount)
         xpReward = math.min(amount, Armory.kMaxLevel - self.level)
         self.level = self.level + xpReward
        
-        self:AdjustMaxHealth(kSentryHealth * (self.level/Armory.kMaxLevel) + kSentryHealth) 
+        self:AdjustMaxHealth(kArmoryHealth * (self.level/Armory.kMaxLevel) + kArmoryHealth) 
 
       
     return xpReward

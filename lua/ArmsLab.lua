@@ -179,11 +179,6 @@ if Server then
 function ArmsLab:UpdatePassive()
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
        if GetHasTech(self, kTechId.RifleClip) or not GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return false end
-       
-    local commander = GetCommanderForTeam(1)
-    if not commander then return true end
-    
-
     local techid = nil  
     
     if not GetHasTech(self, kTechId.Weapons1) then
@@ -210,9 +205,10 @@ function ArmsLab:UpdatePassive()
        return  false
     end
     
-   local techNode = commander:GetTechTree():GetTechNode( techid ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
+   local techNode = self:GetTeam():GetTechTree():GetTechNode( techid ) 
+                 self:SetResearching(techNode, self)
+   --commander.isBotRequestedAction = true
+   --commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
    
 end
 end

@@ -293,7 +293,7 @@ function Welder:PerformWeld(player)
                 success = prevlevel ~= target.level
                    if success then
                    local addAmount = (target.level - prevlevel)
-                   local kAmountLeveledForPoints = 10
+                   local kAmountLeveledForPoints = 40
                    local kLevelScoreAdded = 1
                    player:AddContinuousScore("WeldHealth", addAmount, kAmountLeveledForPoints, kLevelScoreAdded)
                    end     

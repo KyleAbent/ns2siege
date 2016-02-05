@@ -330,7 +330,7 @@ function Plugin:AdjustBuildSpeed()
               
               //kMaxSupply = kMaxSupply - ratio * kMaxSupply
           kMarineRespawnTime = GetFairRespawnLength()
-          kAlienSpawnTime = GetHandicapRespawnLength()
+//          kAlienSpawnTime = GetHandicapRespawnLength()
 
 end
 function Plugin:GetActivePlayers()

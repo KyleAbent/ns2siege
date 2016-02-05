@@ -104,9 +104,9 @@ MAC.kGreetingUpdateInterval = 1
 MAC.kGreetingInterval = 10
 MAC.kGreetingDistance = 5
 MAC.kUseTime = 2.0
-MAC.MaxLevel = 30
+MAC.MaxLevel = 99
 MAC.GainXp = 0.15
-MAC.WeldXp = 0.25
+MAC.WeldXp = 0.15
 MAC.ScaleSize = 1.8
 MAC.kGainXp = .5
 MAC.kTurnSpeed = 3 * math.pi // a mac is nimble
@@ -760,8 +760,19 @@ function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
     return orderStatus
     
 end
+function MAC:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
 function MAC:GetAddXPAmount()
-return MAC.WeldXp / 2
+return self:GetIsSetup() and MAC.WeldXp * 4 or MAC.WeldXp
 end
 function MAC:ProcessMove(deltaTime, target, targetPosition, closeEnough)
 
@@ -875,7 +886,7 @@ function MAC:ProcessConstruct(deltaTime, orderTarget, orderLocation)
                     // Otherwise, add build time to structure
                         orderTarget:Construct(( MAC.kConstructRate * kMACConstructEfficacy) + (self.level/100) + ( MAC.kConstructRate * kMACConstructEfficacy) , self)
                         self.timeOfLastConstruct = time
-                        self:AddXP(MAC.GainXp)
+                        self:AddXP(self:GetAddXPAmount())
                 
                 end
                 
