@@ -480,6 +480,7 @@ function PhaseGate:OnUpdateAnimationInput(modelMixin)
 
     modelMixin:SetAnimationInput("linked", self.linked)
     modelMixin:SetAnimationInput("phase", self.phase)
+    modelMixin:SetAnimationInput("powered", true)
     
 end
 

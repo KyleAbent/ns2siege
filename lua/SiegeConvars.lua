@@ -310,7 +310,7 @@ kBioMassThreeTime = 30
 
 
 kOnosHealtPerBioMass = 18
-kWhipSupply = 7
+//kWhipSupply = 7
 kCragSupply = 7
 
 kPhasePriotityCooldown = 0

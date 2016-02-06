@@ -246,33 +246,46 @@ self:UpdateKings()
 end
 if Server then
 function Cyst:UpdateKings()   
+ -- Print("updating kings")
         local nearestking = GetNearest(self:GetOrigin(), "Cyst", nil, function(ent) return ent.isking == true end)
         if nearestking then   
                       nearestking.wasking = nearestking.isking   
                       nearestking.isking = not nearestking.wasking
+                --      Print("done updating kings step 1")
         end
         local averageorigin = Vector(0,0,0)
-         
+                    --  Print("averageorigin is %s", averageorigin)
           local nearestfrontdoor = GetNearest(self:GetOrigin(), "FrontDoor", nil)
+                     -- Print("nearestfrontdoor is %s", nearestfrontdoor)
           local nearestsiegedoor = GetNearest(self:GetOrigin(), "SiegeDoor", nil)  
+                      --Print("nearestsiegedoor is %s", nearestsiegedoor)
           local nearestpowernode = nil
-          local frontorsiegedoor = ConditionalValue(self:GetIsSiegeEnabled(), nearestsiegedoor, nearestfrontdoor )      
+                      --Print("nearestpowernode is %s", nearestpowernode)
+          local frontorsiegedoor = ConditionalValue(self:GetIsSiegeEnabled(), nearestsiegedoor, nearestfrontdoor )   
+                      --Print("frontorsiegedoor is %s", frontorsiegedoor)   
         
           if frontorsiegedoor then
-            nearestpowernode = GetNearest(frontorsiegedoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt()  end)  
+                         --       Print("frontorsiegedoor is %s", frontorsiegedoor)   
+            nearestpowernode = GetNearest(frontorsiegedoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt() and not ent:GetIsDisabled()  end)  
+                     -- Print("nearestpowernode is %s", nearestpowernode)
           end
           
 
    if frontorsiegedoor and nearestpowernode then
+                       --  Print("averageorigin is %s", averageorigin)
                 averageorigin = averageorigin + frontorsiegedoor:GetOrigin()
+                        --              Print("averageorigin is %s", averageorigin)
                 averageorigin = averageorigin + nearestpowernode:GetOrigin()
+                          --            Print("averageorigin is %s", averageorigin)
                 averageorigin = averageorigin / 2
-         local nearestcctocyst = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
-              if nearestcctocyst then
-                      nearestcctocyst.isking = true
-                      nearestcctocyst:ActivateMagnetize()
-                      nearestcctocyst.wasking = false
-                      nearestcctocyst:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) 
+                          --            Print("averageorigin is %s", averageorigin)
+         local nearescysttoavg = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
+              if nearescysttoavg then
+                     -- Print("nearescysttoavg is %s", nearescysttoavg)
+                      nearescysttoavg.isking = true
+                      nearescysttoavg:ActivateMagnetize()
+                      nearescysttoavg.wasking = false
+                      nearescysttoavg:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) 
                  end
        end
 

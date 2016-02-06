@@ -347,7 +347,7 @@ function Sentry:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Sentry:OnUpdateAnimationInput")    
     modelMixin:SetAnimationInput("attack", self.attacking)
-    modelMixin:SetAnimationInput("powered", self.attachedToBattery)
+    modelMixin:SetAnimationInput("powered", true)
     
 end
 

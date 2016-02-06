@@ -6,7 +6,7 @@ function Plugin:Initialise()
 self.Enabled = true
 return true
 end
-
+/*
 Shine.VoteMenu:AddPage ("SpendStructures", function( self )
        local player = Client.GetLocalPlayer()
     if player:GetTeamNumber() == 1 then 
@@ -151,5 +151,6 @@ end)
 Shine.VoteMenu:EditPage( "Main", function( self ) 
 self:AddSideButton( "Credits", function() self:SetPage( "SpendCredits" ) end)
 end)
+*/
 
 

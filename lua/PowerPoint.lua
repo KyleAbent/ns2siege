@@ -280,7 +280,7 @@ end
   function PowerPoint:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
           if not GetPowerPointRecentlyDestroyed(self) then
-          unitName = string.format(Locale.ResolveString("PowerPoint"))
+          unitName = string.format(Locale.ResolveString("LightManager"))
           elseif  GetPowerPointRecentlyDestroyed(self) then
           local NowToWeld = kDestructionBuildDelay - (Shared.GetTime() - self.timeOfDestruction)
           local WeldLength =  math.ceil( Shared.GetTime() + NowToWeld - Shared.GetTime() )

@@ -240,12 +240,12 @@ function Egg:UpdateToLerkEgg()
       return false
 end
 function Egg:UpdateToFadeEgg()
-   local techNode = commander:GetTechTree():GetTechNode( kTechId.FadeEgg ) 
+   local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.FadeEgg ) 
          self:SetResearching(techNode, self)
       return false
 end
 function Egg:UpdateToOnosEgg()
-   local techNode = commander:GetTechTree():GetTechNode( kTechId.OnosEgg ) 
+   local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.OnosEgg ) 
          self:SetResearching(techNode,self)
       return false
 end

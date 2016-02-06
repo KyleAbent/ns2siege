@@ -125,6 +125,7 @@ function Whip:OnInitialized()
   
         local targetTypes = { kAlienStaticTargets, kAlienMobileTargets }
         self.slapTargetSelector = TargetSelector():Init(self, Whip.kRange, true, targetTypes, { self.FilterTarget(self) })
+        self.slapTargetSelector.visibilityRequired = false
      //   self.bombardTargetSelector = TargetSelector():Init(self, Whip.kBombardRange * (self.level/100) + Whip.kBombardRange, true, targetTypes)
         self.bombardTargetSelector = TargetSelector():Init(self, Whip.kBombardRange, true, targetTypes, { self.FilterTarget(self) })
         
@@ -191,7 +192,7 @@ function Whip:GetFov()
     return Whip.kFov
 end
 function Whip:GetAddXPAmount()
-return self:GetIsSetup() and kWhipHealXPGain * 4 or kWhipHealXPGain
+return 0 //self:GetIsSetup() and kWhipHealXPGain * 4 or kWhipHealXPGain
 end
 function Whip:GetIsSetup()
         if Server then
@@ -400,12 +401,14 @@ function Whip:OnAdjustModelCoords(modelCoords)
     return coords
 end
 */
+/*
 function Whip:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
     unitName = string.format(Locale.ResolveString("Level %s Whip"), self:GetLevel())
 return unitName
-end
 
+end
+*/
 // --- end CommanderInterface
 
 // --- Whip specific
@@ -599,7 +602,7 @@ end
 
 function Whip:UpdateRootState()
 
-    local infested = self:GetGameEffectMask(kGameEffect.OnInfestation)
+    local infested = true //self:GetGameEffectMask(kGameEffect.OnInfestation)
     local moveOrdered = self:GetCurrentOrder() and self:GetCurrentOrder():GetType() == kTechId.Move //or self:GetCurrentOrder():GetType() == kTechId.Follow
     // unroot if we have a move order or infestation recedes
     if self.rooted and (moveOrdered or not infested) then

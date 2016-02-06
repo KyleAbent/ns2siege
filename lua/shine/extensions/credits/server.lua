@@ -554,7 +554,7 @@ end
 
 function Plugin:CreateCommands()
 
-
+/*
 local function Buy(Client, String)
 local Player = Client:GetControllingPlayer()
 
@@ -569,24 +569,10 @@ if not GetGamerules():GetGameStarted() then
 self:NotifyCredits( Client, "Buying in pregame is not supported right now. It's a waste of credits unless determined pregame to be free spending later on.", true)
 return
 end
-/*
-local gameRules = GetGamerules()
-if gameRules:GetGameStarted() and gameRules:GetIsSuddenDeath() then
-self:NotifyCredits( Client, "Buying in suddendeath is not supported right now.", true)
-return
-end
-*/
 if Player:isa("Commander") or not Player:GetIsAlive() then 
       self:NotifyCredits( Client, "Either you're dead, or a commander... Really no difference between the two.. anyway, no credit spending for you.", true)
 return
 end
-
-/*
-if Player then
- self:NotifyCredits( Client, "Purchases currently disabled. ", true)
- return
-end
-*/
 local CreditCost = 1
 local AddTime = 0
 
@@ -690,13 +676,6 @@ end
 if self:HasLimitOf(Player, string.format("MAC"), 1, 3) then 
 self:NotifyCredits(Client, "Three Credit Macs Max. Destroying 1 to make another", true)
 end
-
-/*
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- */
  
  if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.MAC) ) then
 self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
@@ -750,31 +729,6 @@ self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 self.MarineTotalSpent = self.MarineTotalSpent + CreditCost
 return
 end
-/*
-if String == "CommandStation" then
-CreditCost = 4000
-if self:GetPlayerCreditsInfo(Client) < CreditCost then 
-self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
-return
-end
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.CommandStation) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
-self:NotifyMarine( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
-local cc = CreateEntity(CommandStation.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-cc:SetConstructionComplete()
-cc.isGhostStructure = false
-obs.iscreditstructure = true
-   Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
-return
-end
-*/
 if String == "Armory"  then
 CreditCost = 12
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
@@ -930,15 +884,6 @@ self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
 local arc = CreateEntity(ARC.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
 arc:GiveOrder(kTechId.ARCDeploy, arc:GetId(), arc:GetOrigin(), nil, false, false)
-
-/*
-if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
-  arc:SetConstructionComplete()
- else
-  self:NotifyCredits( Client, "%s placed ON infestation, therefore it is not autobuilt.", true, String)
-arc.isGhostStructure = false
-end
-*/
 
 arc:SetIsCreditStructure()
 arc:SetOwner(Player)
@@ -1172,28 +1117,6 @@ Player:GiveDualRailgunExo(Player:GetOrigin())
 self.MarineTotalSpent = self.MarineTotalSpent + CreditCost
 return
 end
-/*
-if String == "TechPoint"  then
-    CreditCost = 2000
-      if self.CreditUsers[ Client ] and self.CreditUsers[ Client ] < CreditCost then
-      self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
-      return
-      end
-      if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.CommandStation) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-  self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
-  self:NotifyMarine( nil, "%s a purchased a %s for %s credits", true, Player:GetName(), String, CreditCost)
-  CreateEntity(TechPoint.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-     Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
-  return
-end
-*/
 
 if String == "ResPoint" then
 CreditCost = 100
@@ -1265,17 +1188,6 @@ end
 self.MarineTotalSpent = self.MarineTotalSpent + CreditCost
 return
 end
-/*
-if String == "Badge" then
-CreditCost = 1000
-if self.CreditUsers[ Client ] and self.CreditUsers[ Client ] < CreditCost then
-self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
- return
-end
-self:NotifyCredits( Client, "Email kyleabent@gmail.com (Avoca) with a 32x32 image (or ill resize it for you) and your username in the subject field (up to 10 badges)", true)
-return
-end
-*/
 if String == "Shrink" then
 CreditCost = 5
 if self:GetPlayerCreditsInfo(Client) < CreditCost then
@@ -1304,12 +1216,6 @@ self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase in
  return
 end
 
-/*
-if Client then 
-self:NotifyCredits( Client, "This heavyily breaks balance and I have no idea how to balance it yet. So until then, growing via credits is disabled.", true)
-return
-end
-*/
 if Player.modelsize >= 3 then 
 self:NotifyCredits( Player, "Cannot go above 200%")
 return
@@ -1399,58 +1305,6 @@ Player:GetTeam():RemoveSupplyUsed(5)
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
 return
 end
-/*
-if String == "ResPoint" then
-CreditCost = 100
-if self.CreditUsers[ Client ] and self.CreditUsers[ Client ] < CreditCost then
-self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
- return
-end
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
-  if self:HasResPoint(Player) then
-self:NotifyCredits(Client, "One Res Point per player at the moment.", true)
-return
-end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.ResourcePoint) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
-self:NotifyAlien( nil, "%s a purchased a %s for %s credits", true, Player:GetName(), String, CreditCost)
-local respoint = CreateEntity(ResourcePoint.kPointMapName, Player:GetOrigin(), Player:GetTeamNumber())  
-respoint.ParentId = Player:GetId()
-   Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client)   
-   Shared.ConsoleCommand(string.format("sh_addpool %s", CreditCost)) 
-   self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
-self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
-return
-end
-*/
-/*
-if String == "TechPoint"  then
-    CreditCost = 2000
-      if self.CreditUsers[ Client ] and self.CreditUsers[ Client ] < CreditCost then
-      self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
-      return
-      end
-      if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Hive) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-  self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
-  self:NotifyAlien( nil, "%s a purchased a %s for %s credits", true, Player:GetName(), String, CreditCost)
-  CreateEntity(TechPoint.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
-     Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
-  return
-end
-*/
 if String == "Harvester" then
 CreditCost = 150
 if self.CreditUsers[ Client ] and self.CreditUsers[ Client ] < CreditCost then
@@ -1673,16 +1527,7 @@ end
 if self:HasLimitOf(Player, string.format("Shade"), 1, 3) then 
 self:NotifyCredits(Client, "Three Credit Macs Max. Destroy the others to continue", true)
 end
-/*
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Shade) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-*/
+
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
 if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then CreateEntity(Clog.kMapName, Player:GetOrigin(), Player:GetTeamNumber())  end
@@ -1713,16 +1558,7 @@ end
 if self:HasLimitOf(Player, string.format("Crag"), 2, 3) then
 self:NotifyCredits(Client, "Three Credit Crags Detected. Deleting 1 to spawn a new one.", true)
 end
-/*
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Crag) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-*/
+
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
 if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then CreateEntity(Clog.kMapName, Player:GetOrigin(), Player:GetTeamNumber())  end
@@ -1753,16 +1589,7 @@ end
 self:NotifyCredits( Client, "Aliens Cannot Build Credit Structures In Siege.", true)
 return 
 end
-/*
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Whip) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-*/
+
 local Time = Shared.GetTime()
 local NextUse = self.BuyUsersTimer[Client]
 if NextUse and NextUse > Time then
@@ -1799,16 +1626,7 @@ end
 if self:HasLimitOf(Player, string.format("Shift"), 1, 3) then 
 self:NotifyCredits(Client, "Three Credit Macs Max. Destroy the others to continue", true)
 end
-/*
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Shift) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-*/
+
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
 if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then CreateEntity(Clog.kMapName, Player:GetOrigin(), Player:GetTeamNumber()) end
@@ -1839,16 +1657,7 @@ end
 if self:HasLimitOf(Player, string.format("Hydra"), 2, 3) then
 self:NotifyCredits(Client, "Three Credit Hydras Detected. Deleting 1 to spawn a new one.", true)
 end
-/*
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Hydra) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-*/
+
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
 local hydra = CreateEntity(Hydra.kMapName, Player:GetOrigin(), Player:GetTeamNumber())    
@@ -1875,16 +1684,7 @@ end
 self:NotifyCredits( Client, "Aliens Cannot Build Credit Structures In Siege.", true)
 return 
 end
-/*
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Egg) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-*/
+
 self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
               if not Player:GetGameEffectMask(kGameEffect.OnInfestation) then
@@ -1902,30 +1702,7 @@ self.PlayerSpentAmount[Client] = self.PlayerSpentAmount[Client]  + CreditCost
 self.AlienTotalSpent = self.AlienTotalSpent + CreditCost
 return
 end
-/*
-if String == "Hive" then
-CreditCost = 4000
-if self:GetPlayerCreditsInfo(Client) < CreditCost then 
-self:NotifyCredits( Client, "%s costs %s credits, you have %s credit(s). Purchase invalid.", true, String, CreditCost, self:GetPlayerCreditsInfo(Client))
-return
-end
-if not Player:GetIsOnGround() then
- self:NotifyCredits( Client, "You must be on the ground to purchase an %s", true, String)
- return
- end
- if not GetPathingRequirementsMet(Vector( Player:GetOrigin() ),  GetExtents(kTechId.Hive) ) then
-self:NotifyCredits( Client, "Pathing does not exist in this placement. Purchase invalid.", true)
-return 
-end
-self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
-self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
-local hive = CreateEntity(Hive.kMapName, Player:GetOrigin() + Vector(0, 3, 0), Player:GetTeamNumber())    
-hive:SetConstructionComplete()
-//hive.isGhostStructure = false
-   Shine.ScreenText.SetText("Credits", string.format( "%s Credits", self:GetPlayerCreditsInfo(Client) ), Client) 
-return
-end
-*/
+
 if String == "Gorge" then
 CreditCost = 10
 if self:GetPlayerCreditsInfo(Client) < CreditCost then 
@@ -2042,13 +1819,6 @@ self:NotifyCredits( Client, "%s costs %s credit, you have %s credit. Purchase in
  return
  
 end
-
-/*
-if Client then 
-self:NotifyCredits( Client, "This heavyily breaks balance and I have no idea how to balance it yet. So until then, growing via credits is disabled.", true)
-return
-end
-*/
 
 if Player:isa("Onos") and Player.modelsize >= 2 then
 self:NotifyCredits( Player, "Cannot go above 200% as an onos")
@@ -2169,6 +1939,7 @@ end
 local BuyCommand = self:BindCommand("sh_buy", "buy", Buy, true)
 BuyCommand:Help("sh_buy <item name>")
 BuyCommand:AddParam{ Type = "string" }
+*/
 
 local function Credits(Client, Targets)
 for i = 1, #Targets do

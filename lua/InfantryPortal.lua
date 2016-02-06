@@ -654,6 +654,7 @@ function InfantryPortal:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("InfantryPortal:OnUpdateAnimationInput")
     modelMixin:SetAnimationInput("spawning", self.queuedPlayerId ~= Entity.invalidId)
+    modelMixin:SetAnimationInput("powered", true)
     
 end
 

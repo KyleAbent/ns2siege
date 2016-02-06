@@ -410,19 +410,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
         displayOrigin = trace.endPoint
         
     end
-    
-    // Can only be built on infestation
-    local requiresInfestation = LookupTechData(structureAbility.GetDropStructureId(), kTechDataRequiresInfestation)
-    if requiresInfestation and not GetIsPointOnInfestation(displayOrigin) then
-    
-        if self:GetActiveStructure().OverrideInfestationCheck then
-            validPosition = self:GetActiveStructure():OverrideInfestationCheck(trace)
-        else
-            validPosition = false
-        end
-        
-    end
-    
+
     if not structureAbility.AllowBackfacing() and trace.normal:DotProduct(GetNormalizedVector(startPosition - trace.endPoint)) < 0 then
         validPosition = false
     end    

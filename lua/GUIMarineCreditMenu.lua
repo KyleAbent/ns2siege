@@ -116,7 +116,7 @@ local function GetSmallIconPixelCoordinates(itemTechId)
         gSmallIconIndex[kTechId.LayStructures] = 4
         gSmallIconIndex[kTechId.LayStructureIP] = 3
         gSmallIconIndex[kTechId.LayStructurePG] = 1
-        gSmallIconIndex[kTechId.LayStructureRobo] = 1
+        gSmallIconIndex[kTechId.LayStructureRobo] = 2
         gSmallIconIndex[kTechId.LayStructureSentry] = 5
         gSmallIconIndex[kTechId.LayStructureObs] = 35
     end

@@ -91,10 +91,10 @@ local gMarineMenuButtons =
                             kTechId.RoboticsFactory, kTechId.ArmsLab, kTechId.None, kTechId.None },
                             
     [kTechId.AdvancedMenu] = { kTechId.Sentry, kTechId.Observatory, kTechId.PhaseGate, kTechId.PrototypeLab, 
-                               kTechId.SentryBattery, kTechId.None, kTechId.None, kTechId.None },
+                               kTechId.None, kTechId.None, kTechId.None, kTechId.None },
 
     [kTechId.AssistMenu] = { kTechId.AmmoPack, kTechId.MedPack, kTechId.NanoShield, kTechId.Scan,
-                             kTechId.PowerSurge, kTechId.CatPack, kTechId.WeaponsMenu, kTechId.None, },
+                             kTechId.CatPack, kTechId.WeaponsMenu, kTechId.None, kTechId.None, },
                              
     [kTechId.WeaponsMenu] = { kTechId.DropShotgun, kTechId.DropGrenadeLauncher, kTechId.DropFlamethrower, kTechId.DropWelder,
                               kTechId.DropMines, kTechId.DropExosuit, kTechId.DropJetpack, kTechId.AssistMenu}

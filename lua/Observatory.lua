@@ -468,6 +468,11 @@ function Observatory:PerformDistressBeacon()
     end
     
 end
+function Observatory:OnUpdateAnimationInput(modelMixin)
+
+    modelMixin:SetAnimationInput("powered", true)
+    
+end
 if Server then
    function Observatory:GetIsFront()
         if Server then
