@@ -106,13 +106,16 @@ end
 function CommandStation:GetIsWallWalkingAllowed()
     return false
 end
+/*
 function CommandStation:GetCanBeWeldedOverride()
 return not self:GetIsSuddenDeath()
 end
+
 function CommandStation:GetAddConstructHealth()
 
 return not self:GetIsSuddenDeath()
 end
+*/
 function CommandStation:GetCanBeNanoShieldedOverride()
 return not self:GetIsVortexed()
 end
@@ -190,13 +193,14 @@ end
 if Server then
 function GetCCQualifications(techId, origin, normal, commander)
  if CommandStation:GetCCAmount() >= 3 then return false end
- 
+          /*
              local gameRules = GetGamerules()
             if gameRules then
                if gameRules:GetGameStarted() and gameRules:GetIsSuddenDeath() then 
                    return false
                end
             end
+          */
             return true
 end
 end

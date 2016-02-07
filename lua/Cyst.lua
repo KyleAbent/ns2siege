@@ -232,6 +232,32 @@ end
         Print("No valid spot found for kingcyst magnetize")
         return self:GetOrigin()
 end
+function Cyst:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
+ function Cyst:FindFreeSpawn()    
+        for index = 1, 100 do
+           local extents = Vector(0.2, 0.2, 0.2)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), kCystRedeployRange, kCystRedeployRange * 4, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then
+           return spawnPoint
+           end
+        end
+        Print("No valid spot found for cyst brother spawn!")
+        return self:GetOrigin()
+end
 function Cyst:Derp()
                 self:UpdateModelCoords()
                 self:UpdatePhysicsModel()
@@ -311,7 +337,7 @@ function Cyst:ActivateMagnetize()
 end
 function Cyst:Magnetize()
           for index, Tunnel in ipairs(GetEntitiesForTeam("TunnelEntrance", 2)) do
-               if Tunnel:GetIsBuilt() and Tunnel:GetIsExit() then 
+               if Tunnel:GetIsBuilt() and Tunnel:GetIsExit() and self:GetDistance(Tunnel) >= 22 then 
                Tunnel:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
                 end
           end

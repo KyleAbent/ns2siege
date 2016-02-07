@@ -1,3 +1,6 @@
+kBuilderPowerRepairRate = 440
+kWelderPowerRepairRate = 880
+kMarineRepairHealthPerSecond = 2400
 kLeapEnergyCost = 20
 kSentryBatteryHealth = 1200
 kHiveMoveUpVector = 0

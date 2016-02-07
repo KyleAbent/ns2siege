@@ -203,7 +203,7 @@ function Plugin:SetGameState( Gamerules, State, OldState )
 	   
 	   self:CreateTimer(21,kSiegeDoorTime + kTimeAfterSiegeOpeningToEnableSuddenDeath, 1, function ()
 	   if self.GameStarted then
-	   Shine.ScreenText.Add( 82, {X = 0.40, Y = 0.95,Text = "Sudden Death is ACTIVE! (No CC/Hive Healing!)",Duration = 1800,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
+	   Shine.ScreenText.Add( 82, {X = 0.40, Y = 0.95,Text = "Sudden Death is ACTIVE! (4x player dmg)",Duration = 1800,R = math.random(0,255), G = math.random(0,255), B = math.random(0,255),Alignment = 0,Size = 4,FadeIn = 0,} )
 	   end
 	   end)
 	   

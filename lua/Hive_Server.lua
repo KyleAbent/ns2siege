@@ -226,8 +226,8 @@ local function SpawnEgg(self, eggCount)
 
         // Need to check if this spawn is valid for an Egg and for a Skulk because
         // the Skulk spawns from the Egg.
-        local validForEgg = GetIsPlacementForTechId(position, true, kTechId.Egg)
-        local validForSkulk = GetIsPlacementForTechId(position, true, kTechId.Skulk)
+        local validForEgg = GetIsPlacementForTechId(position, false, kTechId.Egg)
+        local validForSkulk = GetIsPlacementForTechId(position, false, kTechId.Skulk)
 
         // Prevent an Egg from spawning on top of a Resource Point.
         local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0
@@ -323,12 +323,14 @@ function Hive:GetGameStartedHive()
             end
             return false
 end
+/*
 function Hive:GetCanBeHealedOverride()
     return not self:GetIsSuddenDeathEnabled() and self:GetIsAlive()
 end
 function Hive:GetAddConstructHealth()
 return not self:GetIsSuddenDeathEnabled()
 end
+*/
 function Hive:PerformActivation(techId, position, normal, commander)
 
     local success = false

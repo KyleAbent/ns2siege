@@ -104,7 +104,11 @@ end
 function Extractor:GetRequiresPower()
     return true
 end
+function Extractor:OnUpdateAnimationInput(modelMixin)
 
+    modelMixin:SetAnimationInput("powered", true)
+    
+end
 function Extractor:GetDamagedAlertId()
     return kTechId.MarineAlertExtractorUnderAttack
 end

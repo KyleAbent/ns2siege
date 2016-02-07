@@ -638,11 +638,22 @@ function GetDamageByType(target, attacker, doer, damage, damageType, hitPoint)
       if Server and not target:isa("PowerPoint") and not target:isa("Cyst") and not target:isa("LogicBreakable") and not target:isa("CommandStructure") and not target:isa("BoneWall") then
             local gameRules = GetGamerules()
             if gameRules then
-               if (gameRules:GetGameStarted() and not Shared.GetCheatsEnabled() ) and not ConditionalValue(Shared.GetMapName() == "ns_siegeaholic_remade" or Shared.GetMapName() == "ns2_trainsiege2" or Shared.GetMapName() ==  "ns2_rockdownsiege2", gameRules:GetSideDoorsOpen(), gameRules:GetFrontDoorsOpen()) then 
-                   return 0, 0, 0
+               if gameRules:GetGameStarted() then 
+                    if not Shared.GetCheatsEnabled() and not ConditionalValue(Shared.GetMapName() == "ns_siegeaholic_remade" or Shared.GetMapName() == "ns2_trainsiege2" or Shared.GetMapName() ==  "ns2_rockdownsiege2", gameRules:GetSideDoorsOpen(), gameRules:GetFrontDoorsOpen()) then 
+                    return 0, 0, 0
+                    elseif gameRules:GetIsSuddenDeath() then 
+                    damage = damage * 4
+                    end
                end
             end
           end
+
+          
+          if target:isa("PowerPoint") then
+          damage = damage * 4 
+          end
+          
+          
           if attacker:isa("Player") and not target:isa("FuncDoor") then
           local trace = Shared.TraceRay(attacker:GetOrigin(), target:GetOrigin(), CollisionRep.Move, PhysicsMask.FuncMoveable, EntityFilterAllButIsa("FuncDoor"))  
                 if trace.entity ~= nil and ( trace.entity:isa("FuncDoor") and ( trace.entity:GetState() == FuncDoor.kState.Welded or trace.entity:GetState() == FuncDoor.kState.Locked ) )then 

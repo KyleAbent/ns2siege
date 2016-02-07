@@ -555,6 +555,12 @@ if Server then
             end
             return false
 end
+    function PowerPoint:CystBrothersActivate()
+       local location = GetLocationForPoint(self:GetOrigin())
+       location:ReallySpawnCysts(self)
+       return self:GetIsDisabled()
+    
+    end
     function PowerPoint:UpdateCystKing()
        local nearestcyst = GetNearestMixin(self:GetOrigin(), "Cyst", 2, function(ent) return ent:GetIsBuilt() end)
          if nearestcyst then
@@ -792,6 +798,7 @@ end
         self.timeOfDestruction = Shared.GetTime()
       // self:UpdateMiniMap()
         self:AddTimedCallback(PowerPoint.UpdateCountKill, math.random(4,8)) 
+        self:AddTimedCallback(PowerPoint.CystBrothersActivate, 6)
         self:UpdateCystKing()
     end
 
@@ -799,7 +806,7 @@ end
     
 
     end
-    
+
     function PowerPoint:Reset()
     
         SetupWithInitialSettings(self)

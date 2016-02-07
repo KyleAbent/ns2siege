@@ -21,9 +21,7 @@ Location.kMapName = "location"
 local networkVars =
 {
     showOnMinimap = "boolean",
-   // lasttime = "time",
-   // notapplied = "boolean",
-   mainroom = "boolean",
+   spawningcysts = "boolean",
 }
 
 Shared.PrecacheString("")
@@ -43,13 +41,10 @@ function Location:OnInitialized()
     self:SetTriggerCollisionEnabled(true)
     
     self:SetPropagate(Entity.Propagate_Always)
-    //self:AddTimedCallback(Location.OnUpdate, 30)
-  //  self.lasttime = 0
-  //  self.notapplied = true
+    self.spawningcysts = flase
 end
 
 function Location:Reset()
-      self.mainroom = false
 end    
 
 function Location:OnDestroy()
@@ -66,129 +61,46 @@ function Location:GetShowOnMinimap()
     return self.showOnMinimap
 end
 if Server then
-/*
-function Location:GetIsSiege()
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
-                   return true
-               end
-            end
-            return false
-end
-function Location:GetFront()
-      //Siege 11.12 kyle abent =]
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-            return false
-end
-    function Location:OnUpdate(deltaTime)
-      //        Print("mainbattlecheck =", self.mainbattlecheck) //Print to veryify
-              
-      //   Print("check 1 complete") //Check complete. 
-               //not when siege and only after front
-       if not self:GetFront() then return true end // Cancel and continue loop check
-       
-      if self:GetIsSiege() then
-
-              if string.find(self.name, "Siege") or string.find(self.name, "siege") then 
-                local powerpoint = GetPowerPointForLocation(self.name)
-                if powerpoint ~= nil then
-                powerpoint:InsideMainRoom()
+    function Location:GetCystsInLocation(location, powerpoint)
+            local entities = GetEntitiesForTeamWithinRange("Cyst", 2, powerpoint:GetOrigin(), 24)
+                local cysts = 0
+            for i = 1, #entities do
+            local entity = entities[i]
+                if entity:isa("Cyst") and entity:GetLocationName() == location.name then 
+                  cysts = cysts + 1
                 end
-              end
-              
-              return true
-      end
-       
-       
-    //    Print("check 2 complete")
-        
-              //geneerate list
-       local inrangeincombat = {}
-       local combateersincombat = {}
-          //triggermixin.lua get all within location
-       local entities = self:GetEntitiesInTrigger()
-       
-            if table.count(entities) == 0 then
-     //         Print("empty room")
-              return true
+            end
+            return cysts
+    end
+    function Location:ReallySpawnCysts(powerpoint)
+    --Kyle Abent :S
+    -- 2.7 -- To replace comm cysts with automatic system based on where state of turf within dynamic playthrough lays(in theory)
+            local extents = (self:GetOrigin().x + self:GetOrigin().y + self:GetOrigin().z) - (self.scale.x + self.scale.y + self.scale.z)
+            local cysts = self:GetCystsInLocation(self, powerpoint)
+            
+                Print("cysts is %s", cysts)
+            if cysts == 0 then 
+              local cyst = CreateEntity(Cyst.kMapName, powerpoint:FindFreeSpace(), 2)
+             return 
+             end
+             
+            local ratio = math.abs(extents/(cysts*kCystRedeployRange))
+            Print("Cyst Ratio is %s for room %s", ratio, self.name)
+            
+            if ratio >= 4 then
+            Print("Ratio is >= 4")
+                   local nearestcyst = GetNearest(powerpoint:GetOrigin(), "Cyst", 2, function(ent) return GetLocationForPoint(ent:GetOrigin()) == GetLocationForPoint(powerpoint:GetOrigin()) end)
+                    if nearestcyst then
+                       Print("nearestcyst is %s", nearestcyst)
+                      local cyst = CreateEntity(Cyst.kMapName, nearestcyst:FindFreeSpawn(), 2)
+                      end
             end
             
-  //      Print("entities: %s", #entities)
-       local combatentities = 0
-       local eligable = {}
-       
-       for _, entity in ipairs(GetEntitiesWithMixin("Combat")) do
-          combatentities = combatentities + 1
-          if HasMixin(entity, "PowerConsumer") then entity.mainbattle = false end   
-          
-       if table.find(entities, entity) then // Only effect entities in this room
-          local inCombat = (entity.timeLastDamageDealt + 30 > Shared.GetTime()) or (entity.lastTakenDamageTime + 30 > Shared.GetTime())
-          if inCombat then
-            table.insert(eligable, entity)
-          end
-       end
-       
-       
-        end
-        
-             if table.count(eligable) == 0 then
-    //          Print("empty eligabe room")
-              return true
-            end
             
-        
-    //   Print("combatentities; %s", combatentities)
-    //   Print("eligable: %s", table.count(eligable) )
-   //    Print("check 2 point 5 complete")
-       
-
+     //self:AddTimedCallback(Location.OnUpdate, 30)
+    end
     
-         self.notapplied = Shared.GetTime() > self.lasttime  + 25 //to make sure only one room is applied?
-  if table.count(entities) >= (  table.count(eligable) * .51 ) and self.notapplied then   //To be eligable - contain 51% or more of the current 
-    //Print("check 3 complete")
-  
-           //look for those who are in battle
-
-       for _, entity in pairs(entities) do
-         if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
-          if HasMixin(entity, "Combat") then entity:InsideMainRoom() end
-           if entity:isa("PowerPoint") then entity:SetMainRoom() end
-           //CreateEntity(EtherealGate.kMapName, entity:GetOrigin(), 2)
-       end
-       
-    //   Print("check 4 complete")
-  end//
-       
-        //   if entity:GetLocationName() then
-        //   Print("room is %s", entity:GetLocationName())
-        //   end
-        
-        Shared.ConsoleCommand("sh_zedtime")
-        self.lasttime = Shared.GetTime()
-        return true // to continue loop check
-    
-    end
-    */
-    function Location:ClearLocations()
-           self.mainroom = false
-           local entities = self:GetEntitiesInTrigger()
-           for _, entity in pairs(entities) do
-              if HasMixin(entity, "PowerConsumer") then entity.mainbattle = false end
-          end      
-end
-    function Location:GetIsMainRoom()
-       return self.mainroom
-    end
-    function Location:SetMainRoom()
-    self.mainroom = true
-    end
-    function Location:MakeSureRoomIsntEmpty()
+        function Location:MakeSureRoomIsntEmpty()
                      local entities = self:GetEntitiesInTrigger()
                      for i = 1, #entities do
                      local ent = entities[i]
@@ -196,23 +108,7 @@ end
                      end
                      return false
     end
-    function Location:Intensify()
     
-                      Print("check 5 complete")
-                   self:AddTimedCallback(Location.ClearLocations, 29)
-                    local entities = self:GetEntitiesInTrigger()
-                    for _, entity in pairs(entities) do
-                      if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
-                      if HasMixin(entity, "Combat") then entity:InsideMainRoom() end
-                      if entity:isa("PowerPoint") then entity:SetMainRoom() end
-                       if entity.GetLocationName then Print("room is: %s", entity:GetLocationName()) end
-                      //CreateEntity(EtherealGate.kMapName, entity:GetOrigin(), 2)
-                    end
-                  Print("check 6 complete")
-                  Shared.ConsoleCommand("sh_zedtime")
-                  return success
-    
-    end
     function Location:GetIsSetup()
         if Server then
             local gameRules = GetGamerules()
@@ -223,7 +119,7 @@ end
             end
         end
             return false
-end
+      end
     function Location:OnTriggerEntered(entity, triggerEnt)
         ASSERT(self == triggerEnt)
           if self:GetIsSetup() then
