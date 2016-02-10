@@ -149,7 +149,9 @@ function Hive:OnDestroy()
         end
         
 end
-
+function Hive:GetCanBeUsedConstructed(byPlayer)
+    return false
+end
 function Hive:GetTeamType()
     return kAlienTeamType
 end
@@ -604,11 +606,16 @@ function Hive:OnKill(attacker, doer, point, direction)
     
     self:SetModel(nil)    
     
+    /*
                    local team = self:GetTeam()
         if team then
          team:UpdateBioMassLevel()
            team:OnUpgradeChamberDestroyed(self)
          end
+    */
+    
+     GetGamerules():SpawnNewHive(self:GetOrigin())
+     
 end
 function Hive:GetIsEggBeaconOnField()
       local shell = GetEntitiesWithinRange("Shell", self:GetOrigin(), 999)

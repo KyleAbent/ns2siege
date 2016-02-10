@@ -36,7 +36,6 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/WebableMixin.lua")
@@ -193,7 +192,6 @@ function ARC:OnInitialized()
         self.desiredRoll = angles.roll
     
         InitMixin(self, MobileTargetMixin)
-        InitMixin(self, SupplyUserMixin)
         
         // TargetSelectors require the TargetCacheMixin for cleanup.
         InitMixin(self, TargetCacheMixin)
@@ -666,10 +664,9 @@ function ARC:OnOverrideOrder(order)
         if self:GetInAttackMode() then self:PerformActivation(kTechId.ARCUndeploy, nil, normal, commander) order:SetType(kTechId.Move) end
     end
 end
-function ARC:OnOrderComplete(currentOrder)
-if currentOrder:GetType() == kTechId.Move then self:PerformActivation(kTechId.ARCDeploy, nil, normal, commander) end
-end
 */
+
+
 function ARC:OnOrderGiven(order)
     if order ~= nil and (order:GetType() == kTechId.Attack or order:GetType() == kTechId.SetTarget) then
         local target = Shared.GetEntity(order:GetParam())

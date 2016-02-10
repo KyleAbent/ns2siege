@@ -31,7 +31,6 @@ Script.Load("lua/TargettingMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 
 local kSpinUpSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_up")
 local kSpinDownSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_down")
@@ -226,7 +225,6 @@ function Sentry:OnInitialized()
         
         // TargetSelectors require the TargetCacheMixin for cleanup.
         InitMixin(self, TargetCacheMixin)
-        InitMixin(self, SupplyUserMixin)
         
         // configure how targets are selected and validated
         self.targetSelector = TargetSelector():Init(
@@ -358,17 +356,7 @@ end
 function Sentry:GetMaxLevel()
 return Sentry.kSentryMaxLevel
 end
-function Sentry:OverrideHintString( hintString, forEntity )
-    
-    if not GetAreEnemies(self, forEntity) then
-        if self.level ~= Sentry.kSentryMaxLevel then
-            return string.format(Locale.ResolveString( "Weld me to level me up!" ) )
-        end
-    end
 
-    return hintString
-    
-end
 function Sentry:OnWeldOverride(entity, elapsedTime)
 
     local welded = false
@@ -616,7 +604,7 @@ if Server then
         if self.lastBatteryCheckTime == nil or (time > self.lastBatteryCheckTime + 0.5) then
         
             // Update if we're powered or not
-            self.attachedToBattery = false
+            self.attachedToBattery = true
             
             local ents = GetEntitiesForTeamWithinRange("PowerPoint", self:GetTeamNumber(), self:GetOrigin(), 9999)
             for index, ent in ipairs(ents) do
@@ -857,6 +845,16 @@ function Sentry:GetTechButtons(techId)
     return techButtons
     
 end
+function Sentry:OverrideHintString( hintString, forEntity )
+    
+    if not GetAreEnemies(self, forEntity) then
+        local amountleft = 6
+            return string.format(Locale.ResolveString( "Sentrys left: %s" ), amountleft )
+    end
+
+    return hintString
+    
+end
  function Sentry:PerformActivation(techId, position, normal, commander)
      local success = false
     if techId == kTechId.LevelSentry then
@@ -902,15 +900,6 @@ function GetCheckSentryLimit(techId, origin, normal, commander)
     
 end
 
-function GetBatteryInRange(commander)
 
-    local batteries = {}
-    for _, battery in ipairs(GetEntitiesForTeam("PowerPoint", commander:GetTeamNumber())) do
-        batteries[battery] = 999999
-    end
-    
-    return batteries
-    
-end
 
 Shared.LinkClassToMap("Sentry", Sentry.kMapName, networkVars)

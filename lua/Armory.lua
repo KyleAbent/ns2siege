@@ -32,7 +32,6 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
@@ -206,7 +205,6 @@ function Armory:OnInitialized()
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
-        InitMixin(self, SupplyUserMixin)
         InitMixin(self, StunMixin)
     elseif Client then
     
@@ -218,6 +216,12 @@ function Armory:OnInitialized()
     
     InitMixin(self, IdleMixin)
 end
+    function Armory:OnConstructionComplete()    
+      local parent = self:GetParent()
+       if parent then
+         self:SetOrigin(self:GetOrigin() + Vector(0,1,0) )       
+        end
+    end
 function Armory:GetCanBeUsed(player, useSuccessTable)
 
     if player:isa("Exo") then
@@ -257,6 +261,16 @@ end
 function Armory:GetLevelPercentage()
 return self.level / Armory.kMaxLevel * kArmoryScaleSize
 end
+/*
+function Armory:GetAttachPointOriginHardcoded(attachPointName)
+    return self:GetOrigin() + Vector(0,4,0)
+end
+*/
+/*
+function Armory:OnAttached(entity)
+    entity:SetOrigin(self:GetOrigin() + Vector(0,1.5,0))
+end
+*/
 /* Overboard
 function Armory:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords

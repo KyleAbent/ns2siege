@@ -558,7 +558,7 @@ end
     function PowerPoint:CystBrothersActivate()
        local location = GetLocationForPoint(self:GetOrigin())
        location:ReallySpawnCysts(self)
-       return self:GetIsDisabled()
+       return self:GetIsDisabled() or not self:GetIsBuilt() and not self:GetIsInSiegeRoom()
     
     end
     function PowerPoint:UpdateCystKing()
@@ -801,6 +801,9 @@ end
         self:AddTimedCallback(PowerPoint.CystBrothersActivate, 6)
         self:UpdateCystKing()
     end
+            function PowerPoint:ActivateCystTimer()
+               self:AddTimedCallback(PowerPoint.CystBrothersActivate, 6)
+               end
 
         function PowerPoint:UpdateMiniMap()
     

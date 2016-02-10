@@ -561,9 +561,9 @@ function ConstructMixin:GetTotalConstructionTime()
             if gameRules then
                  if  gameRules:GetSiegeDoorsOpen() then
                     marineadvantage = self:GetTeamNumber() == 1 and 4 or 8
-                     if self:isa("Hive") then
-                      marineadvantage = marineadvantage * 4
-                     end
+              --       if self:isa("Hive") then
+              --        marineadvantage = marineadvantage * 4
+              --       end
                  elseif gameRules:GetFrontDoorsOpen() then
                     marineadvantage = self:GetTeamNumber() == 1 and 8 or 12
                  else //setup

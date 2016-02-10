@@ -1,13 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Cyst.lua
-//
-//    Created by:   Mats Olsson (mats.olsson@matsotech.se)
-//
-// A cyst controls and spreads infestation
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/FireMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
@@ -204,6 +194,28 @@ function Cyst:GetInfestationGrowthRate()
 end
 function Cyst:OnConstructionComplete()
     self:UpdateKings()
+    self:AddTimedCallback(Cyst.EnergizeInRange, 4)
+end
+function Cyst:EnergizeInRange()
+    if self:GetIsBuilt() and not self:GetIsOnFire() and self.isking and self:GetLevel() == self:GetMaxLevel() then
+    
+        local energizeAbles = GetEntitiesWithMixinForTeamWithinRange("Energize", self:GetTeamNumber(), self:GetOrigin(), kEnergizeRange)
+        
+        for _, entity in ipairs(energizeAbles) do
+        
+            if entity ~= self then
+                entity:Energize(self)
+                entity:SetMucousShield()
+            end
+            
+        end
+    
+    end
+    
+    return self:GetIsAlive() and self.isking
+end
+function Cyst:GetLevel()
+        return Round(self.level, 2)
 end
 function Cyst:GetExtentsOverride()
 local kXZExtents = 0.2 * self:GetLevelPercentage()
@@ -225,7 +237,7 @@ end
            local locationName = location and location:GetName() or ""
            local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
         
-           if spawnPoint ~= nil and sameLocation and GetIsPointOnInfestation(spawnPoint) then
+           if spawnPoint ~= nil and sameLocation then
            return spawnPoint
            end
         end
@@ -292,7 +304,7 @@ function Cyst:UpdateKings()
         
           if frontorsiegedoor then
                          --       Print("frontorsiegedoor is %s", frontorsiegedoor)   
-            nearestpowernode = GetNearest(frontorsiegedoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt() and not ent:GetIsDisabled()  end)  
+            nearestpowernode = GetNearest(frontorsiegedoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt() and not ent:GetIsDisabled() and not ( string.find(ent:GetLocationName(), "siege") or string.find(ent:GetLocationName(), "Siege") ) end)  
                      -- Print("nearestpowernode is %s", nearestpowernode)
           end
           
@@ -303,7 +315,9 @@ function Cyst:UpdateKings()
                         --              Print("averageorigin is %s", averageorigin)
                 averageorigin = averageorigin + nearestpowernode:GetOrigin()
                           --            Print("averageorigin is %s", averageorigin)
-                averageorigin = averageorigin / 2
+                averageorigin = averageorigin + self:GetOrigin()
+                        --  Print("averageorigin is %s", averageorigin)
+                averageorigin = averageorigin / 3
                           --            Print("averageorigin is %s", averageorigin)
          local nearescysttoavg = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
               if nearescysttoavg then
@@ -333,16 +347,107 @@ function Cyst:GetHealthbarOffset()
     return 0.5
 end 
 function Cyst:ActivateMagnetize()
+--Kyle Abent
                       self:AddTimedCallback(Cyst.Magnetize, 8)
 end
+    function Cyst:OnTakeDamage(damage, attacker, doer, point, direction, damageType)
+          
+           if self:GetIsBuilt() and self:GetHealthScalar()<= 0.5 and self.lastumbra == nil or (self.lastumbra + math.random(4,8)) < Shared.GetTime() then
+                    CreateEntity(CragUmbra.kMapName,  self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
+                    self:TriggerEffects("crag_trigger_umbra")
+                    self.lastumbra = Shared.GetTime()
+           end
+        
+    end
+function Cyst:Synchronize()
+--Kyle Abent
+                     local whips, crags, shades = self:DoICreateShadeWhipCrag()
+                    if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+                  gameRules:SynrhonizeCystEntities(whips, crags, shades, self, self:FindFreeSpace())
+                end
+                end
+
+end
+function Cyst:DoICreateShadeWhipCrag()
+ local whips = GetEntitiesForTeamWithinRange("Whip", 2, self:GetOrigin(), 24)
+ local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 24)
+ local shades = GetEntitiesForTeamWithinRange("Shade", 2, self:GetOrigin(), 24)
+return whips, crags, shades
+end
+function Cyst:GetCanAffordEgg()
+  return self:GetTeam():GetTeamResources() >= 4
+end
 function Cyst:Magnetize()
+--Kyle Abent
+ if self:GetLevel() ~= self:GetMaxLevel() then return true end--Be fully grown king first
           for index, Tunnel in ipairs(GetEntitiesForTeam("TunnelEntrance", 2)) do
                if Tunnel:GetIsBuilt() and Tunnel:GetIsExit() and self:GetDistance(Tunnel) >= 22 then 
                Tunnel:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
                 end
           end
+          
+          self:AddTimedCallback(Cyst.Cook, 4)
+          self:Synchronize()
           return self.isking
 end
+function Cyst:MagnetizeStructures()
+          for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
+               if crag:GetIsBuilt() and self:GetDistance(crag) >= 24 then 
+               crag:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
+                end
+          end
+          for index, shade in ipairs(GetEntitiesForTeam("Shade", 2)) do
+               if shade:GetIsBuilt() and self:GetDistance(shade) >= 24 then 
+               shade:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
+                end
+          end
+          for index, whip in ipairs(GetEntitiesForTeam("Whip", 2)) do
+               if whip:GetIsBuilt() and self:GetDistance(whip) >= 24 then 
+               whip:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
+                end
+          end
+          
+
+end
+  function Cyst:Cook()
+         for index, Egg in ipairs(GetEntitiesForTeam("Egg", 2)) do
+               if self:GetDistance(Egg) >= 22 and (self.isking and self:GetLevel() == self:GetMaxLevel()) and self:GetCanAffordEgg() and Egg:GetCanBeacon() then 
+               Egg:TriggerBeacon(self:FindEggSpawn())
+              self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources()  - 4)
+                end
+          end
+  
+     return false
+  end
+       function Cyst:FindEggSpawn()    
+        for index = 1, 100 do
+           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 7, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for egg beacon!")
+           return self:GetOrigin()
+    end
+  /*
+    function Cyst:CookThisOneSlow(egg)
+           if egg then egg:SetOrigin(self:FindFreeSpace(false)) end
+    end
+    
+   */
   function Cyst:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
         if self.isking == true then
@@ -356,7 +461,7 @@ function Cyst:GetLevelPercentage()
 return self.level / Cyst.MaxLevel * Cyst.ScaleSize
 end
 function Cyst:GetMaxLevel()
-return ARC.MaxLevel
+return Cyst.MaxLevel
 end
 function Cyst:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords

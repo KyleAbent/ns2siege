@@ -135,9 +135,55 @@ function ARC:GetLocationName()
         local locationName = location and location:GetName() or ""
         return locationName
 end
+ function ARC:FindFreeSpace(origin)    
+        for index = 1, 100 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, .5, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+          if  spawnPoint ~= nil then
+              local hive = GetEntitiesForTeamWithinRange("Hive", 2, spawnPoint, ARC.kFireRange)
+              if #hive == 0 then spawnPoint = nil end
+          end
+        
+           if spawnPoint ~= nil and sameLocation then
+           return spawnPoint
+           end
+           
+        end
+        Print("No valid spot found for arc auto siege placement")
+        return origin
+end
 function ARC:GetIsInSiege()
 if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
 return false
+end
+/*
+function ARC:GetIsInSiegeHive()
+  local hiveinradius = GetEntitiesForTeamWithinRange("Hive", 2, self:GetOrigin(), ARC.kFireRange)
+  if #hiveinradius == 0 then return false end
+ return self:GetIsInSiege() 
+end
+
+function ARC:GotoSiege()
+    --near robo
+  local nearest = GetNearest(self:GetOrigin(), "RoboticsFactory", nil, function(ent) return string.find(ent:GetLocationName(), "siege") or string.find(ent:GetLocationName(), "Siege")   end)
+       if nearest then 
+               self:GiveOrder(kTechId.Move, nearest:GetId(), self:FindFreeSpace(nearest:GetOrigin()), nil, false, false)
+       end
+end
+*/
+function ARC:OnOrderComplete(currentOrder)
+  local hiveinradius = GetEntitiesForTeamWithinRange("Hive", 2, self:GetOrigin(), ARC.kFireRange)
+  if #hiveinradius == 0 then return end
+if currentOrder:GetType() == kTechId.Move and self:GetIsInSiege() then self:PerformActivation(kTechId.ARCDeploy, nil, normal, commander) end
 end
 function ARC:AdjustPitchAndRoll()
 
@@ -197,10 +243,10 @@ end
 function ARC:ValidateTargetPosition(position)
 
     // ink clouds will screw up with arcs
-    local inkClouds = GetEntitiesForTeamWithinRange("ShadeInk", GetEnemyTeamNumber(self:GetTeamNumber()), position, ShadeInk.kShadeInkDisorientRadius)
-    if #inkClouds > 0 then
-        return false
-    end
+   -- local inkClouds = GetEntitiesForTeamWithinRange("ShadeInk", GetEnemyTeamNumber(self:GetTeamNumber()), position, ShadeInk.kShadeInkDisorientRadius)
+  --  if #inkClouds > 0 then
+  --      return false
+  --  end
 
     return true
 

@@ -150,6 +150,7 @@ if Server then
             MarineTeam.gSandboxMode = false
             self.playedfrontsound = false
             self.playedsiegesound = false
+            self.lastaliencreatedentity = 0
             self.respawnedplayers = false
             self.issuddendeath = false
             self.mainrooms = Shared.GetTime()
@@ -267,6 +268,7 @@ if Server then
         self.playedfrontsound = false
         self.playedsiegesound = false
         self.respawnedplayers = false
+        self.lastaliencreatedentity = 0
         
     end
 
@@ -1954,6 +1956,7 @@ end
              SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, subtractamount *  1)
            
     end
+
         function NS2Gamerules:SetupRoomBluePrint(location, powerpoint, hasfrontdoor)
         
 
@@ -2084,10 +2087,15 @@ local unbuilt = 0
                return self.siegedoorsopened, self.setuppowernodecount, self.siegepowernodecount 
 
 end
+function NS2Gamerules:CystUnbuiltRooms()
+     for _, powerpoint in ientitylist(Shared.GetEntitiesWithClassname("PowerPoint")) do
+               if not powerpoint:GetIsBuilt() then powerpoint:ActivateCystTimer() end
+     end
+end
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  self:CountNodes()
- 
+ self:CystUnbuiltRooms()
                  SendTeamMessage(self.team1, kTeamMessageTypes.FrontDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.FrontDoor)
                 
@@ -2166,12 +2174,25 @@ function NS2Gamerules:SwitchObservatoryToSiegeMode()
                    //Ends with SuddenDeath
                return self.issuddendeath == false
 end
+/*
+function NS2Gamerules:GiveArcOrders()
+
+          for index, arc in ipairs(GetEntitiesForTeam("ARC", 1)) do
+               if not arc:GetInAttackMode() and not arc:GetIsInSiegeHive() and not arc.moving then 
+                arc:GotoSiege()
+                end
+          end
+                   //Ends with SuddenDeath
+               return self.siegedoorsopened --self.issuddendeath == false
+end
+*/
 function NS2Gamerules:OpenSiegeDoors()
  self.siegedoorsopened = true
  //self:CountNodes()
   
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
+                --self:AddTimedCallback(NS2Gamerules.GiveArcOrders, 10)
               // self:AddTimedCallback(NS2Gamerules.SwitchShadesToSiegeMode, kShadeInkCooldown)
               //self:AddTimedCallback(NS2Gamerules.CountNodes, 30)
               // self:AddTimedCallback(NS2Gamerules.SwitchCragsToSiegeMode, kHealWaveCooldown)
@@ -2234,6 +2255,54 @@ function NS2Gamerules:ToggleMarineZedTime()
 end
 function NS2Gamerules:GetIsZedTime()
   return self.iszedtime 
+end
+function NS2Gamerules:SynrhonizeCystEntities(whips, crags, shades, cyst, origin)
+            local spawned = false 
+        if self:GetCanSpawnAlienEntity() then
+         
+        
+                    if #whips <= math.random(1,7) then
+                       if not spawned then
+                      local whip = CreateEntity(Whip.kMapName, origin, 2) 
+                      self.lastaliencreatedentity = Shared.GetTime()
+                        spawned = true
+                      end
+                    end
+                    
+                    if #crags <= math.random(1,7) then
+                       if not spawned then
+                      local crag = CreateEntity(Crag.kMapName, origin, 2) 
+                      self.lastaliencreatedentity = Shared.GetTime()
+                        spawned = true
+                      end
+                    end
+                    
+                    if #shades <= math.random(1,3) then
+                       if not spawned then
+                       local shade = CreateEntity(Shade.kMapName, origin, 2) 
+                      self.lastaliencreatedentity = Shared.GetTime()
+                        spawned = true
+                      end
+                    end
+        end   
+        
+
+            if not spawned then
+                 cyst:MagnetizeStructures()
+            else
+              self.team2:SetTeamResources(self.team2:GetTeamResources()  - 8)
+            end     
+
+end
+function NS2Gamerules:SpawnNewHive(origin)
+   
+self:AddTimedCallback(function() CreateEntity(Hive.kMapName, origin, 2)  end, math.random(4,16))
+    
+
+end
+function NS2Gamerules:GetCanSpawnAlienEntity()
+    return self.lastaliencreatedentity + math.random(4,8) < Shared.GetTime() and self.team2:GetTeamResources() >= 10
+
 end
 function NS2Gamerules:SendZedTimeActivationMessage()
                  self.iszedtime = true

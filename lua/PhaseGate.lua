@@ -34,7 +34,6 @@ Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
 Script.Load("lua/MinimapConnectionMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
@@ -212,7 +211,6 @@ function PhaseGate:OnInitialized()
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
         InitMixin(self, MinimapConnectionMixin)
-        InitMixin(self, SupplyUserMixin)
     
     elseif Client then
     

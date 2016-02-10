@@ -34,7 +34,6 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/SoftTargetMixin.lua")
 Script.Load("lua/StormCloudMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
@@ -199,7 +198,6 @@ function Drifter:OnInitialized()
         InitMixin(self, RepositioningMixin)
         InitMixin(self, SleeperMixin)
         InitMixin(self, MobileTargetMixin)
-        InitMixin(self, SupplyUserMixin)
         
         self.canUseAbilities = true
         self.timeAbilityUsed = 0

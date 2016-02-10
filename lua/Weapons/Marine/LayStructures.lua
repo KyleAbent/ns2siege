@@ -200,9 +200,6 @@ local function DropStructure(self, player)
                 structure:SetOwner(player)
                 structure:SetConstructionComplete()
                 if self:GetIsCreditStructure() == true then 
-                   local supply = LookupTechData(self:GetDropStructureId(), kTechDataSupply, 0)
-                   structure:GetTeam():RemoveSupplyUsed(supply) 
-                   structure.iscreditstructure = self:GetIsCreditStructure()
                    if structure.ignorelimit then structure.ignorelimit = true end
                 end
                 
@@ -316,6 +313,7 @@ function LayStructures:GetPositionForStructure(player)
     local isPositionValid = false
     local foundPositionInRange = false
     local structPosition = nil
+    local isonstructure = false
     
     local origin = player:GetEyePos() + player:GetViewAngles():GetCoords().zAxis * kPlacementDistance
     
@@ -340,8 +338,9 @@ function LayStructures:GetPositionForStructure(player)
     
         if trace.entity == nil then
             isPositionValid = true
-        elseif not trace.entity:isa("ScriptActor") and not trace.entity:isa("Clog") and not trace.entity:isa("Web") then
+        elseif HasMixin(trace.entity, "Construct") and trace.entity:GetTeamNumber() == 1  then
             isPositionValid = true
+            isonstructure = true
         end
         
         displayOrigin = trace.endPoint
@@ -352,7 +351,7 @@ function LayStructures:GetPositionForStructure(player)
         end
     
           if not IsPathable(displayOrigin) then
-                    isPositionValid = false
+                    isPositionValid = false or isonstructure
                 end
                 
         // Don't allow dropped structures to go too close to techpoints and resource nozzles

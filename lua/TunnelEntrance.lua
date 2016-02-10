@@ -356,7 +356,7 @@ if Server then
            local locationName = location and location:GetName() or ""
            local sameLocation = spawnPoint ~= nil and locationName == hive:GetLocationName()
         
-           if spawnPoint ~= nil and sameLocation and GetIsPointOnInfestation(spawnPoint) then
+           if spawnPoint ~= nil and sameLocation then --and GetIsPointOnInfestation(spawnPoint) then
            return spawnPoint
            end
        end

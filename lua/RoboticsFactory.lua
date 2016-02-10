@@ -34,7 +34,6 @@ Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 
@@ -157,7 +156,6 @@ function RoboticsFactory:OnInitialized()
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
-        InitMixin(self, SupplyUserMixin)
     
     elseif Client then
     
@@ -503,6 +501,11 @@ if Server then
             self:UpgradeToTechId(kTechId.ARCRoboticsFactory)
         end
         
+           if self:GetIsInSiege() then
+          self.automaticspawningmac = false
+          self.automaticspawningarc = true
+         end
+        
     end
     
 end
@@ -520,6 +523,15 @@ function RoboticsFactory:GetHealthbarOffset()
     return 1
 end 
 
+function RoboticsFactory:GetIsInSiege()
+if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
+return false
+end
+function RoboticsFactory:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
 function RoboticsFactory:ManufactureEntity()
 
     local mapName = LookupTechData(self.researchId, kTechDataMapName)    

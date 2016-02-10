@@ -39,7 +39,6 @@ Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CorrodeMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/SoftTargetMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/WebableMixin.lua")
@@ -231,7 +230,6 @@ function MAC:OnInitialized()
         
         InitMixin(self, SleeperMixin)
         InitMixin(self, MobileTargetMixin)
-        InitMixin(self, SupplyUserMixin)
         InitMixin(self, InfestationTrackerMixin)
         
         // This Mixin must be inited inside this OnInitialized() function.

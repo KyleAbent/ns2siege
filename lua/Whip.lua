@@ -8,8 +8,8 @@ Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
 // ragdolls on death
 Script.Load("lua/RagdollMixin.lua")
-// counts against the supply limit
-Script.Load("lua/SupplyUserMixin.lua")
+
+
 // is responsible for an alien upgrade tech
 Script.Load("lua/UpgradableMixin.lua")
 
@@ -120,7 +120,7 @@ function Whip:OnInitialized()
     if Server then
     
         InitMixin(self, RepositioningMixin)
-        InitMixin(self, SupplyUserMixin)
+
         InitMixin(self, TargetCacheMixin)
   
         local targetTypes = { kAlienStaticTargets, kAlienMobileTargets }
@@ -327,7 +327,11 @@ function Whip:OnResearchComplete(researchId)
     end
         
 end
-
+function Whip:MoveBitch(origin, cyst)
+         if (self:GetOrigin() - origin):GetLength() >= 24 then
+             self:GiveOrder(kTechId.Move, cyst:GetId(), origin, nil, true, true) 
+         end
+end
 function Whip:GetTechAllowed(techId, techNode, player)
     
     local allowed, canAfford = AlienStructure.GetTechAllowed(self, techId, techNode, player)

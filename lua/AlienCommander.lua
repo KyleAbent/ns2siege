@@ -425,7 +425,7 @@ local gAlienMenuButtons =
                             kTechId.NutrientMist, kTechId.Rupture, kTechId.BoneWall, kTechId.Contamination },
                             
     [kTechId.AdvancedMenu] = { kTechId.Drifter, kTechId.ControlledHallucination, kTechId.Hive, kTechId.None,
-                               kTechId.Shell, kTechId.Veil, kTechId.None, kTechId.EtheralGate},
+                               kTechId.None, kTechId.Veil, kTechId.None, kTechId.EtheralGate},
 
     [kTechId.AssistMenu] = { kTechId.HealWave, kTechId.ShadeInk, kTechId.SelectShift, kTechId.SelectDrifter,
                              kTechId.None, kTechId.None, kTechId.None, kTechId.None }

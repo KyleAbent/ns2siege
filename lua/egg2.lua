@@ -1,3 +1,14 @@
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+//
+// lua\Egg.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+//                  Andreas Urwalek (andi@unknownworlds.com)
+//
+// Thing that aliens spawn out of.
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -21,9 +32,10 @@ Script.Load("lua/MaturityMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/TeleportMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
+
+Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
-Script.Load("lua/OrdersMixin.lua")
 
 class 'Egg' (ScriptActor)
 
@@ -46,7 +58,6 @@ local networkVars =
 {
     // if player is inside it
     empty = "boolean",
-    timeLastBeacon = "time",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -66,6 +77,7 @@ AddMixinNetworkVars(MaturityMixin, networkVars)
 AddMixinNetworkVars(TeleportMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
+AddMixinNetworkVars(AlienStructureMoveMixin, networkVars)
 
 if Server then
     
@@ -103,10 +115,10 @@ function Egg:OnCreate()
     InitMixin(self, TeleportMixin)
     InitMixin(self, PathingMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
+    InitMixin(self, AlienStructureMoveMixin, { kAlienStructureMoveSound = Whip.kWalkingSound })
     
     if Server then
         InitMixin(self, InfestationTrackerMixin)
-
     elseif Client then
         InitMixin(self, CommanderGlowMixin)    
     end
@@ -114,8 +126,7 @@ function Egg:OnCreate()
     self.empty = true
     
     self:SetLagCompensated(false)
-    self:AddTimedCallback(Egg.UpdateManually, 4)
-    self.timeLastBeacon = Shared.GetTime()
+    
 end
 
 function Egg:OnInitialized()
@@ -124,7 +135,6 @@ function Egg:OnInitialized()
     
     self:SetModel(Egg.kModelName, Egg.kAnimationGraph)
     self:SetPhysicsCollisionRep(CollisionRep.Move)
-
     
     self.queuedPlayerId = nil
 
@@ -138,19 +148,38 @@ function Egg:OnInitialized()
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, SleeperMixin)
-        InitMixin(self, RepositioningMixin)
         
     elseif Client then
         InitMixin(self, UnitStatusMixin)
     end
-    
+    self:SmellOrder()
 end
-function Egg:GetCanBeacon()
-    return self.timeLastBeacon + 16 < Shared.GetTime()
+function Egg:SmellOrder()
+
+                 if not GetHasTech(self, kTechId.SmellOrder) then return end
+         local eggebacon = GetEntitiesForTeamWithinRange("Shell", 2, self:GetOrigin(), 999999)
+         if #eggebacon == 1 then
+         
+           for _, bacon in ientitylist(Shared.GetEntitiesWithClassname("Shell")) do 
+          if bacon:GetLocationName() ~= self:GetLocationName() then
+            local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
+            local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
+            local minrange = 5
+            local maxrange = 12
+            local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, bacon:GetOrigin(), minrange, maxrange, EntityFilterAll())
+            self:GiveOrder(kTechId.Move, nil, spawnPoint)
+            //break ?? only 1 on the field hopefully..
+           end
+           end
+      //  elseif #eggebacon > 1 then
+      //  Print("too much bacon on the field ya tard"
+        end
 end
+
 function Egg:GetShowCrossHairText(toPlayer)
     return not GetAreEnemies(self, toPlayer)
 end    
+
 function Egg:GetCanSleep()
     return true
 end    
@@ -166,10 +195,7 @@ end
 function Egg:GetMatureMaxHealth()
     return kMatureEggHealth
 end 
-function Egg:TriggerBeacon(location) 
-           self:SetOrigin(location)
-           self.lastbeacontime = Shared.GetTime()
-end
+
 function Egg:GetMatureMaxArmor()
     return kMatureEggArmor
 end
@@ -185,7 +211,9 @@ end
 function Egg:GetHealthPerBioMass()
     return 0
 end    
-
+function Egg:GetMaxSpeed()
+    return kAlienStructureMoveSpeed
+end
 function Egg:GetArmorFullyUpgradedAmount()
     return 0
 end
@@ -196,8 +224,9 @@ function Egg:GetTechButtons(techId)
                           kTechId.None, kTechId.None, kTechId.None, kTechId.None }   
 
     if self:GetTechId() == kTechId.Egg then   
-        techButtons = { kTechId.SpawnAlien, kTechId.None, kTechId.None, kTechId.None, 
-                        kTechId.None, kTechId.None, kTechId.None, kTechId.None }      
+    
+        techButtons = { kTechId.SpawnAlien, kTechId.EggBeaconChoiceTwo, kTechId.SmellOrder, kTechId.EggBeaconChoiceOne, 
+                        kTechId.GorgeEgg, kTechId.LerkEgg, kTechId.FadeEgg, kTechId.OnosEgg }      
     end
     
     return techButtons
@@ -227,69 +256,12 @@ function Egg:OverrideHintString(hintString, forEntity)
     return hintString
     
 end
-function Egg:UpdateManually()
-   if Server then  
-     return self:UpdateToGorgeEgg()
-   end
-end
-if Server then
-function Egg:GetTeamCanAfford(tres)
-  return self:GetTeam():GetTeamResources() >= tres
-end
-function Egg:DeductTres(tres)
-  return self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources()  - tres)
-end
-function Egg:UpdateToGorgeEgg()
-           if self:GetTeamCanAfford(4) then
-            self:DeductTres(4)
-          local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.GorgeEgg ) 
-         self:SetResearching(techNode, self)
-         end
-   return not self:isa("GorgeEgg")
-end
-function Egg:UpdateToLerkEgg()
-                 if self:GetTeamCanAfford(8) then
-            self:DeductTres(8)
-   local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.LerkEgg ) 
-         self:SetResearching(techNode, self)
-          end
-   return not self:isa("LerkEgg")
-end
-function Egg:UpdateToFadeEgg()
-                   if self:GetTeamCanAfford(12) then
-            self:DeductTres(12)
-   local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.FadeEgg ) 
-         self:SetResearching(techNode, self)
-         end
-   return not self:isa("FadeEgg")
-end
-function Egg:UpdateToOnosEgg()
-        if self:GetTeamCanAfford(20) then
-            self:DeductTres(20)
-   local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.OnosEgg ) 
-         self:SetResearching(techNode,self)
-          end
-   return not self:isa("OnosEgg")
-end
-end
-function Egg:GetIsInSiege() --return true because sometimes the eggs may be re-beaconed outside of siege?
-if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
-return false
-end
+
 function Egg:OnResearchComplete(techId)
     
     local success = false    
 
-    if techId == kTechId.GorgeEgg then
-            self:UpgradeToTechId(techId)
-           self:AddTimedCallback(Egg.UpdateToLerkEgg, 4)
-     elseif techId == kTechId.LerkEgg then
-             self:UpgradeToTechId(techId)
-             self:AddTimedCallback(Egg.UpdateToFadeEgg, 4)
-    elseif techId == kTechId.FadeEgg then
-            self:UpgradeToTechId(techId)
-            self:AddTimedCallback(Egg.UpdateToOnosEgg, 4)
-    elseif techId == kTechId.OnosEgg then
+    if techId == kTechId.GorgeEgg or techId == kTechId.LerkEgg  or techId == kTechId.FadeEgg  or techId == kTechId.OnosEgg then
         self:UpgradeToTechId(techId)
     end
     
@@ -313,6 +285,10 @@ function Egg:GetIsFlameAble()
     return true
 end
 
+/** 
+ * Takes the queued player from this Egg and placed them back in the
+ * respawn queue to be spawned elsewhere.
+ */
 local function RequeuePlayer(self)
 
     if self.queuedPlayerId then
@@ -428,17 +404,11 @@ function Egg:SpawnPlayer(player)
             queuedPlayer = Shared.GetEntity(self.queuedPlayerId)
         end
     
-        // Spawn player on top of egg
-        local spawnOrigin = Vector(self:GetOrigin())
-        // Move down to the ground.
-        local _, normal = GetSurfaceAndNormalUnderEntity(self)
-        if normal.y < 1 then
-            spawnOrigin.y = spawnOrigin.y - (self:GetExtents().y / 2) + 1
-        else
-            spawnOrigin.y = spawnOrigin.y - (self:GetExtents().y / 2)
-        end
-
+        // Comin up: Custom Eggs... because eggs when moving go underground and cause stuck spot upon spawning otherwise
         local gestationClass = self:GetClassToGestate()
+        local extents = LookupTechData(gestationClass, kTechDataMaxExtents, nil)
+        local spawnOrigin = GetGroundAtPosition(self:GetOrigin(), nil, PhysicsMask.AllButPCs, extents)
+       
         
         // We must clear out queuedPlayerId BEFORE calling ReplaceRespawnPlayer
         // as this will trigger OnEntityChange() which would requeue this player.
@@ -480,6 +450,16 @@ function Egg:SetQueuedPlayerId(playerId)
     
     playerToSpawn:SetEggId(self:GetId())
 
+    //Refund costs for a non skulk egg
+    local techId = self:GetIsResearching() and self:GetResearchingId() or self:GetTechId()
+    if techId ~= kTechId.Egg then
+        local eggCosts = LookupTechData(techId, kTechDataCostKey, 0)
+        local team = self:GetTeam()
+        team:AddTeamResources(eggCosts, true)
+        self:ClearResearch()
+        self:SetTechId(kTechId.Egg)
+    end
+
     playerToSpawn:SetIsRespawning(true)
     
     if Server then
@@ -489,6 +469,16 @@ function Egg:SetQueuedPlayerId(playerId)
         end
         
         playerToSpawn:SetFollowTarget(self)
+        
+         local eggs = GetEntitiesForTeamWithinRange("Hive", 2, self:GetOrigin(), 3)
+         if #eggs >=1 then
+             local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
+             local minrange = 5
+             local maxrange = 12
+             local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetOrigin(), minrange, maxrange, EntityFilterAll())
+             self:SetOrigin(spawnPoint)
+         end
+
         
     end
     
@@ -588,7 +578,11 @@ function Egg:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("built", true)
     
 end
-
+function Egg:OnOverrideOrder(order)
+    if order:GetType() == kTechId.Default then
+       return
+    end
+end
 function Egg:OnAdjustModelCoords(coords)
     
     coords.origin = coords.origin - Egg.kSkinOffset

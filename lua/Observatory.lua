@@ -39,7 +39,6 @@ Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 
 class 'Observatory' (ScriptActor)
 
@@ -156,7 +155,6 @@ function Observatory:OnInitialized()
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
-        InitMixin(self, SupplyUserMixin)
     elseif Client then
     
         InitMixin(self, UnitStatusMixin)

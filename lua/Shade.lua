@@ -1,26 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Shade.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Alien structure that provides cloaking abilities and confuse and deceive capabilities.
-//
-// Disorient (Passive) - Enemy structures and players flicker in and out when in range of Shade, 
-// making it hard for Commander and team-mates to be able to support each other. Extreme reverb 
-// sounds for enemies (and slight reverb sounds for friendlies) enhance the effect.
-//
-// Cloak (Triggered) - Instantly cloaks self and all enemy structures and aliens in range
-// for a short time. Mutes or changes sounds too? Cleverly used, this would ideally allow a 
-// team to get a stealth hive built. Allow players to stay cloaked for awhile, until they attack
-// (even if they move out of range - great for getting by sentries).
-//
-// Hallucination - Allow Commander to create fake Fade, Onos, Hive (and possibly 
-// ammo/medpacks). They can be pathed around and used to create tactical distractions or divert 
-// forces elsewhere.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
@@ -54,7 +31,6 @@ Script.Load("lua/CommanderGlowMixin.lua")
 
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
@@ -161,7 +137,6 @@ function Shade:OnInitialized()
     
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, RepositioningMixin)
-        InitMixin(self, SupplyUserMixin)
 
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -220,6 +195,11 @@ function Shade:PerformAction(techNode)
     end
 
 end
+function Shade:MoveBitch(origin, cyst)
+         if (self:GetOrigin() - origin):GetLength() >= 24 then
+             self:GiveOrder(kTechId.Move, cyst:GetId(), origin, nil, true, true) 
+         end
+end
 function Shade:GetAddXPAmount()
 return self:GetIsSetup() and Shade.GainXP * 4 or Shade.GainXP
 end
@@ -267,7 +247,8 @@ function Shade:TriggerInk()
 
   if Server then
     // Create ShadeInk entity in world at this position with a small offset
-    CreateEntity(ShadeInk.kMapName, self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
+  --  CreateEntity(ShadeInk.kMapName, self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
+      CreateEntity(HallucinationCloud.kMapName, self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
   end
   
     self:TriggerEffects("shade_ink")
@@ -369,37 +350,45 @@ function Shade:OnUpdate(deltaTime)
             if self.Levelslowly == nil or (Shared.GetTime() > self.Levelslowly + 4) then
             self:AddXP(Shade.GainXP * 4)
             self.Levelslowly = Shared.GetTime()
+            self:HallucinationsMan()
             end
     
     end
     
 end
-function Shade:OnScan()
-               
-     if self:GetIsBuilt() and not self:GetIsOnFire() and self:GetCanTrigger() and self:GetHasShadeHive() then
-                 local number = math.random(self.level, 100)
-                 if number >= 99 then self:TriggerInk() end
+function Shade:HasFriendsInRange()
+        local energizeAbles = GetEntitiesWithMixinForTeamWithinRange("Energize", self:GetTeamNumber(), self:GetOrigin(), kEnergizeRange)
+        if #energizeAbles == 0 then  return false end -- Print("shade ink no friends in range") return false end
+    --    Print("shade ink friends in range")
+        return true
+
+end
+function Shade:HallucinationsMan()    
+     if self:GetIsBuilt() and not self:GetIsOnFire() and self:GetCanTrigger() and self:HasFriendsInRange() then
+            --     Print("number shold generate now") 
+                 local number = math.random(self:GetLevel(), 100)
+             --    Print("shade ink number is", number) 
+                 if number >= 99 then self:TriggerInk() end --Print("shade ink number is >= 99 triggering ink")  self:TriggerInk() end
      end     
-                 
-    self:TriggerUncloak()
-    
 end
 function Shade:GetCanTrigger()
   for _, Shade in ipairs(GetEntitiesForTeamWithinRange("Shade", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius)) do
                if not Shade:GetCanInk() then 
+            --   Print("shade ink trigger returned false 111111")
                 return false
                 end
           end
+        --  Print("shade ink trigger returned true111") 
          return true 
 
 end
 function Shade:GetCanInk()
 
 if (self.lastinktrigger + kShadeInkCooldown) < Shared.GetTime() then
-Print("shade ink trigger returned true") 
+--Print("shade ink trigger returned true") 
 return true
 else
-Print("shade ink trigger returned false")
+--Print("shade ink trigger returned false")
 return false
 end
 
@@ -448,10 +437,6 @@ end
 function Shade:GetCoolDown()
     return kShadeInkCooldown
 end
-function Shade:GetHasShadeHive()
-      local shadehive = GetEntitiesWithinRange("ShadeHive", self:GetOrigin(), 999999)
-           if #shadehive >=1 then return true end
-           return false
-end
+
 
 Shared.LinkClassToMap("Shade", Shade.kMapName, networkVars)

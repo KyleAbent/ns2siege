@@ -531,7 +531,7 @@ local level = 0.1
  if not gameRules:GetGameStarted() then return 0 end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
       level = Clamp(kSiegeDoorTime/roundlength, 0.1, 1)
-      Print("GetReversedRoundLengthToSiege = %s", level)
+     -- Print("GetReversedRoundLengthToSiege = %s", level)
        return level 
 end
 function GetRoundLengthToSiege()
@@ -544,7 +544,7 @@ local level = 1
   end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
       level = Clamp(roundlength/kSiegeDoorTime, 0.1, 1)
-      Print("GetRoundLengthToSiege = %s", level)
+    --  Print("GetRoundLengthToSiege = %s", level)
        return level 
 end
 function GetRoundLengthToSuddenDeath()
@@ -557,7 +557,7 @@ local level = 1
   end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
       level = Clamp(roundlength/ (kSiegeDoorTime+kTimeAfterSiegeOpeningToEnableSuddenDeath), 0.1, 1)
-      Print("GetRoundLengthToSuddenDeath = %s", level)
+     -- Print("GetRoundLengthToSuddenDeath = %s", level)
        return level 
 end
 function GetFairHealthValues()

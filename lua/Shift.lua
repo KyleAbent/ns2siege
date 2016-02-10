@@ -1,20 +1,3 @@
--- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
---
--- lua\Shift.lua
---
---    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
---
--- Alien structure that allows commander to outmaneuver and redeploy forces. 
---
--- Recall - Ability that lets players jump to nearest structure (or hive) under attack (cooldown 
--- of a few seconds)
--- Energize - Passive ability that gives energy to nearby players
--- Echo - Targeted ability that lets Commander move a structure or drifter elsewhere on the map
--- (even a hive or harvester!). 
---
--- ========= For more information, visit us at http:--www.unknownworlds.com =====================
-
-Script.Load("lua/CommAbilities/Alien/ShiftEcho.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
@@ -45,7 +28,6 @@ Script.Load("lua/DissolveMixin.lua")
 
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
@@ -163,7 +145,6 @@ function Shift:OnInitialized()
     
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, RepositioningMixin)
-        InitMixin(self, SupplyUserMixin)
         
         self:AddTimedCallback(Shift.EnergizeInRange, 1)
         

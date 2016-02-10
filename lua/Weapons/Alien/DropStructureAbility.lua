@@ -403,7 +403,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
         if trace.entity == nil then
             validPosition = true
             
-        elseif trace.entity:isa("Infestation") or trace.entity:isa("Clog") then
+        elseif trace.entity:isa("Infestation") or trace.entity:isa("Clog") or (trace.entity:isa("Cyst") and trace.entity.isking) then
             validPosition = true
         end
         

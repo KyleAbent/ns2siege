@@ -321,7 +321,7 @@ kPhasePriotityCost = 0
 
 kRedemptionEHPThreshold = 0.35
 kRedemptionTimeBase = 1.5
-kRedemptionCooldown = 45
+kRedemptionCooldown = 30
 kRedemptionCost = 2
 kRebirthCost = 2
 

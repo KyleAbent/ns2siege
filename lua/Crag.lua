@@ -1,16 +1,3 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Crag.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Alien structure that gives the commander defense and protection abilities.
-//
-// Passive ability - heals nearby players and structures
-// Triggered ability - emit defensive umbra (8 seconds)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
@@ -45,7 +32,6 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommAbilities/Alien/CragUmbra.lua")
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
-Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
@@ -167,7 +153,6 @@ function Crag:OnInitialized()
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, SleeperMixin)
         InitMixin(self, RepositioningMixin)
-        InitMixin(self, SupplyUserMixin)
         
         // TODO: USE TRIGGERS, see shade
 
@@ -416,6 +401,12 @@ end
 function Crag:GetMaxSpeed()
     return kAlienStructureMoveSpeed
 end
+function Crag:MoveBitch(origin, cyst)
+         if (self:GetOrigin() - origin):GetLength() >= 24 then
+             self:GiveOrder(kTechId.Move, cyst:GetId(), origin, nil, true, true) 
+         end
+end
+
 // Look for nearby friendlies to heal
 function Crag:OnUpdate(deltaTime)
 

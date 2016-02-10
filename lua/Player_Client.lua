@@ -1094,7 +1094,7 @@ function PlayerUI_GetTooltipDataFromTechId(techId, hotkeyIndex)
         end
         
         tooltipData.hotKey = tooltipData.hotKey or ""
-        tooltipData.supply = LookupTechData(techId, kTechDataSupply, 0)
+       -- tooltipData.supply = LookupTechData(techId, kTechDataSupply, 0)
         
         tooltipData.biomass = LookupTechData(techId, kTechDataBioMass, 0)
 

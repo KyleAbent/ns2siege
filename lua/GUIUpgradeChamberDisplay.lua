@@ -35,10 +35,10 @@ local kUpgradeLevelFunc =
 // first entry is tech id to use if the player has none of the upgrades in the list
 local kIndexToUpgrades =
 {
-    { kTechId.CragHive, kTechId.Carapace, kTechId.Regeneration, kTechId.Redemption, kTechId.Rebirth, },
-    { kTechId.CragHiveTwo, kTechId.Hunger, kTechId.ThickenedSkin},
-    { kTechId.ShiftHive, kTechId.Celerity, kTechId.Adrenaline },
-    { kTechId.ShadeHive, kTechId.Phantom, kTechId.Aura, kTechId.Focus },
+    { kTechId.None, kTechId.Carapace, kTechId.Regeneration, kTechId.Redemption, kTechId.Rebirth, },
+    { kTechId.None, kTechId.Hunger, kTechId.ThickenedSkin},
+    { kTechId.None, kTechId.Celerity, kTechId.Adrenaline },
+    { kTechId.None, kTechId.Phantom, kTechId.Aura, kTechId.Focus },
 }
 
 local function CreateUpgradeIcon()
