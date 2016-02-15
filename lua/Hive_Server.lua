@@ -375,14 +375,11 @@ function Hive:UpdateSpawnEgg()
     local egg = nil
 
     local eggCount = GetNumEggs(self)
-    if eggCount < ScaleWithPlayerCount(kAlienEggsPerHive, #GetEntitiesForTeam("Player", self:GetTeamNumber()), true) then  
-  
-        egg = SpawnEgg(self, eggCount)
-        success = egg ~= nil
-        
+    if eggCount < 8 then  
+        SpawnEgg(self, eggCount)
     end
     
-    return success, egg
+    return true
 
 end
 
@@ -876,7 +873,9 @@ function Hive:OnConstructionComplete()
     self:UpdateAliensWeaponsManually()
     
     --cheap maphack to raise height in ns2_epicsiege ;)
-   self:SetOrigin(self:GetOrigin() + Vector(0,kHiveMoveUpVector,0) )
+   --self:SetOrigin(self:GetOrigin() + Vector(0,kHiveMoveUpVector,0) )
+    self:AddTimedCallback(Hive.UpdateSpawnEgg, 8)
+   
     
 end
 

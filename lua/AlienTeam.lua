@@ -590,46 +590,6 @@ local function GetCriticalHivePosition(self)
 
 end
 
-local function UpdateEggGeneration(self)
-
-    if not self.timeLastEggUpdate then
-        self.timeLastEggUpdate = Shared.GetTime()
-    end
-
-    if self.timeLastEggUpdate + ScaleWithPlayerCount(kEggGenerationRate, #GetEntitiesForTeam("Player", self:GetTeamNumber())) < Shared.GetTime() then
-
-        local enemyTeamPosition = GetCriticalHivePosition(self)
-        local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
-        
-        local builtHives = {}
-        
-        // allow only built hives to spawn eggs
-        for _, hive in ipairs(hives) do
-        
-            if hive:GetIsBuilt() and hive:GetIsAlive() then
-                table.insert(builtHives, hive)
-            end
-        
-        end
-        
-        if enemyTeamPosition then
-            Shared.SortEntitiesByDistance(enemyTeamPosition, builtHives)
-        end
-        
-        for _, hive in ipairs(builtHives) do
-        
-            if hive:UpdateSpawnEgg() then
-                break
-            end
-        
-        end
-        
-        self.timeLastEggUpdate = Shared.GetTime()
-    
-    end
-
-end
-
 local function UpdateAlienSpectators(self)
 
     if self.timeLastSpectatorUpdate == nil then
@@ -686,7 +646,6 @@ function AlienTeam:Update(timePassed)
     PlayingTeam.Update(self, timePassed)
     
     self:UpdateTeamAutoHeal(timePassed)
-    UpdateEggGeneration(self)
     UpdateEggCount(self)
     UpdateAlienSpectators(self)
     

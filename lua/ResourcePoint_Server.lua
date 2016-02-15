@@ -15,24 +15,11 @@ function ResourcePoint:Reset()
 end
 function ResourcePoint:AutoDrop()
     if self:GetAttached() == nil then
-      
-          local powerpoint = GetPowerPointForLocation(self:GetLocationName())
-          if powerpoint ~= nil then 
-           if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() then 
-              self:SpawnResourceTowerForTeamModified(1, kTechId.Extractor)
-           elseif powerpoint:GetIsDisabled() or  powerpoint:GetIsSocketed() then                                      
-              local infestation = GetEntitiesWithMixinWithinRange("Infestation", self:GetOrigin(), 7) 
-              if #infestation >= 1 then
-               self:SpawnResourceTowerForTeamModified(2, kTechId.Harvester)
-               end
-              end//
-           end//
-           
-             //if respoint:GetGameEffectMask(kGameEffect.OnInfestation) and marine == false then
-             // respoint:SpawnResourceTowerForTeamModified(2, kTechId.Harvester)
-            //end   
-     
-       end//
+                  local gameRules = GetGamerules()
+            if gameRules then
+                           gameRules:AutoDrop(self)  
+            end
+       end
 end
 function ResourcePoint:OnAttached(entity)
     self.occupiedTeam = entity:GetTeamNumber()

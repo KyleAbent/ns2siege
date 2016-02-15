@@ -76,7 +76,7 @@ local networkVars =
     isKing = "boolean",
     level = "float (0 to " .. Cyst.MaxLevel .. " by .1)",
     wasking = "boolean",
-    
+    lastumbra = "time",
 
 }
 
@@ -142,6 +142,7 @@ function Cyst:OnCreate()
     self.isKing = false
     self.level = 0
     self.wasking = false
+    self.lastumbra = 0
 end
 
 
@@ -193,7 +194,6 @@ function Cyst:GetInfestationGrowthRate()
     return Cyst.kInfestationGrowthDuration
 end
 function Cyst:OnConstructionComplete()
-    self:UpdateKings()
     self:AddTimedCallback(Cyst.EnergizeInRange, 4)
 end
 function Cyst:EnergizeInRange()
@@ -279,66 +279,7 @@ function Cyst:Derp()
                self:MarkPhysicsDirty()    
 end
 function Cyst:OnKill(attacker, doer, point, direction)
-if self.isking then self:SetIsVisible(false) self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
-self:UpdateKings()
-end
-if Server then
-function Cyst:UpdateKings()   
- -- Print("updating kings")
-        local nearestking = GetNearest(self:GetOrigin(), "Cyst", nil, function(ent) return ent.isking == true end)
-        if nearestking then   
-                      nearestking.wasking = nearestking.isking   
-                      nearestking.isking = not nearestking.wasking
-                --      Print("done updating kings step 1")
-        end
-        local averageorigin = Vector(0,0,0)
-                    --  Print("averageorigin is %s", averageorigin)
-          local nearestfrontdoor = GetNearest(self:GetOrigin(), "FrontDoor", nil)
-                     -- Print("nearestfrontdoor is %s", nearestfrontdoor)
-          local nearestsiegedoor = GetNearest(self:GetOrigin(), "SiegeDoor", nil)  
-                      --Print("nearestsiegedoor is %s", nearestsiegedoor)
-          local nearestpowernode = nil
-                      --Print("nearestpowernode is %s", nearestpowernode)
-          local frontorsiegedoor = ConditionalValue(self:GetIsSiegeEnabled(), nearestsiegedoor, nearestfrontdoor )   
-                      --Print("frontorsiegedoor is %s", frontorsiegedoor)   
-        
-          if frontorsiegedoor then
-                         --       Print("frontorsiegedoor is %s", frontorsiegedoor)   
-            nearestpowernode = GetNearest(frontorsiegedoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt() and not ent:GetIsDisabled() and not ( string.find(ent:GetLocationName(), "siege") or string.find(ent:GetLocationName(), "Siege") ) end)  
-                     -- Print("nearestpowernode is %s", nearestpowernode)
-          end
-          
-
-   if frontorsiegedoor and nearestpowernode then
-                       --  Print("averageorigin is %s", averageorigin)
-                averageorigin = averageorigin + frontorsiegedoor:GetOrigin()
-                        --              Print("averageorigin is %s", averageorigin)
-                averageorigin = averageorigin + nearestpowernode:GetOrigin()
-                          --            Print("averageorigin is %s", averageorigin)
-                averageorigin = averageorigin + self:GetOrigin()
-                        --  Print("averageorigin is %s", averageorigin)
-                averageorigin = averageorigin / 3
-                          --            Print("averageorigin is %s", averageorigin)
-         local nearescysttoavg = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
-              if nearescysttoavg then
-                     -- Print("nearescysttoavg is %s", nearescysttoavg)
-                      nearescysttoavg.isking = true
-                      nearescysttoavg:ActivateMagnetize()
-                      nearescysttoavg.wasking = false
-                      nearescysttoavg:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) 
-                 end
-       end
-
-end
-function Cyst:GetIsSiegeEnabled()
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
-                   return true
-               end
-            end
-            return false
-end
+if self.isking then self.isking = false self:SetIsVisible(false) self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
 end
 function Cyst:SetKing(whom)
    self.king = true
@@ -350,15 +291,17 @@ function Cyst:ActivateMagnetize()
 --Kyle Abent
                       self:AddTimedCallback(Cyst.Magnetize, 8)
 end
+if Server then
     function Cyst:OnTakeDamage(damage, attacker, doer, point, direction, damageType)
-          
-           if self:GetIsBuilt() and self:GetHealthScalar()<= 0.5 and self.lastumbra == nil or (self.lastumbra + math.random(4,8)) < Shared.GetTime() then
+              --suppose to be for king but kinda fits the role for all cysts
+           if self:GetIsBuilt() and self:GetHealthScalar()<= 0.5 and (self.lastumbra + math.random(4,8)) < Shared.GetTime() then
                     CreateEntity(CragUmbra.kMapName,  self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
                     self:TriggerEffects("crag_trigger_umbra")
                     self.lastumbra = Shared.GetTime()
            end
         
     end
+end
 function Cyst:Synchronize()
 --Kyle Abent
                      local whips, crags, shades = self:DoICreateShadeWhipCrag()

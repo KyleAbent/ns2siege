@@ -592,7 +592,10 @@ function TunnelEntrance:CheckSpaceAboveForJump()
 
     local startPoint = self:GetOrigin() 
     local endPoint = startPoint + Vector(1.2, 1.2, 1.2)
-    
+    local trace = Shared.TraceRay(self:GetOrigin(), self:GetOrigin() + Vector(0,1,0),  CollisionRep.Default,  PhysicsMask.All,  EntityFilterOne(self))
+       if trace.fraction < 1 or trace.entity then
+            return false
+        end
     return GetWallBetween(startPoint, endPoint, self)
     
 end

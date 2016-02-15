@@ -234,10 +234,19 @@ function Egg:UpdateManually()
 end
 if Server then
 function Egg:GetTeamCanAfford(tres)
-  return self:GetTeam():GetTeamResources() >= tres
+  return self:GetTeam():GetTeamResources() >= tres and self:GetIsFront()
 end
 function Egg:DeductTres(tres)
   return self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources()  - tres)
+end
+function Egg:GetIsFront()
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+            return false
 end
 function Egg:UpdateToGorgeEgg()
            if self:GetTeamCanAfford(4) then
@@ -395,7 +404,16 @@ local function GestatePlayer(self, player, fromTechId)
     
     newPlayer:DropToFloor()
     
+
+        
     local techIds = { self:GetGestateTechId() }
+    
+
+        local upgrades = Player.lastUpgradeList
+        if upgrades and #upgrades > 0 then
+            table.insert(techIds, upgrades)
+        end
+        
     newPlayer:SetGestationData(techIds, fromTechId, 1, 1)
 
 end

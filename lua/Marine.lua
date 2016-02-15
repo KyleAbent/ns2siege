@@ -523,6 +523,17 @@ function Marine:GetHasLayStructure()
     
     return builder
 end
+function Marine:GetHasWelderPrimary()
+        local weapon = self:GetWeaponInHUDSlot(3)
+        local welder = false
+    if (weapon) then
+        if (weapon:isa("Welder")) then
+            welder = true
+        end
+    end
+    
+    return welder
+end
 function Marine:GetIsBuilding()
         local weapon = self:GetActiveWeapon()
         local building = false

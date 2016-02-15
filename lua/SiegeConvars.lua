@@ -1,3 +1,6 @@
+kExpandCystInterval =  8
+kStructureDropCost = 8
+kCystSpawnCost = 1
 kBuilderPowerRepairRate = 440
 kWelderPowerRepairRate = 880
 kMarineRepairHealthPerSecond = 2400

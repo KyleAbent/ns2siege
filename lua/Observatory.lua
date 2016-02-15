@@ -484,7 +484,7 @@ if Server then
             return false
 end
 function Observatory:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() and not byPlayer:GetWeaponInHUDSlot(5)
+  return not self:GetIsFront() and not byPlayer:GetWeaponInHUDSlot(5) and byPlayer:GetHasWelderPrimary()
 end
 function Observatory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 

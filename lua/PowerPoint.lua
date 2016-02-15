@@ -561,14 +561,7 @@ end
        return self:GetIsDisabled() or not self:GetIsBuilt() and not self:GetIsInSiegeRoom()
     
     end
-    function PowerPoint:UpdateCystKing()
-       local nearestcyst = GetNearestMixin(self:GetOrigin(), "Cyst", 2, function(ent) return ent:GetIsBuilt() end)
-         if nearestcyst then
-             nearestcyst:UpdateKings()
-        end
-    end
     function PowerPoint:OnConstructionComplete()
-        self:UpdateCystKing()
         self:StopDamagedSound()
         
         self.health = kPowerPointHealth
@@ -799,7 +792,6 @@ end
       // self:UpdateMiniMap()
         self:AddTimedCallback(PowerPoint.UpdateCountKill, math.random(4,8)) 
         self:AddTimedCallback(PowerPoint.CystBrothersActivate, 6)
-        self:UpdateCystKing()
     end
             function PowerPoint:ActivateCystTimer()
                self:AddTimedCallback(PowerPoint.CystBrothersActivate, 6)

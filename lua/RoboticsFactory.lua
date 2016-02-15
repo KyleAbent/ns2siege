@@ -365,7 +365,7 @@ if Server then
             return false
 end
 function RoboticsFactory:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() and not byPlayer:GetWeaponInHUDSlot(5)
+  return not self:GetIsFront() and not byPlayer:GetWeaponInHUDSlot(5) and byPlayer:GetHasWelderPrimary()
 end
 function RoboticsFactory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 

@@ -75,29 +75,12 @@ if Server then
     function Location:ReallySpawnCysts(powerpoint)
     --Kyle Abent :S
     -- 2.7 -- To replace comm cysts with automatic system based on where state of turf within dynamic playthrough lays(in theory)
-            local extents = (self:GetOrigin().x + self:GetOrigin().y + self:GetOrigin().z) - (self.scale.x + self.scale.y + self.scale.z)
-            local cysts = self:GetCystsInLocation(self, powerpoint)
-            
-                Print("cysts is %s", cysts)
-            if cysts == 0 then 
-              local cyst = CreateEntity(Cyst.kMapName, powerpoint:FindFreeSpace(), 2)
-             return 
-             end
-             
-            local ratio = math.abs(extents/(cysts*kCystRedeployRange))
-            Print("Cyst Ratio is %s for room %s", ratio, self.name)
-            
-            if ratio >= 4 then
-            Print("Ratio is >= 4")
-                   local nearestcyst = GetNearest(powerpoint:GetOrigin(), "Cyst", 2, function(ent) return GetLocationForPoint(ent:GetOrigin()) == GetLocationForPoint(powerpoint:GetOrigin()) end)
-                    if nearestcyst then
-                       Print("nearestcyst is %s", nearestcyst)
-                      local cyst = CreateEntity(Cyst.kMapName, nearestcyst:FindFreeSpawn(), 2)
-                      end
+    
+                      local gameRules = GetGamerules()
+            if gameRules then
+                           gameRules:SpawnCystsAtLocation(self, powerpoint)  
             end
             
-            
-     //self:AddTimedCallback(Location.OnUpdate, 30)
     end
     
         function Location:MakeSureRoomIsntEmpty()
