@@ -77,6 +77,7 @@ local networkVars =
     level = "float (0 to " .. Cyst.MaxLevel .. " by .1)",
     wasking = "boolean",
     lastumbra = "time",
+    hasMagnetized = "private boolean",
 
 }
 
@@ -143,6 +144,7 @@ function Cyst:OnCreate()
     self.level = 0
     self.wasking = false
     self.lastumbra = 0
+    self.hasMagnetized = false
 end
 
 
@@ -333,7 +335,16 @@ function Cyst:Magnetize()
           
           self:AddTimedCallback(Cyst.Cook, 4)
           self:Synchronize()
+          if self.hasMagnetized == false then self.hasMagnetized = true end
           return self.isking
+end
+
+function Cyst:GetCanDethrone()
+      return self.hasMagnetized
+end
+function Cyst:Dethrone()
+                      self.isking = false
+                      self.wasking = true
 end
 function Cyst:MagnetizeStructures()
           for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do

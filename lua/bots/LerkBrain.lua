@@ -15,7 +15,7 @@ function LerkBrain:Initialize()
 end
 
 function LerkBrain:GetExpectedPlayerClass()
-    return "Lerk"
+    return "Skulk"
 end
 
 function LerkBrain:GetExpectedTeamNumber()

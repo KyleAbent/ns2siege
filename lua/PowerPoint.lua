@@ -114,7 +114,7 @@ PrecacheAsset("shaders/PowerNode_emissive.surface_shader")
 local kDamagedPercentage = 0.4
 
 // Re-build only possible when X seconds have passed after destruction (when aux power kicks in)
-local kDestructionBuildDelay = 15
+local kDestructionBuildDelay = 8
 
 // The amount of time that must pass since the last time a PP was attacked until
 // the team will be notified. This makes sure the team isn't spammed.

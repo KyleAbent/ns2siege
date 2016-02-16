@@ -234,7 +234,14 @@ function Egg:UpdateManually()
 end
 if Server then
 function Egg:GetTeamCanAfford(tres)
-  return self:GetTeam():GetTeamResources() >= tres and self:GetIsFront()
+  return self:GetTeam():GetTeamResources() >= tres and self:GetIsFront() and self:GetCanTeamPrioritizeIt()
+end
+function Egg:GetCanTeamPrioritizeIt()
+            local gameRules = GetGamerules()
+            if gameRules then
+                   return gameRules:GetCanAlienTeamUpgEggs()
+            end
+            return false
 end
 function Egg:DeductTres(tres)
   return self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources()  - tres)

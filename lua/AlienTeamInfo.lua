@@ -89,9 +89,9 @@ if Server then
             self.bioMassAlertLevel = Clamp(team:GetBioMassAlertLevel(), 0 , 12)
             self.maxBioMassLevel = Clamp(team:GetMaxBioMassLevel(), 0 , 12)
             
-            local veillevel = GetHasTech(self, kTechId.ShadeHive) and self:GetUpgradeLevels() or 0
-            local spurlevel = GetHasTech(self, kTechId.ShiftHive) and self:GetUpgradeLevels() or 0
-            local shelllevel = GetHasTech(self, kTechId.CragHive) and self:GetUpgradeLevels() or 0
+            local veillevel =  self:GetUpgradeLevels() or 0
+            local spurlevel = self:GetUpgradeLevels() or 0
+            local shelllevel = self:GetUpgradeLevels() or 0
             
             self.veilLevel = veillevel
             self.spurLevel = spurlevel

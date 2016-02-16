@@ -16,12 +16,14 @@ local BadgeURLPath = "config://shine/BadgesLink.json"
 local BadgesPath = "config://shine/UserConfig.json"
 
 Shine.Hook.SetupClassHook( "ScoringMixin", "AddScore", "OnScore", "PassivePost" )
+Shine.Hook.SetupClassHook( "Marine", "OnCreate", "HookOnCareMarine", "PassivePost" )
 Shine.Hook.SetupClassHook( "NS2Gamerules", "ResetGame", "OnReset", "PassivePost" )
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyMist", "BecauseFuckSpammingCommanders", "Replace" )
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyMed", "BuyMed", "Replace" )
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyAmmo", "BuyAmmo", "Replace" )
 Shine.Hook.SetupClassHook( "Marine", "TellMarine", "ToDropBlue", "Replace" )
 Shine.Hook.SetupClassHook( "Marine", "UpdateCredits", "ToAmount", "Replace" )
+Shine.Hook.SetupClassHook( "Player", "TogglePlayerAlltalk", "ToggleAlltalk", "Replace" )
 
 
 
@@ -41,7 +43,9 @@ self.PlayerSpentAmount = {}
 
 return true
 end
-
+function Plugin:HookOnCareMarine()
+  self:AdjustBuildSpeed()
+end
 function Plugin:ToAmount(player)
  local client = player:GetClient()
 local controlling = client:GetControllingPlayer()
@@ -90,6 +94,18 @@ local Client = controlling:GetClient()
         self:NotifyBuy( Client, "AmmoPack costs 1 resource, you have %s resources. Purchase invalid.", true, player:GetResources()) 
         else
        self:SimpleTimer(2, function () if not player or not player:GetIsAlive() then return else player:GiveItem(AmmoPack.kMapName) player:SetResources(player:GetResources() - 1) end end)
+        end
+end
+function Plugin:ToggleAlltalk(player)
+local controlling = player:GetControllingPlayer()
+local Client = controlling:GetClient()
+
+        if player.alltalktoggled == true then
+        player.alltalktoggled = false
+        self:NotifyBuy( Client, "[[2.16 UNTESTED]]Only your teammates can hear your microphone now.", true) 
+        else
+        player.alltalktoggled = true
+        self:NotifyBuy( Client, "[[2.16 UNTESTED]]Everybody on the server can now hear your microphone", true) 
         end
 end
 local function GetPathingRequirementsMet(position, extents)
@@ -1975,6 +1991,14 @@ end
 
 local SaveCreditsCommand = self:BindCommand("sh_savecredits", "savecredits", SaveCreditsCmd)
 SaveCreditsCommand:Help("sh_savecredits saves all credits online")
+
+local function ToggleAllTalkMic( Client )
+        self:ToggleAlltalk(Client)
+end
+
+local ToggleAllTalkMicCommand = self:BindCommand( "sh_togglemic", "togglemic", ToggleAllTalkMic )
+ToggleAllTalkMicCommand:Help( "toggles clientside microphone to broadcast to only team, or to all server." )
+
 
 local function Generate( Client )
         local credits = self:GetPlayerCreditsInfo(Client)

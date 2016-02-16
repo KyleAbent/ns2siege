@@ -266,6 +266,7 @@ local networkVars =
     isMoveBlocked = "private boolean",
     
     communicationStatus = "enum kPlayerCommunicationStatus",
+    alltalktoggled = "boolean",
 
 }
 
@@ -383,6 +384,7 @@ function Player:OnCreate()
     self.gravity = 0
     self.buildspeed = .1
     self.credits = 0
+    self.alltalktoggled = false
     
 end
 
@@ -916,6 +918,9 @@ end
 function Player:Buy()
 end
 function Player:HookWithShineToBuyMist(player)
+       self:Kill() //What a horrible Joke.. Oh Hey! Purchase Mist! ... *Dies
+end
+function Player:TogglePlayerAlltalk(player)
        self:Kill() //What a horrible Joke.. Oh Hey! Purchase Mist! ... *Dies
 end
 function Player:HookWithShineToBuyMed(player)

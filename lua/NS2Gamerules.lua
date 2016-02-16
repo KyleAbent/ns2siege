@@ -157,6 +157,7 @@ if Server then
             self.doorsopened = false
             self.sideopened = false
             self.siegedoorsopened = false
+            self.alienteamcanupgeggs = false
             self.setuppowernodecount = 0
             self.setuppowernodecountbuilt = 0
             self.lastnode = false
@@ -250,6 +251,7 @@ if Server then
         self.teamsReady = false
         self.tournamentMode = false
         self.doorsopened = false
+        self.alienteamcanupgeggs = false
         self.setuppowernodecount = 0
         self.setuppowernodecountbuilt= 0
         self.lastnode = false
@@ -1687,6 +1689,13 @@ function NS2Gamerules:OnUpdate(timePassed)
             canHear = true
         end
         
+        --ns2siege - client option for microphone alltalk
+        
+        if speakerPlayer.alltalktoggled == true then
+           canHear = true
+        end
+        
+        
         // NOTE: SCRIPT ERROR CAUSED IN THIS FUNCTION WHEN FP SPEC WAS ADDED.
         // This functionality never really worked anyway.
         // If we're spectating a player, we can hear their team (but not in tournamentmode, once that's in)
@@ -1720,6 +1729,9 @@ function NS2Gamerules:GetSetupNodeRatio()
     end
 function NS2Gamerules:GetFrontDoorsOpen()
 return self.doorsopened
+end
+function NS2Gamerules:GetCanAlienTeamUpgEggs()
+return self.alienteamcanupgeggs
 end
 function NS2Gamerules:GetSideDoorsOpen()
 return self.sideopened
@@ -1815,8 +1827,12 @@ function NS2Gamerules:PickMainRoom(force)
                   
                              local powerpoint = GetPowerPointForLocation(location.name)
                              if powerpoint ~= nil then
-                             powerpoint:SetMainRoom()
-                              end
+                                  if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() then
+                                    powerpoint:SetMainRoom()
+                                  else
+                                  return true
+                                  end
+                               end
                               
                     for _, entity in ipairs(entities) do
                       if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
@@ -2200,6 +2216,7 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, shades, cyst, origin)
 --Kyle Abent
             local spawned = false 
             local tres = not self.doorsopened and kStructureDropCost * .5 or kStructureDropCost
+            self.alienteamcanupgeggs = false
         if self:GetCanSpawnAlienEntity(tres) then
          
         
@@ -2231,6 +2248,7 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, shades, cyst, origin)
 
             if not spawned then
                  cyst:MagnetizeStructures()
+                 self.alienteamcanupgeggs = true
             else
               self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)
             end     
@@ -2262,88 +2280,49 @@ function NS2Gamerules:SetupRulesTest()
           if frontorsiegedoor then 
             nearestpowernode = GetNearest(frontorsiegedoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt() and not ent:GetIsDisabled() and not ( string.find(ent:GetLocationName(), "siege") or string.find(ent:GetLocationName(), "Siege") ) end)  
           end
-   if frontorsiegedoor and nearestpowernode  then
-                averageorigin = averageorigin + frontorsiegedoor:GetOrigin()
-                averageorigin = averageorigin + nearestpowernode:GetOrigin()
-                averageorigin = averageorigin / 2
-         local nearescysttoavg = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
-              if nearescysttoavg then
-              
-                    for index, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do
-                     if cyst.isking and cyst ~= nearescysttoavg then
-                      cyst.isking = false
-                      cyst.wasking = true
-                    end         
-                  end
-                  
-                     CreatePheromone(kTechId.ExpandingMarker, nearescysttoavg:GetOrigin(), 2) 
-                      nearescysttoavg.isking = true
-                      nearescysttoavg:ActivateMagnetize()
-                      nearescysttoavg.wasking = false
-                      nearescysttoavg:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) 
-                 end
-       end
-end
-function NS2Gamerules:ExpandKingCyst()
-  --Kyle Abent
- -- Print("updating kings")
-   if not self.doorsopened then self:SetupRulesTest() return true end 
-        local averagecystorigin = Vector(0,0,0)
-        local cystcount = 0
-        local averagepowerpointorigin = Vector(0,0,0)
-        local powerpointcount = 0
-        local averageorigin = Vector(0,0,0)
-        local mainroomorigin = nil
-        
-         for index, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do
-            averagecystorigin = averagecystorigin + self:GetOrigin()
-            cystcount = cystcount + 1
-        end
-         averagecystorigin = averagecystorigin / cystcount
-         
-         for index, powerpoint in ientitylist(Shared.GetEntitiesWithClassname("PowerPoint")) do
-           if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() then
-            averagepowerpointorigin = averagepowerpointorigin + self:GetOrigin()
-            powerpointcount = powerpointcount + 1
-            end
-        end
-         averagepowerpointorigin = averagepowerpointorigin / powerpointcount
-         
-         
-       for _, powerconsumer in ipairs(GetEntitiesWithMixin("PowerConsumer")) do
-                   if powerconsumer.mainbattle == true then
-                    mainroomorigin = mainroomorigin:GetOrigin()
+          
+                  local mainroomorigin = nil
+       for index, pherome in ientitylist(Shared.GetEntitiesWithClassname("Pheromone")) do
+                       local techId = pherome:GetType()
+                  if  techId == kTechId.ThreatMarker then
+                    mainroomorigin = pherome:GetOrigin()
                     break
                    end
               end
               
-         
-         if mainroomorigin ~= nil then
-         averageorigin = averagepowerpointorigin + averagecystorigin + mainroomorigin
-         averageorigin = averageorigin / 3
-         else
-         averageorigin = averagepowerpointorigin + averagecystorigin
-         averageorigin = averageorigin / 2
-         end
-
+   if frontorsiegedoor and nearestpowernode  then
+                averageorigin = averageorigin + frontorsiegedoor:GetOrigin()
+                averageorigin = averageorigin + nearestpowernode:GetOrigin()
+                if mainroomorigin then
+                 averageorigin = averageorigin + mainroomorigin
+                 averageorigin = averageorigin / 3
+                else
+                 averageorigin = averageorigin / 2
+                end
+   end
+           return averageorigin
+end
+function NS2Gamerules:ExpandKingCyst()
+  --Kyle Abent
+ -- Print("updating kings")
+   local averageorigin = self:SetupRulesTest() 
          local nearescysttoavg = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
               if nearescysttoavg then
-              
                     for index, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do
-                     if cyst.isking and cyst ~= nearescysttoavg then
-                      cyst.isking = false
-                      cyst.wasking = true
+                     if cyst.isking and cyst ~= nearescysttoavg and cyst:GetCanDethrone() then
+                       cyst:Dethrone()
                     end         
+                      if cyst.level ~= 0 then
+                       cyst.wasking = cyst.level ~= 0
+                       if cyst.wasking then return true end -- dethrone first
+                       end
                   end
-                  
                      CreatePheromone(kTechId.ExpandingMarker, nearescysttoavg:GetOrigin(), 2) 
                       nearescysttoavg.isking = true
                       nearescysttoavg:ActivateMagnetize()
                       nearescysttoavg.wasking = false
                       nearescysttoavg:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) 
                  end
-  
-
        return true
 end
 function NS2Gamerules:GetCanSpawnAlienEntity(trescount, timeywimey)

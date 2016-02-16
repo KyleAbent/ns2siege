@@ -15,7 +15,7 @@ function FadeBrain:Initialize()
 end
 
 function FadeBrain:GetExpectedPlayerClass()
-    return "Fade"
+    return "Skulk"
 end
 
 function FadeBrain:GetExpectedTeamNumber()

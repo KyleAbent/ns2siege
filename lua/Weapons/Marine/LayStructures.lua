@@ -353,8 +353,12 @@ function LayStructures:GetPositionForStructure(player)
           if not IsPathable(displayOrigin) then
                     isPositionValid = false or isonstructure
                 end
-                
-        // Don't allow dropped structures to go too close to techpoints and resource nozzles
+          local entsnearby = GetEntitiesWithMixinForTeamWithinRange("Construct", 1, player:GetOrigin(), 12) 
+          
+          if #entsnearby >= 20 then
+           isPositionValid = false
+           end
+          
         if GetPointBlocksAttachEntities(displayOrigin) then
             isPositionValid = false
         end
@@ -363,16 +367,12 @@ function LayStructures:GetPositionForStructure(player)
             isPositionValid = false
         end
         
-        // Don't allow placing above or below us and don't draw either
         local structureFacing = player:GetViewAngles():GetCoords().zAxis
     
         if math.abs(Math.DotProduct(trace.normal, structureFacing)) > 0.9 then
             structureFacing = trace.normal:GetPerpendicular()
         end
     
-        // Coords.GetLookIn will prioritize the direction when constructing the coords,
-        // so make sure the facing direction is perpendicular to the normal so we get
-        // the correct y-axis.
         local perp = Math.CrossProduct(trace.normal, structureFacing)
         structureFacing = Math.CrossProduct(perp, trace.normal)
     

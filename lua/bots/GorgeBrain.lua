@@ -15,7 +15,7 @@ function GorgeBrain:Initialize()
 end
 
 function GorgeBrain:GetExpectedPlayerClass()
-    return "Gorge"
+    return "Skulk"
 end
 
 function GorgeBrain:GetExpectedTeamNumber()
