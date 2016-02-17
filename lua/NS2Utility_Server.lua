@@ -606,7 +606,7 @@ function GetFairRespawnLength()
 --Works well as of 1.15
 local default = kMarineRespawnTime
  local gameRules = GetGamerules()
- if not gameRules:GetGameStarted() then return kMarineRespawnTime end 
+ if not gameRules:GetGameStarted() and not gameRules:GetCanUpdateRespawnTime() then return kMarineRespawnTime end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
              Print("roundlength is %s", roundlength)
       roundlength = Clamp(roundlength/kSiegeDoorTime, 0.1, 2) //So dependent on roundlength
@@ -649,6 +649,8 @@ local default = kMarineRespawnTime
         afterbalance = team1Players > team2Players and Clamp(default * math.max(unbalancedAmount, 1.10), 4, 16) or afterbalance
         afterbalance = team2Players > team1Players and Clamp(default / math.max(unbalancedAmount, 1.10), 4, 16) or afterbalance
          Print("afterbalance is %s, return afterbalance", afterbalance)  
+         
+         gameRules:UpdateSpawnTime()
         return afterbalance
 end
 function GetActivePlayers()

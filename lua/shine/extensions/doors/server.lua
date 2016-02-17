@@ -77,7 +77,7 @@ function Plugin:OnFirstThink()
                     Print("time is %s", time)
                 end
           end
-             kFrontDoorTime = 300-60
+             kFrontDoorTime = (300-60)+21
               time = Clamp(time,600, 1200)
              kSiegeDoorTime = time
              self.siegetimer = time

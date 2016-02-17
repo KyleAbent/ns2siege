@@ -324,6 +324,9 @@ end
 function Cyst:GetCanAffordEgg()
   return self:GetTeam():GetTeamResources() >= 4
 end
+function Cyst:GetAddXPAmount()
+ if self.isking then return Cyst.GainXP / 4 else return 0 end
+end
 function Cyst:Magnetize()
 --Kyle Abent
  if self:GetLevel() ~= self:GetMaxLevel() then return true end--Be fully grown king first

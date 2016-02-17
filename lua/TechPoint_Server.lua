@@ -51,7 +51,7 @@ function TechPoint:SpawnCommandStructure(teamNumber)
     
 end
 function TechPoint:SpawnOtherHives() --Okay matey you've got it 3 hives comin up
-   for index, techpoint in ipairs( GetEntitiesWithinRange( "TechPoint", self:GetOrigin(), 12) ) do
+   for index, techpoint in ipairs( GetEntitiesWithinRange( "TechPoint", self:GetOrigin(), 18) ) do
      if techpoint:GetAttached() == nil then techpoint:SpawnCommandStructure(2) end
       end
 end

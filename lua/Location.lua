@@ -22,6 +22,7 @@ local networkVars =
 {
     showOnMinimap = "boolean",
    spawningcysts = "boolean",
+   poweredatfrontopen = "private boolean",
 }
 
 Shared.PrecacheString("")
@@ -41,10 +42,12 @@ function Location:OnInitialized()
     self:SetTriggerCollisionEnabled(true)
     
     self:SetPropagate(Entity.Propagate_Always)
-    self.spawningcysts = flase
+    self.spawningcysts = false
+    self.poweredatfrontopen = false
 end
 
 function Location:Reset()
+    self.poweredatfrontopen = false
 end    
 
 function Location:OnDestroy()
@@ -71,6 +74,28 @@ if Server then
                 end
             end
             return cysts
+    end
+    function Location:SetIsPoweredAtFrontOpen()
+                         local entities = self:GetEntitiesInTrigger()
+                     for i = 1, #entities do
+                     local ent = entities[i]
+                           if ent:isa("PowerPoint") then 
+                              self.poweredatfrontopen = ent:GetIsBuilt() and not ent:GetIsDisabled()
+                           end
+                     end
+    end
+    function Location:RoomCurrentlyHasPower()
+                         local entities = self:GetEntitiesInTrigger()
+                     for i = 1, #entities do
+                     local ent = entities[i]
+                           if ent:isa("PowerPoint") then 
+                              return ent:GetIsBuilt() and not ent:GetIsDisabled()
+                           end
+                     end
+                     return false
+    end
+    function Location:GetHadPowerDuringSetup()
+                  return self.poweredatfrontopen 
     end
     function Location:ReallySpawnCysts(powerpoint)
     --Kyle Abent :S

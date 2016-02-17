@@ -1,13 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\NS2Gamerules.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
-
 ----Hewavily modified within siege
 
 Script.Load("lua/Gamerules.lua")
@@ -155,6 +145,7 @@ if Server then
             self.issuddendeath = false
             self.mainrooms = Shared.GetTime()
             self.doorsopened = false
+            self.lastrespawnupdate = 0
             self.sideopened = false
             self.siegedoorsopened = false
             self.alienteamcanupgeggs = false
@@ -251,6 +242,7 @@ if Server then
         self.teamsReady = false
         self.tournamentMode = false
         self.doorsopened = false
+        self.lastrespawnupdate = 0
         self.alienteamcanupgeggs = false
         self.setuppowernodecount = 0
         self.setuppowernodecountbuilt= 0
@@ -1764,7 +1756,7 @@ local neutralavgorigin = Vector(0, 0, 0)
          neutralavgorigin =  team1avgorigin + team2avgorigin
          neutralavgorigin =  neutralavgorigin / (marines+aliens) --better as a table i know
      //    Print("neutralavgorigin is %s", neutralavgorigin)
-     local nearest = GetNearest(neutralavgorigin, "Location", nil, function(ent) local powerpoint = GetPowerPointForLocation(ent.name) return ent:MakeSureRoomIsntEmpty() and powerpoint ~= nil and not (not self.siegedoorsopened  and string.find(ent.name, "Siege") or string.find(ent.name, "siege") ) end)
+     local nearest = GetNearest(neutralavgorigin, "Location", nil, function(ent) local powerpoint = GetPowerPointForLocation(ent.name) return ent:MakeSureRoomIsntEmpty() and ( powerpoint ~= nil and powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() ) and not (not self.siegedoorsopened  and string.find(ent.name, "Siege") or string.find(ent.name, "siege") ) end)
     if nearest then
    // Print("nearest is %s", nearest.name)
 
@@ -1827,11 +1819,7 @@ function NS2Gamerules:PickMainRoom(force)
                   
                              local powerpoint = GetPowerPointForLocation(location.name)
                              if powerpoint ~= nil then
-                                  if powerpoint:GetIsBuilt() and not powerpoint:GetIsDisabled() then
                                     powerpoint:SetMainRoom()
-                                  else
-                                  return true
-                                  end
                                end
                               
                     for _, entity in ipairs(entities) do
@@ -2085,10 +2073,16 @@ function NS2Gamerules:AutoDrop(respoint)
               end
            end
 end
+function NS2Gamerules:SetLocationVar()
+     for _, location in ientitylist(Shared.GetEntitiesWithClassname("Location")) do
+              location:SetIsPoweredAtFrontOpen()
+     end
+end
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  self:CountNodes()
  self:CystUnbuiltRooms()
+ self:SetLocationVar()
                  SendTeamMessage(self.team1, kTeamMessageTypes.FrontDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.FrontDoor)
                 
@@ -2182,6 +2176,13 @@ function NS2Gamerules:ToggleFuncMoveable()
                 funcmoveable.driving = not funcmoveable.driving
                 end
 end
+
+function NS2Gamerules:GetCanUpdateRespawnTime()
+  return (self.lastrespawnupdate + 8) < Shared.GetTime()
+end
+function NS2Gamerules:UpdateSpawnTime()
+  self.lastrespawnupdate = Shared.GetTime()
+end
 function NS2Gamerules:EnableSuddenDeath()
 self.issuddendeath = true
 
@@ -2217,7 +2218,7 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, shades, cyst, origin)
             local spawned = false 
             local tres = not self.doorsopened and kStructureDropCost * .5 or kStructureDropCost
             self.alienteamcanupgeggs = false
-        if self:GetCanSpawnAlienEntity(tres) then
+        if self:GetCanSpawnAlienEntity(tres, nil, cyst:GetIsInCombat()) then
          
         
                     if #whips <= math.random(1,7) then
@@ -2262,26 +2263,26 @@ self:AddTimedCallback(function() CreateEntity(Hive.kMapName, origin, 2)  end, ma
 end
 function NS2Gamerules:SetupRulesTest()
         local frontdoor = nil
-        local siegedoor = nil
- 
+        local averageorigin = Vector(0,0,0)
+        local nearestpowernode = nil
+        local nearestrelevancy = nil
+        local mainroomorigin = nil
+          
          for index, frontdoorderp in ientitylist(Shared.GetEntitiesWithClassname("FrontDoor")) do
            frontdoor = frontdoorderp
            break
         end
-                 for index, siegedoorderp in ientitylist(Shared.GetEntitiesWithClassname("SiegeDoor")) do
-           siegedoor = siegedoorderp
-           break
-        end    
-        local averageorigin = Vector(0,0,0)
-          local nearestpowernode = nil
-          local frontorsiegedoor = ConditionalValue(self.siegedoorsopened, siegedoor, frontdoor  )   
-          
-          
-          if frontorsiegedoor then 
-            nearestpowernode = GetNearest(frontorsiegedoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt() and not ent:GetIsDisabled() and not ( string.find(ent:GetLocationName(), "siege") or string.find(ent:GetLocationName(), "Siege") ) end)  
-          end
-          
-                  local mainroomorigin = nil
+             if self.doorsopened then
+             nearestrelevancy = GetNearest(frontdoor:GetOrigin(), "Location", nil, function(ent) return ent:GetHadPowerDuringSetup() and ent:RoomCurrentlyHasPower() end)  
+             end
+             
+             if not nearestrelevancy then
+              nearestrelevancy = GetNearest(frontdoor:GetOrigin(), "PowerPoint", nil, function(ent) return ent:GetIsBuilt() and not ent:GetIsDisabled() and not ( string.find(ent:GetLocationName(), "siege") or string.find(ent:GetLocationName(), "Siege") ) end)  
+             else
+               nearestrelevancy = GetPowerPointForLocation(nearestrelevancy.name)
+             end
+              
+
        for index, pherome in ientitylist(Shared.GetEntitiesWithClassname("Pheromone")) do
                        local techId = pherome:GetType()
                   if  techId == kTechId.ThreatMarker then
@@ -2290,9 +2291,9 @@ function NS2Gamerules:SetupRulesTest()
                    end
               end
               
-   if frontorsiegedoor and nearestpowernode  then
-                averageorigin = averageorigin + frontorsiegedoor:GetOrigin()
-                averageorigin = averageorigin + nearestpowernode:GetOrigin()
+   if frontdoor and nearestrelevancy  then
+                averageorigin = averageorigin + frontdoor:GetOrigin()
+                averageorigin = averageorigin + nearestrelevancy:GetOrigin()
                 if mainroomorigin then
                  averageorigin = averageorigin + mainroomorigin
                  averageorigin = averageorigin / 3
@@ -2310,7 +2311,9 @@ function NS2Gamerules:ExpandKingCyst()
               if nearescysttoavg then
                     for index, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do
                      if cyst.isking and cyst ~= nearescysttoavg and cyst:GetCanDethrone() then
-                       cyst:Dethrone()
+                       local kinglocation = cyst:GetLocationName() 
+                       local nearestlocation = nearescysttoavg:GetLocationName()
+                        if nearestlocation ~= kinglocation then cyst:Dethrone() end
                     end         
                       if cyst.level ~= 0 then
                        cyst.wasking = cyst.level ~= 0
@@ -2325,16 +2328,18 @@ function NS2Gamerules:ExpandKingCyst()
                  end
        return true
 end
-function NS2Gamerules:GetCanSpawnAlienEntity(trescount, timeywimey)
+function NS2Gamerules:GetCanSpawnAlienEntity(trescount, timeywimey, isincombat)
+   local canafford = self.team2:GetTeamResources() >= trescount
    if not timeywimey then
     local time = self.lastaliencreatedentity + math.random(4,32)
     time = ConditionalValue(self.doorsopened or self.siegedoorsopened, time *.5, time)
+    time = ConditionalValue(isincombat, time * math.random(.7, .90), time)
     time = time - (self.team2:GetTeamResources()/200) * time
-    return time < Shared.GetTime() and self.team2:GetTeamResources() >= trescount
-    else
-    return timeywimey < Shared.GetTime() and self.team2:GetTeamResources() >= trescount
+    timeywimey = time
     end
-
+        if timeywimey < Shared.GetTime() then
+              return canafford
+         end
 end
 function NS2Gamerules:SpawnCystsAtLocation(location, powerpoint)
    if self:GetCanSpawnAlienEntity(kCystSpawnCost, math.random(4,8)) then
@@ -2379,58 +2384,6 @@ function NS2Gamerules:SendZedTimeDeActivationMessage()
                  SendTeamMessage(self.team1, kTeamMessageTypes.ZedTimeEnd)
                  SendTeamMessage(self.team2, kTeamMessageTypes.ZedTimeEnd)
 end
-/*
-    function NS2Gamerules:FrontDoor()
-    self.doorsopened = true
-                   for index, frontdoor in ientitylist(Shared.GetEntitiesWithClassname("FrontDoor")) do
-                frontdoor.driving = true
-                frontdoor.cleaning = false
-                end
-                 if not self.playedfrontsound then
-              self.playedfrontsound = true
-              for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
-              StartSoundEffectForPlayer(NS2Gamerules.kFrontDoorSound, player)
-              end
-              end
-    end
-    function NS2Gamerules:SiegeDoor()
-                    self.siegedoorsopened = true
-               for index, siegedoor in ientitylist(Shared.GetEntitiesWithClassname("SiegeDoor")) do
-                siegedoor.driving = true
-                end //
-              if not self.playedsiegesound then
-                 self.playedsiegesound = true
-                 for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
-                   StartSoundEffectForPlayer(NS2Gamerules.kSiegeDoorSound, player)
-                    end // 
-              end 
-    end
-    function NS2Gamerules:SuddenDeath()
-             self.issuddendeath = true
-       //  if not self.alreadyhookedsuddendeath then self:HookSuddenDeathStart() self.alreadyhookedsuddendeath = true end
-            if not self.respawnedplayers then
-              self.respawnedplayers = true
-               for _, entity in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
-                if entity:GetTeamNumber() == 1 or entity:GetTeamNumber() == 2 then
-                  if not entity:GetIsAlive() then
-                  entity:GetTeam():ReplaceRespawnPlayer(entity)
-                  end //
-                  StartSoundEffectForPlayer(NS2Gamerules.SuddenDeathMusic, entity)
-                  StartSoundEffectForPlayer(NS2Gamerules.kSuddenDeathSound, entity)
-                  entity:SetResources(100)
-                end //
-              end //
-           end //
-    end
-  */  
-/*
-function NS2Gamerules:HookDoorsOpen()
-end
-function NS2Gamerules:HookSiegeOpen()
-end
-function NS2Gamerules:HookSuddenDeathStart()
-end
-*/
 ////////////////    
 // End Server //
 ////////////////

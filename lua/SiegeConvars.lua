@@ -27,13 +27,6 @@ kParasitesToDisable = 4
 kFadeGravityMod = 1
 kMarineResearchDelay = 15
 kInfestationBuildModifier = .5
-      //Purely in theory for server perf. 
-       //Not in any way meant for balance
-kAlienRegenerationTime = 4
-kAlienInnateRegenerationPercentage  = 0.04
-kAlienMinInnateRegeneration = 2
-kAlienMaxInnateRegeneration = 33
-kAlienRegenerationCombatModifier = .7
 //kMaxTeamResources = 420
 
 kBeaconDelay = 16
