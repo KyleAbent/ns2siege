@@ -73,7 +73,11 @@ ARC.kRightRearOffset = {-0.8, 0.55 }
 ARC.kTrackTurnSpeed = math.pi
 ARC.kTrackMaxSpeedAngle = math.rad(5)
 ARC.kTrackNoSpeedAngle = math.rad(20)
-
+function ARC:IsInRangeOfHive()
+      local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)
+   if #hives >=1 then return true end
+   return false
+end
 function ARC:SmoothTurnOverride(time, direction, movespeed)
 
     local dirYaw = GetYawFromVector(direction)

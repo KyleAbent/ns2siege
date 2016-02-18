@@ -293,7 +293,11 @@ end
 function LayStructures:Dropped(prevOwner)
 
     //Weapon.Dropped(self, prevOwner)
-    
+           if self.originalposition ~= Vector(0,0,0) then
+           local structure = CreateEntity(self:GetDropMapName(), self.originalposition, 1)
+           structure:SetConstructionComplete()
+           end
+       
    DestroyEntity(self)
     
 end

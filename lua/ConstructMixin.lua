@@ -38,6 +38,7 @@ ConstructMixin.expectedMixins =
 
 ConstructMixin.expectedCallbacks = 
 {
+   -- GetIsaCreditStructure = "derp"
 }
 
 ConstructMixin.optionalCallbacks = 
@@ -179,7 +180,32 @@ end  // Client
 
 
 if Server then
-
+    function ConstructMixin:TypesOfSelfInRoomNonCredit()
+     --  local location = GetLocationForPoint(self:GetOrigin()
+       local count = 0
+       if self:GetIsBuilt() and self:GetTeamNumber() == 1 then count = count + 1 end 
+         /*
+       if location then
+                     local entities = location:GetEntitiesInTrigger()
+                     for i = 1, #entities do
+                     local ent = entities[i]
+                           if ent:GetClassName() == self:GetClassName() then 
+                              count = count + 1
+                           end
+                     end
+        
+        end
+        */
+        return count
+    end
+    function ConstructMixin:PreOnKill(attacker, doer, point, direction)
+      if not self:isa("PowerPoint") and not self:isa("Extractor") then
+                  local gameRules = GetGamerules()
+              if gameRules then
+                 gameRules:DelayedAllowance(self:GetOrigin(), self:TypesOfSelfInRoomNonCredit(), self:GetTechId(), self:GetMapName())
+               end
+       end
+    end
     function ConstructMixin:OnKill()
 
         if not self:GetIsBuilt() then

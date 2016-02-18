@@ -489,6 +489,31 @@ function BuildTechData()
      [kTechDataObstacleRadius] = 0.25},
      
      
+             { [kTechDataId] = kTechId.Dropship, 
+      [kTechDataSupply] = kObservatorySupply,
+                --   [kTechDataBuildRequiresMethod] = GetCheckObsyLimit, 
+      --  [kTechDataBuildMethodFailedMessage] = "Experiment: 3 Max Obs Per Room",  
+    --  [kTechDataHint] = "OBSERVATORY_HINT", 
+     [kTechDataGhostModelClass] = "MarineGhostModel", 
+       [kTechDataRequiresPower] = true,       
+      [kTechDataMapName] = Dropship.kMapName,  
+      [kTechDataDisplayName] = "Dropship", 
+     [kVisualRange] = Observatory.kDetectionRange, 
+    [kTechDataCostKey] = kObservatoryCost,    
+     [kTechDataModel] = Observatory.kModelName,    
+     --     [kTechDataBuildTime] = kObservatoryBuildTime, 
+  [kTechDataMaxHealth] = kObservatoryHealth,   
+   [kTechDataEngagementDistance] = kObservatoryEngagementDistance,
+    [kTechDataMaxArmor] = kObservatoryArmor, 
+    [kTechDataInitialEnergy] = kObservatoryInitialEnergy,   
+      [kTechDataMaxEnergy] = kObservatoryMaxEnergy, 
+   [kTechDataPointValue] = kObservatoryPointValue,
+    [kTechDataHotkey] = Move.O, 
+    [kTechDataNotOnInfestation] = kPreventMarineStructuresOnInfestation,
+    [kTechDataTooltipInfo] = "OBSERVATORY_TOOLTIP", 
+     [kTechDataObstacleRadius] = 0.25},
+     
+     
      
         { [kTechDataId] = kTechId.DistressBeacon,  
           [kTechDataBuildTime] = 0.1,   

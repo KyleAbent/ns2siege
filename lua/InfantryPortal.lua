@@ -507,7 +507,7 @@ if Server then
             return false
 end
 function InfantryPortal:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() and not byPlayer:GetWeaponInHUDSlot(5) and byPlayer:GetHasWelderPrimary()
+  return not self:GetIsFront() and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
 end
 function InfantryPortal:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 

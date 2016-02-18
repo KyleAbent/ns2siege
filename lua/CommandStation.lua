@@ -140,7 +140,33 @@ if Client then
     end
     
 end
+if Server then
 
+   function CommandStation:GetCanBeUsedConstructed(byPlayer)
+   return not self:GetIsSiege() and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
+   end
+   
+   function CommandStation:GetIsSiege()
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+            return false
+      end
+      
+function CommandStation:OnUse(player, elapsedTime, useSuccessTable)
+     if self:GetIsBuilt() and self:GetCanBeUsedConstructed(player) then
+           local laystructure = player:GiveItem(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.CommandStation)
+           laystructure:SetMapName(CommandStation.kMapName)
+           laystructure.originalposition = self:GetOrigin()
+           DestroyEntity(self)
+    end
+end
+
+end
 function CommandStation:GetRequiresPower()
     return false
 end

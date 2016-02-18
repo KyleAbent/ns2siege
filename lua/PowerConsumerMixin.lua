@@ -54,6 +54,17 @@ if Server then
         end
         
     end
+    
+       function PowerConsumerMixin:GetIsSiege()
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+            return false
+      end
+      
 end
 
     

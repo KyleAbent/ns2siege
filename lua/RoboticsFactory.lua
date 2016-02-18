@@ -128,7 +128,7 @@ function RoboticsFactory:OnCreate()
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
         
     self.open = false
-   self.automaticspawningmac = false
+   self.automaticspawningmac = true
    self.automaticspawningarc = false
    self.stunned = false
 end
@@ -365,7 +365,7 @@ if Server then
             return false
 end
 function RoboticsFactory:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() and not byPlayer:GetWeaponInHUDSlot(5) and byPlayer:GetHasWelderPrimary()
+  return not self:GetIsFront() and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
 end
 function RoboticsFactory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 

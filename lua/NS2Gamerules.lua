@@ -145,6 +145,7 @@ if Server then
             self.issuddendeath = false
             self.mainrooms = Shared.GetTime()
             self.doorsopened = false
+            self.marinepacksdropped = 0
             self.lastrespawnupdate = 0
             self.sideopened = false
             self.siegedoorsopened = false
@@ -242,6 +243,7 @@ if Server then
         self.teamsReady = false
         self.tournamentMode = false
         self.doorsopened = false
+        self.marinepacksdropped = 0
         self.lastrespawnupdate = 0
         self.alienteamcanupgeggs = false
         self.setuppowernodecount = 0
@@ -861,103 +863,6 @@ if Server then
         end
         
     end
-    /*
-    local function UpdateAutoTeamBalance(self, dt)
-    
-        local wasDisabled = false
-        
-        // Check if auto-team balance should be enabled or disabled.
-        local autoTeamBalance = Server.GetConfigSetting("auto_team_balance")
-        local autoTeamBalance = not Shared.GetCheatsEnabled() and Server.GetConfigSetting("auto_team_balance")
-        if autoTeamBalance and autoTeamBalance.enabled then
-        
-            local enabledOnUnbalanceAmount = autoTeamBalance.enabled_on_unbalance_amount or 2
-            // Prevent the unbalance amount from being 0 or less.
-            enabledOnUnbalanceAmount = enabledOnUnbalanceAmount > 0 and enabledOnUnbalanceAmount or 2
-            local enabledAfterSeconds = autoTeamBalance.enabled_after_seconds or 10
-            
-            local team1Players = self.team1:GetNumPlayers()
-            local team2Players = self.team2:GetNumPlayers()
-            
-            local unbalancedAmount = math.abs(team1Players - team2Players)
-            if unbalancedAmount >= enabledOnUnbalanceAmount then
-            
-                if not self.autoTeamBalanceEnabled then
-                
-                    self.teamsUnbalancedTime = self.teamsUnbalancedTime or 0
-                    self.teamsUnbalancedTime = self.teamsUnbalancedTime + dt
-                    
-                    if self.teamsUnbalancedTime >= enabledAfterSeconds then
-                    
-                        self.autoTeamBalanceEnabled = true
-                        if team1Players > team2Players then
-                            self.team1:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
-                        else
-                            self.team2:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
-                        end
-                        
-                        SendTeamMessage(self.team1, kTeamMessageTypes.TeamsUnbalanced)
-                        SendTeamMessage(self.team2, kTeamMessageTypes.TeamsUnbalanced)
-                        Print("Auto-team balance enabled")
-                        
-
-                        
-                    end
-                    
-                end
-                
-            // The autobalance system itself has turned itself off.
-            elseif self.autoTeamBalanceEnabled then
-                wasDisabled = true
-            end
-            
-        // The autobalance system was turned off by the admin.
-        elseif self.autoTeamBalanceEnabled then
-            wasDisabled = true
-        end
-        
-        if wasDisabled then
-        
-            self.team1:SetAutoTeamBalanceEnabled(false)
-            self.team2:SetAutoTeamBalanceEnabled(false)
-            self.teamsUnbalancedTime = 0
-            self.autoTeamBalanceEnabled = false
-            SendTeamMessage(self.team1, kTeamMessageTypes.TeamsBalanced)
-            SendTeamMessage(self.team2, kTeamMessageTypes.TeamsBalanced)
-            Print("Auto-team balance disabled")
-            
-
-            
-        end
-        
-    end
-    */
-    local function CheckForNoCommander(self, onTeam, commanderType)
-
-        self.noCommanderStartTime = self.noCommanderStartTime or { }
-        
-        if not self:GetGameStarted() then
-            self.noCommanderStartTime[commanderType] = nil
-        else
-        
-            local commanderExists = Shared.GetEntitiesWithClassname(commanderType):GetSize() ~= 0
-            
-            if commanderExists then
-                self.noCommanderStartTime[commanderType] = nil
-            elseif not self.noCommanderStartTime[commanderType] then
-                self.noCommanderStartTime[commanderType] = Shared.GetTime()
-            elseif Shared.GetTime() - self.noCommanderStartTime[commanderType] >= kSendNoCommanderMessageRate then
-            
-                self.noCommanderStartTime[commanderType] = nil
-                SendTeamMessage(onTeam, kTeamMessageTypes.NoCommander)
-                
-            end
-            
-        end
-        
-    end
-    
-    
     local function RemoveTag(tagName)
         local tags = { }
         Server.GetTags(tags)
@@ -1112,7 +1017,6 @@ function NS2Gamerules:OnUpdate(timePassed)
                 self:UpdateHealth()
                 self:UpdateTechPoints()
                 
-                CheckForNoCommander(self, self.team1, "MarineCommander")
                 
 
                 self:UpdateNumPlayersForScoreboard()
@@ -1918,29 +1822,47 @@ end
              SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, subtractamount *  1)
            
     end
-
-        function NS2Gamerules:SetupRoomBluePrint(location, powerpoint, hasfrontdoor)
-        
+        function NS2Gamerules:SetupRoomBluePrint(location, powerpoint, hasfrontdoor, issiege)
+          local laystructureCCcount = 0
+                for index, marine in ientitylist(Shared.GetEntitiesWithClassname("Marine")) do
+                    if marine:GetIsBuildingCC() then
+                     laystructureCCcount = laystructureCCcount + 1
+                    end
+                end
 
                 local armoryspawnpoint = powerpoint:FindFreeSpace()
                 local armory = CreateEntity(Armory.kMapName, armoryspawnpoint, 1)  
                   if armory then
                   armory:GetTeam():RemoveSupplyUsed(kArmorySupply)
                   end
+                  
+                local prototypespawn = powerpoint:FindFreeSpace()
+                local prototype = CreateEntity(PrototypeLab.kMapName, prototypespawn, 1)  
                 
                 local observatoryspawnpoint = powerpoint:FindFreeSpace()
+                if issiege then
+                observatoryspawnpoint = powerpoint:FindArcHiveSpawn()
+                end
                 local phasegatespawnpoint = powerpoint:FindFreeSpace()
                 local roboticsspawnpoint = powerpoint:FindFreeSpace()
+                local arcspawnpoint = powerpoint:FindFreeSpace()
+                local CCpawnpoint = powerpoint:FindFreeSpace()
                 local nearestobs = GetEntitiesForTeamWithinRange("Observatory", 1, observatoryspawnpoint, Observatory.kDetectionRange)
                 local nearestphasegate = GetEntitiesForTeamWithinRange("PhaseGate", 1, phasegatespawnpoint, Observatory.kDetectionRange*2.75)
                 local nearestrobotics = GetEntitiesForTeamWithinRange("RoboticsFactory", 1, roboticsspawnpoint, Observatory.kDetectionRange*2.75)
-
+                local nearestCC = GetEntitiesForTeamWithinRange("CommandStation", 1, CCpawnpoint, Observatory.kDetectionRange*2.75) or 0
+                local allCCs = GetEntitiesForTeamWithinRange("CommandStation", 1, CCpawnpoint, 999999) or 0
+                local nearestarc = GetEntitiesForTeamWithinRange("ARC", 1, arcspawnpoint, Observatory.kDetectionRange*2.5)
                 if #nearestobs == 0 then
                  local observatory = CreateEntity(Observatory.kMapName, observatoryspawnpoint, 1)  
                      if observatory then
                      observatory:GetTeam():RemoveSupplyUsed(kObservatorySupply)
+                      if isinsiege then observatorySetConstructionComplete() end
                      end
                 end
+                if #nearestarc == 0 then
+                 local dropship = CreateEntity(Dropship.kMapName, arcspawnpoint, 1)  
+                end  
                 
                 if #nearestrobotics == 0 then
                  local roboticsfactory = CreateEntity(RoboticsFactory.kMapName, roboticsspawnpoint, 1)  
@@ -1956,6 +1878,10 @@ end
                      end
                 end
                 
+               if #nearestCC + #allCCs + laystructureCCcount <= 2 then
+                 local CC = CreateEntity(CommandStation.kMapName, CCpawnpoint, 1)  
+                end
+                
            if hasfrontdoor then      
                 CreateEntity(Sentry.kMapName, spawnpoint, 1)  
                 CreateEntity(Sentry.kMapName,spawnpoint, 1)  
@@ -1967,8 +1893,107 @@ end
            end
         
         end
+    function NS2Gamerules:DelayedAllowance(origin, allowance, techid, mapname)
+     for i = 1, allowance do      
+     local cost = LookupTechData(techid, kTechDataCostKey)
+     
+      if self.team1:GetTeamResources() >= cost then
+              local dropship = CreateEntity(Dropship.kMapName, self:FindFreeDropShipSpace(origin), 1)  
+              dropship:SetTechId(techid)
+              dropship:SetMapName(mapname)
+              self.team1:SetTeamResources(self.team1:GetTeamResources()  - cost)
+       end
+     end
+    end
+    function NS2Gamerules:FindCustomFreeSpace(who, min, max)
     
+        for index = 1, 20 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)                                  --not sure about filter?
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, who:GetModelOrigin(), min, max, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == who:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then 
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for FindCustomFreeSpace")
+           return who:GetOrigin()
+    end
+    function NS2Gamerules:FindFreeDropShipSpace(where)
     
+        for index = 1, 24 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)                                  --not sure about filter?
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, where, 0, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == GetLocationForPoint(where) and ( GetLocationForPoint(where):RoomCurrentlyHasPower() or not GetIsPointOnInfestation(where) )
+        
+           if spawnPoint ~= nil and sameLocation then 
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for FindFreeDropShipSpace")
+           return where
+    end
+local function GetDroppackSoundName(techId)
+
+    if techId == kTechId.MedPack then
+        return MedPack.kHealthSound
+    elseif techId == kTechId.AmmoPack then
+        return AmmoPack.kPickupSound
+    elseif techId == kTechId.CatPack then
+        return CatPack.kPickupSound
+    end 
+   
+end
+    function NS2Gamerules:DropMarineSupport(who, position, techId)
+     -- Print("DropMarineSupport test")
+      if self.team1:GetTeamResources() == 0 or not self.doorsopened then return end
+    local donotadd = false
+    
+    if self.marinepacksdropped == 4 then
+       self.team1:SetTeamResources(self.team1:GetTeamResources()  - 1)
+       donotadd = true
+       self.marinepacksdropped = 0
+    end
+    
+    local mapName = LookupTechData(techId, kTechDataMapName)
+    local success = false
+    
+    if mapName then
+      --Print("DropMarineSupport test")
+        local desired = self:FindCustomFreeSpace(who, 0, 4)
+         if desired ~= nil then
+         position = desired
+         end
+        local droppack = CreateEntity(mapName, position, 1)
+        StartSoundEffectForPlayer(GetDroppackSoundName(techId), self)
+       // self:ProcessSuccessAction(techId)
+        success = true
+        
+        if not donotadd then
+        self.marinepacksdropped = Clamp(self.marinepacksdropped + 1, 1, 4)
+        end
+        
+    end
+
+    return success
+    
+    end
     function NS2Gamerules:NodeKilledFront(powerpoint)
     --Kyle Abent =] based on almost 2 years of ns2siege gameplay observations this dynamic timer for all situations WIP
                   local amount = 1
@@ -2155,12 +2180,57 @@ function NS2Gamerules:GiveArcOrders()
                return self.siegedoorsopened --self.issuddendeath == false
 end
 */
+function NS2Gamerules:GetSiegePowerPoint()
+local powernode = nil
+             for index, powerpoint in ipairs(GetEntitiesForTeam("PowerPoint", 1)) do
+               if powerpoint:GetIsInSiegeRoom() then 
+                powernode = powerpoint
+                break
+                end
+          end 
+return powernode
+
+end
+function NS2Gamerules:GetArcCountInSiege()
+local count = 0
+             for index, arc in ipairs(GetEntitiesForTeam("ARC", 1)) do
+               if arc:GetIsInSiege() then 
+                count = count + 1
+                end
+          end 
+return count
+
+end
+function NS2Gamerules:MakeSureArcsCanShootHive(powerpoint)
+             for index, arc in ipairs(GetEntitiesForTeam("ARC", 1)) do
+               if arc:GetIsInSiege() and not arc:IsInRangeOfHive() then 
+                arc:GiveOrder(kTechId.Move, powerpoint:GetId(), powerpoint:FindArcHiveSpawn(), nil, false, false)
+                end
+          end 
+end
+function NS2Gamerules:DropshipArcs()
+   local arcspawnpoint = self:GetSiegePowerPoint():FindArcHiveSpawn()
+     if self:GetArcCountInSiege() <= 12 and self.team1:GetTeamResources() >= 8 then
+
+         if arcspawnpoint ~= nil then
+         local dropship = CreateEntity(Dropship.kMapName, arcspawnpoint, 1) 
+          self.team1:SetTeamResources(self.team2:GetTeamResources()  - 8)
+        end
+     end
+     
+     self:MakeSureArcsCanShootHive(self:GetSiegePowerPoint())
+     
+     return true
+
+end
 function NS2Gamerules:OpenSiegeDoors()
  self.siegedoorsopened = true
   
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
                self:AddTimedCallback(NS2Gamerules.SwitchObservatoryToSiegeMode, kSiegeObsAutoScanCooldown)
+               
+               self:AddTimedCallback(NS2Gamerules.DropshipArcs, 8)
 
                 
                for index, siegedoor in ientitylist(Shared.GetEntitiesWithClassname("SiegeDoor")) do
@@ -2178,7 +2248,7 @@ function NS2Gamerules:ToggleFuncMoveable()
 end
 
 function NS2Gamerules:GetCanUpdateRespawnTime()
-  return (self.lastrespawnupdate + 8) < Shared.GetTime()
+  return (self.lastrespawnupdate + 16) < Shared.GetTime()
 end
 function NS2Gamerules:UpdateSpawnTime()
   self.lastrespawnupdate = Shared.GetTime()
@@ -2291,14 +2361,13 @@ function NS2Gamerules:SetupRulesTest()
                    end
               end
               
-   if frontdoor and nearestrelevancy  then
-                averageorigin = averageorigin + frontdoor:GetOrigin()
+   if nearestrelevancy  then
                 averageorigin = averageorigin + nearestrelevancy:GetOrigin()
                 if mainroomorigin then
                  averageorigin = averageorigin + mainroomorigin
-                 averageorigin = averageorigin / 3
-                else
                  averageorigin = averageorigin / 2
+                else
+                 averageorigin = averageorigin / 1
                 end
    end
            return averageorigin

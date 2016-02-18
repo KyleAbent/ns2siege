@@ -254,7 +254,7 @@ function Marine:OnCreate()
    self.hasjumppack = false
    self.lastjump = 0
    self.hasfirebullets = false
-   self.hasreupply = false
+   self.hasreupply = true
    self.heavyarmor = false
    self.lastsupply = 0
    self.timeLastBeacon = Shared.GetTime()
@@ -544,6 +544,16 @@ function Marine:GetIsBuilding()
     end
     
     return building
+end
+function Marine:GetIsBuildingCC()
+        local weapon = self:GetWeaponInHUDSlot(5)
+    if (weapon) then
+        if (weapon:isa("LayStructures")) then
+            if weapon:GetDropMapName() == CommandStation.kMapName then return true end
+        end
+    end
+    
+    return false
 end
 function Marine:GetNanoShieldOffset()
     return Vector(0, -0.1, 0)
@@ -1055,13 +1065,22 @@ function Marine:OnProcessMove(input)
     
          if self.hasreupply then
       if Shared.GetTime() >  self.lastsupply + 8 then
+        local hassupplied = false
             if self:GetHealth() <= 90 then 
-             self:TriggerDropPack(self:GetOrigin(), kTechId.MedPack)
+             hassupplied = self:TriggerDropPack(self:GetOrigin(), kTechId.MedPack)
              end
              
-             if self:GetWeaponInHUDSlot(1) and self:GetWeaponInHUDSlot(1):GetAmmoFraction() <= .5
-             or self:GetWeaponInHUDSlot(2) and self:GetWeaponInHUDSlot(2):isa("Pistol") and self:GetWeaponInHUDSlot(2):GetAmmoFraction() <= .5                                 then
-             self:TriggerDropPack(self:GetOrigin(), kTechId.AmmoPack) 
+             if not hassupplied then
+             local weapon = self:GetActiveWeapon()
+                if weapon and weapon.GetAmmoFraction then          
+                   if weapon:GetAmmoFraction() <= .9 then                      
+                  hassupplied = self:TriggerDropPack(self:GetOrigin(), kTechId.AmmoPack) 
+                   end
+               end
+             end
+             
+             if not hassupplied and self:GetIsInCombat() then
+             self:TriggerDropPack(self:GetOrigin(), kTechId.CatPack) 
              end
              
        self.lastsupply = Shared.GetTime()

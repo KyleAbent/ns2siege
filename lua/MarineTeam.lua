@@ -426,7 +426,8 @@ function MarineTeam:InitTechTree()
     self.techTree:AddBuildNode(kTechId.PhaseGate,                    kTechId.None,        kTechId.None, true)
 
 
-    self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.None,       kTechId.None)      
+    self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.None,       kTechId.None)     
+    self.techTree:AddBuildNode(kTechId.Dropship,               kTechId.None,       kTechId.None)  
     self.techTree:AddActivation(kTechId.DistressBeacon,           kTechId.Observatory) 
     self.techTree:AddActivation(kTechId.LevelSentry,           kTechId.None)  
     self.techTree:AddActivation(kTechId.LevelIP,           kTechId.None)   

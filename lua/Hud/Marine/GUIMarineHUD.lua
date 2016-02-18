@@ -609,12 +609,12 @@ function GUIMarineHUD:Update(deltaTime)
     
         if commanderName == nil then
         
-            commanderName = Locale.ResolveString("NO_COMMANDER")
+            commanderName = Locale.ResolveString("Auto OP")
             
             if not self.commanderNameIsAnimating then
             
                 self.commanderNameIsAnimating = true
-                self.commanderName:SetColor(Color(1, 0, 0, 1))
+                self.commanderName:SetColor(Color(44.0, 106.0, 426, 1))
                 self.commanderName:FadeOut(1, nil, AnimateLinear, AnimFadeIn)
                 
             end

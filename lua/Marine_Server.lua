@@ -92,32 +92,12 @@ end
 function Marine:GetDamagedAlertId()
     return kTechId.MarineAlertSoldierUnderAttack
 end
-local function GetDroppackSoundName(techId)
 
-    if techId == kTechId.MedPack then
-        return MedPack.kHealthSound
-    elseif techId == kTechId.AmmoPack then
-        return AmmoPack.kPickupSound
-   // elseif techId == kTechId.CatPack then
-   //     return CatPack.kPickupSound
-    end 
-   
-end
 function Marine:TriggerDropPack(position, techId)
-
-    local mapName = LookupTechData(techId, kTechDataMapName)
-    local success = false
-    if mapName then
-    
-        local droppack = CreateEntity(mapName, position, self:GetTeamNumber())
-        StartSoundEffectForPlayer(GetDroppackSoundName(techId), self)
-       // self:ProcessSuccessAction(techId)
-        success = true
-        
-    end
-
-    return success
-
+            local gameRules = GetGamerules()
+            if gameRules then
+                  return gameRules:DropMarineSupport(self, position, techId)
+                end
 end
 function Marine:SetPoisoned(attacker)
 
@@ -540,12 +520,6 @@ function Marine:DropAllWeapons()
 end
 function Marine:PreOnKill(attacker, doer, point, direction)
 if self.modelsize ~= 1 then self.modelsize = 1 end
-
-      if self:GetIsBuilding() then  
-        local weapon = self:GetWeaponInHUDSlot(5)
-           local structure = CreateEntity(weapon:GetDropMapName(), weapon.originalposition, 1)
-           structure:SetConstructionComplete()
-       end
 end
 function Marine:OnKill(attacker, doer, point, direction)
     

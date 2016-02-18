@@ -74,6 +74,7 @@ kTechIdToMaterialOffset[kTechId.RoboticsFactory] = 6
 kTechIdToMaterialOffset[kTechId.LayStructureRobo] = 6
 kTechIdToMaterialOffset[kTechId.ARCRoboticsFactory] = 6
 kTechIdToMaterialOffset[kTechId.Observatory] = 7
+kTechIdToMaterialOffset[kTechId.Dropship] = 7
 kTechIdToMaterialOffset[kTechId.LayStructureObs] = 7
 kTechIdToMaterialOffset[kTechId.AdvancedBeaconTech] = 7
 kTechIdToMaterialOffset[kTechId.SelectObservatory] = 74

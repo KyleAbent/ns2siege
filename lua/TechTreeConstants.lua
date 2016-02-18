@@ -71,7 +71,7 @@ kTechId = createTechIdEnum({
 
     // Marine tech 
     'CommandStation', 'MAC', 'Armory', 'InfantryPortal', 'Extractor', 'ExtractorArmor', 'Sentry', 'LevelSentry', 'LevelIP', 'PGchannelOne', 'PGchannelTwo', 'PGchannelThree', 'ARC', 
-    'PowerPoint', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'AdvancedBeacon', 'PhaseGate', 'RoboticsFactory', 'AdvancedBeaconTech', 'ARCRoboticsFactory', 'ArmsLab',
+    'PowerPoint', 'AdvancedArmoryUpgrade', 'Observatory', 'Dropship', 'Detector', 'DistressBeacon', 'AdvancedBeacon', 'PhaseGate', 'RoboticsFactory', 'AdvancedBeaconTech', 'ARCRoboticsFactory', 'ArmsLab',
     'SentryBattery', 'PrototypeLab', 'AdvancedArmory',
     
     // Weapon tech

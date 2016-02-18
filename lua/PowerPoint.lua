@@ -582,7 +582,7 @@ end
                     if Server then
             local gameRules = GetGamerules()
             if gameRules then
-                  gameRules:SetupRoomBluePrint(GetLocationForPoint(self:GetOrigin()), self, self:GetRoomHasFrontDoor())
+                  gameRules:SetupRoomBluePrint(GetLocationForPoint(self:GetOrigin()), self, self:GetRoomHasFrontDoor(), self:GetIsInSiegeRoom())
                 end
                 end
             end
@@ -636,6 +636,27 @@ end
        end
            Print("No valid spot found for phase cannon!")
            return self:GetOrigin()
+    end
+              function PowerPoint:FindArcHiveSpawn()    
+        for index = 1, 100 do
+           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 48, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation and GetIsPointWithinHiveRadius(spawnPoint) then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for FindArcHiveSpawn")
+           return nil
     end
        function PowerPoint:UpdateCountKill()
            if Server then 
