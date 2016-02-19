@@ -25,6 +25,7 @@ Script.Load("lua/InfestationTrackerMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
+
 class 'Dropship' (ScriptActor)
 
 Dropship.kMapName = "dropship"
@@ -36,11 +37,13 @@ Dropship.kCrashgedModelName = PrecacheAsset("models/marine/Dropship/dropship_cra
 ///Siege Random Automatic Passive Time Researches
 
 local kAnimationGraph = PrecacheAsset("models/marine/Dropship/animated.animation_graph")
-
+local kHallucinationMaterial = PrecacheAsset( "cinematics/vfx_materials/marine_highlight.material")
 local networkVars = { 
                      flying = "boolean", 
     techId = "string (128)",
     mapname = "string (128)",
+    isbeacon = "boolean",
+     ipid = "entityid",
                      }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -101,6 +104,9 @@ function Dropship:OnCreate()
     self.startsBuilt = true
     self.techId = kTechId.ARC
     self.mapname = ARC.kMapName
+    self.isbeacon = false
+    self.ipid = Entity.invalidI
+
 end
 
 function Dropship:OnInitialized()
@@ -126,7 +132,11 @@ function Dropship:OnInitialized()
     end
     
     InitMixin(self, IdleMixin)
+        self:DoubleCheck()
 
+end
+function Dropship:DoubleCheck()
+    if self:isa("DropshipBeacon") then self.isbeacon = true end
 end
 function Dropship:GetDropStructureId()
     return self.techId
@@ -141,9 +151,61 @@ end
 function Dropship:SetMapName(mapname)
      self.mapname = mapname
 end
+if Client then
+
+    function Dropship:OnUpdateRender()
+          local showMaterial = not GetAreEnemies(self, Client.GetLocalPlayer()) and self.isbeacon --and not self.flying
+    
+        local model = self:GetRenderModel()
+        if model then
+
+            model:SetMaterialParameter("glowIntensity", 0)
+
+            if showMaterial then
+                
+                if not self.hallucinationMaterial then
+                    self.hallucinationMaterial = AddMaterial(model, kHallucinationMaterial)
+                end
+                
+                self:SetOpacity(0, "hallucination")
+            
+            else
+            
+                if self.hallucinationMaterial then
+                    RemoveMaterial(model, self.hallucinationMaterial)
+                    self.hallucinationMaterial = nil
+                end//
+                
+                self:SetOpacity(1, "hallucination")
+            
+            end //showma
+            
+        end//omodel
+   end //up render
+    
+end//client
+if Server then
+ function Dropship:PreOnKill(attacker, doer, point, direction)
+          /*
+                  local gameRules = GetGamerules()
+              if gameRules then
+                 gameRules:DropshipDeath(self:GetOrigin(), self.flying, self.isbeacon)
+               end  
+          */
+     self:ClearIPID()
+                      
+end
+end
 function Dropship:Derp()
     self.flying = false 
     self:SetModel(Dropship.kCrashgedModelName, kAnimationGraph)
+    if self.isbeacon then 
+       self:SetPhysicsGroup(PhysicsGroup.DropshipBeacon)  
+                local ip = Shared.GetEntity(self.ipid)
+             if ip then
+                ip:FinishSpawn()
+             end
+       end
     
                     self:UpdateModelCoords()
                 self:UpdatePhysicsModel()
@@ -152,24 +214,42 @@ function Dropship:Derp()
                end  
                self:MarkPhysicsDirty()   
      if Server then 
+              if not self.isbeacon then
        local entity = CreateEntity(self:GetDropMapName(), self:GetOrigin(), 1) 
          if entity:isa("ARC") then
          entity:GiveOrder(kTechId.ARCDeploy, self:GetId(), orderOrigin, nil, false, false)    
          elseif HasMixin(entity, "Construct") then
           entity.isGhostStructure = false
-         end
-       
-         self:AddTimedCallback(Dropship.Delete, 1)          
-       end             
+         end 
+               end
+                   self:AddTimedCallback(Dropship.Delete, 1)      
+       end   
+ 
 return false
                
 end
 
 
  if Server then
+ 
 function Dropship:Delete()
-  DestroyEntity(self)
+
+        if self.isbeacon then
+        self:ClearIPID()
+        self:AddTimedCallback(Dropship.DeleteBeacon, 4)  
+        else
+        DestroyEntity(self)
+        end
 end
+function Dropship:DeleteBeacon()
+        DestroyEntity(self)
+end   
+function Dropship:ClearIPID()
+             local ip = Shared.GetEntity(self.ipid)
+             if ip then
+                ip.spawnedship = Entity.invalidI
+             end
+end             
 end
 
 function Dropship:GetTechButtons(techId)
@@ -182,6 +262,10 @@ end
 function Dropship:OnTag(tagName)
     if tagName == "stopflying" then
        self.flying = false
+              local ip = Shared.GetEntity(self.ipid)
+             if ip then
+                ip:FinishSpawn()
+             end
     end
 end
 
@@ -234,7 +318,7 @@ return false
 end
 
 function Dropship:GetHealthbarOffset()
-    return 0.9
+    return 4
 end 
 function Dropship:GetDetectionRange()
 
@@ -247,3 +331,11 @@ function Dropship:GetDetectionRange()
 end
 
 Shared.LinkClassToMap("Dropship", Dropship.kMapName, networkVars)
+
+
+class 'DropshipBeacon' (Dropship)
+
+DropshipBeacon.kMapName = "dropshipbeacon"
+
+
+Shared.LinkClassToMap("DropshipBeacon", DropshipBeacon.kMapName, networkVars)

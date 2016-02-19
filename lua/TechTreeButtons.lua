@@ -1,16 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\TechTreeButtons.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Hard-coded data which maps tech tree constants to indices into a texture. Used to display
-// icons in the commander build menu and alien buy menu.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
-// These are the icons that appear next to alerts or as hotkey icons.
-// Icon size should be 20x20. Also used for the alien buy menu.
 function CommanderUI_Icons()
 
     local player = Client.GetLocalPlayer()
@@ -75,6 +62,7 @@ kTechIdToMaterialOffset[kTechId.LayStructureRobo] = 6
 kTechIdToMaterialOffset[kTechId.ARCRoboticsFactory] = 6
 kTechIdToMaterialOffset[kTechId.Observatory] = 7
 kTechIdToMaterialOffset[kTechId.Dropship] = 7
+kTechIdToMaterialOffset[kTechId.DropshipBeacon] = 7
 kTechIdToMaterialOffset[kTechId.LayStructureObs] = 7
 kTechIdToMaterialOffset[kTechId.AdvancedBeaconTech] = 7
 kTechIdToMaterialOffset[kTechId.SelectObservatory] = 74

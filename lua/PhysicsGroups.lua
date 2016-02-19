@@ -69,6 +69,7 @@ PhysicsGroup = enum
     'AlienWalkThrough',
     'AlienWalkThroughHit',
     'OpenDoor',
+    'DropshipBeacon',
 }
 
 // Pre-defined physics group masks.
@@ -83,7 +84,7 @@ PhysicsMask = enum
     All = 0xFFFFFFFF,
     
     // Filters anything that should not be collided with for player movement.
-    Movement = CreateMaskExcludingGroups(PhysicsGroup.OpenDoor, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.DroppedWeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
+    Movement = CreateMaskExcludingGroups(PhysicsGroup.DropshipBeacon, PhysicsGroup.OpenDoor, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.DroppedWeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
     
     // Filters anything that should not collide with onos movement.
     OnosMovement = CreateMaskExcludingGroups(PhysicsGroup.OpenDoor, PhysicsGroup.AlienWalkThrough, PhysicsGroup.AlienWalkThroughHit, PhysicsGroup.WhipGroup, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.MediumStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.PlayerControllersGroup, 

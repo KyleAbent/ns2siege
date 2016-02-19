@@ -183,7 +183,7 @@ if Server then
     function ConstructMixin:TypesOfSelfInRoomNonCredit()
      --  local location = GetLocationForPoint(self:GetOrigin()
        local count = 0
-       if self:GetIsBuilt() and self:GetTeamNumber() == 1 then count = count + 1 end 
+       if self:GetIsBuilt() and self:GetTeamNumber() == 1 and not self:isa("Dropship") then count = count + 1 end 
          /*
        if location then
                      local entities = location:GetEntitiesInTrigger()

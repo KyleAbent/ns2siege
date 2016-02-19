@@ -1,14 +1,3 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\MarineTeam.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// This class is used for teams that are actually playing the game, e.g. Marines or Aliens.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/Marine.lua")
 Script.Load("lua/PlayingTeam.lua")
 
@@ -428,6 +417,7 @@ function MarineTeam:InitTechTree()
 
     self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.None,       kTechId.None)     
     self.techTree:AddBuildNode(kTechId.Dropship,               kTechId.None,       kTechId.None)  
+    self.techTree:AddBuildNode(kTechId.DropshipBeacon,               kTechId.None,       kTechId.None)  
     self.techTree:AddActivation(kTechId.DistressBeacon,           kTechId.Observatory) 
     self.techTree:AddActivation(kTechId.LevelSentry,           kTechId.None)  
     self.techTree:AddActivation(kTechId.LevelIP,           kTechId.None)   

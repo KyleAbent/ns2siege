@@ -2103,6 +2103,13 @@ function NS2Gamerules:SetLocationVar()
               location:SetIsPoweredAtFrontOpen()
      end
 end
+function NS2Gamerules:EnableIPsBeacon()
+local ent = nil
+     for _, IP in ientitylist(Shared.GetEntitiesWithClassname("InfantryPortal")) do
+              IP:ActivateBeacons()
+     end
+     return true
+end
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  self:CountNodes()
@@ -2120,6 +2127,8 @@ function NS2Gamerules:OpenFrontDoors()
                 end
                 
               self:AddTimedCallback(NS2Gamerules.PickMainRoom, 10)
+              self:EnableIPsBeacon()
+              self:AddTimedCallback(NS2Gamerules.EnableIPsBeacon, 90)
                 
               for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
               StartSoundEffectForPlayer(NS2Gamerules.kFrontDoorSound, player)           

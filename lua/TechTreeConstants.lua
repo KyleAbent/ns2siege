@@ -1,11 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\TechTreeConstants.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 local gTechIdToString = {}
 
 local function createTechIdEnum(table)
@@ -71,7 +63,7 @@ kTechId = createTechIdEnum({
 
     // Marine tech 
     'CommandStation', 'MAC', 'Armory', 'InfantryPortal', 'Extractor', 'ExtractorArmor', 'Sentry', 'LevelSentry', 'LevelIP', 'PGchannelOne', 'PGchannelTwo', 'PGchannelThree', 'ARC', 
-    'PowerPoint', 'AdvancedArmoryUpgrade', 'Observatory', 'Dropship', 'Detector', 'DistressBeacon', 'AdvancedBeacon', 'PhaseGate', 'RoboticsFactory', 'AdvancedBeaconTech', 'ARCRoboticsFactory', 'ArmsLab',
+    'PowerPoint', 'AdvancedArmoryUpgrade', 'Observatory', 'Dropship', 'DropshipBeacon', 'Detector', 'DistressBeacon', 'AdvancedBeacon', 'PhaseGate', 'RoboticsFactory', 'AdvancedBeaconTech', 'ARCRoboticsFactory', 'ArmsLab',
     'SentryBattery', 'PrototypeLab', 'AdvancedArmory',
     
     // Weapon tech
