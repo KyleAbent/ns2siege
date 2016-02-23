@@ -1,11 +1,3 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Armory.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -26,7 +18,6 @@ Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
-Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
@@ -105,7 +96,6 @@ AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
-AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
@@ -136,7 +126,6 @@ function Armory:OnCreate()
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
     InitMixin(self, CombatMixin)
-    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -233,10 +222,6 @@ end
 function Armory:GetCanBeUsedConstructed(byPlayer)
     return not byPlayer:isa("Exo")
 end    
-
-function Armory:GetRequiresPower()
-    return true
-end
 function Armory:GetMaxLevel()
 return Armory.kMaxLevel
 end

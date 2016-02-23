@@ -28,7 +28,6 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
-Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
@@ -68,7 +67,6 @@ AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
@@ -97,7 +95,6 @@ function ArmsLab:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
-    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -284,9 +281,6 @@ function ArmsLab:OnResearchComplete(researchId)
    end
 end
 end // server
-function ArmsLab:GetIsPoweredOverride()
-    return ( self.powered or self.powerSurge and not self:GetIsVortexed() ) or self:GetHasSentryBatteryInRadius()
-end
 function ArmsLab:GetHasSentryBatteryInRadius()
       local battery = GetEntitiesWithinRange("SentryBattery", self:GetOrigin(), SentryBattery.kRange)
    if #battery >=1 then return true end
@@ -363,12 +357,16 @@ if Client then
             
         end
         
-        self.haloCinematic:SetIsVisible(self.deployed and self:GetIsPowered())
+        self.haloCinematic:SetIsVisible(self.deployed) 
         
     end
     
 end
+function ArmsLab:OnUpdateAnimationInput(modelMixin)
 
+    modelMixin:SetAnimationInput("powered", true)
+    
+end
 function ArmsLab:OnDestroy()
 
     ScriptActor.OnDestroy(self)
@@ -382,8 +380,5 @@ function ArmsLab:OnDestroy()
     
 end
 
-function ArmsLab:GetRequiresPower()
-    return true
-end
 
 Shared.LinkClassToMap("ArmsLab", ArmsLab.kMapName, networkVars)

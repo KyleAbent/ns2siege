@@ -62,27 +62,6 @@ local kResearchTypeToHiveType =
     [kTechId.UpgradeToShadeHive] = kTechId.ShadeHive,
     [kTechId.UpgradeToShiftHive] = kTechId.ShiftHive,
 }
-/*
-function Hive:UpdateResearch()
-
-    local researchId = self:GetResearchingId()
-
-    if kResearchTypeToHiveType[researchId] then
-    
-        local hiveTypeTechId = kResearchTypeToHiveType[researchId]
-        local techTree = self:GetTeam():GetTechTree()    
-        local researchNode = techTree:GetTechNode(hiveTypeTechId)    
-        researchNode:SetResearchProgress(self.researchProgress)
-        techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress)) 
-        
-    end
-    
-    if researchId == kTechId.ResearchBioMassOne or researchId == kTechId.ResearchBioMassTwo then
-        self.biomassResearchFraction = self:GetResearchProgress()
-    end
-
-end
-*/
 function Hive:OnResearchCancel(researchId)
 
     if kResearchTypeToHiveType[researchId] then
@@ -498,92 +477,6 @@ function Hive:OnUpdate(deltaTime)
     end    
     
 end
-/*
-function Hive:UpdatePassive()
-   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
-       if not GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() or GetHasTech(self, kTechId.RifleClip) then return end
-       
-    local commander = GetCommanderForTeam(2)
-    if not commander then return end
-    
-
-    local techid = nil
-    
-   // if not GetHasTech(self, kTechId.ShiftHive) then
-   // techid = kTechId.ShiftHive 
-   // end
-    
-  
-    local teamInfo = GetTeamInfoEntity(2)
-   ` local bioMassLevel = (teamInfo and teamInfo.GetBioMassLevel) and teamInfo:GetBioMassLevel() or 0
-        
-    if self.bioMassLevel == 0 then
-    techid = kTechId.Weapons1
-    elseif self.bioMassLevel == 1 then
-    techid = kTechId.ResearchBioMassOne
-   elseif self.bioMassLevel == 2 then
-    techid = kTechId.ResearchBioMassTwo
-  elseif self.bioMassLevel == 3 then
-    techid = kTechId.ResearchBioMassThree
-    else
-       return  
-    end
-
-  
-   local techNode = commander:GetTechTree():GetTechNode( techid ) 
-   commander.isBotRequestedAction = true
-   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
-   
-end
-function Hive:UpdateResearch(deltaTime)
-   //Kyle Abent Siege 10.25.15 morning writing twtich.tv/kyleabent
-    local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
-    if researchNode then
-        local gameRules = GetGamerules()
-        local projectedminutemarktounlock = 60
-        local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
-        local teamInfo = GetTeamInfoEntity(2)
-        local bioMassLevel = (teamInfo and teamInfo.GetBioMassLevel) and teamInfo:GetBioMassLevel() or 0
-
-        if researchNode:GetTechId() == kTechId.ResearchBioMassOne then
-           projectedminutemarktounlock = 0 //kBioMassOneSecondUnlock 
-        elseif researchNode:GetTechId() == kTechId.ResearchBioMassTwo then
-          projectedminutemarktounlock = 0 //kBioMassOneSecondUnlock
-        elseif researchNode:GetTechId() == kTechId.ResearchBioMassThree then
-          projectedminutemarktounlock = 0 //kBioMassOneSecondUnlock
-       elseif researchNode:GetTechId() == kTechId.UpgradeToShiftHive then
-          projectedminutemarktounlock = 60 //kSecondMarkToUnlockShiftHive
-        end
-      
-       
-        local progress = Clamp(currentroundlength / projectedminutemarktounlock, 0, 1)
-        //Print("%s", progress)
-        
-        if progress ~= self.researchProgress then
-        
-            self.researchProgress = progress
-
-            researchNode:SetResearchProgress(self.researchProgress)
-            
-            local techTree = self:GetTeam():GetTechTree()
-            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
-            
-            // Update research progress
-            if self.researchProgress == 1 then
-
-                // Mark this tech node as researched
-                researchNode:SetResearched(true)
-                
-                techTree:QueueOnResearchComplete(self.researchingId, self)
-                
-            end
-        
-        end
-        
-    end 
-
-end
-*/
 function Hive:OnKill(attacker, doer, point, direction)
 
     CommandStructure.OnKill(self, attacker, doer, point, direction)
@@ -614,33 +507,19 @@ function Hive:OnKill(attacker, doer, point, direction)
      GetGamerules():SpawnNewHive(self:GetOrigin())
      
 end
-function Hive:GetIsEggBeaconOnField()
-      local shell = GetEntitiesWithinRange("Shell", self:GetOrigin(), 999)
-           if #shell >=1 then return true end
-           return false
-end
 
-function Hive:GenerateEggSpawns(hiveLocationName)
-
+function Hive:GenerateEggSpawns(haskingcyst, kingcystlocation,saidcyst)
     PROFILE("Hive:GenerateEggSpawns")
-    
     self.eggSpawnPoints = { }
-    
     local minNeighbourDistance = 1.5
     local maxEggSpawns = 20
     local maxAttempts = maxEggSpawns * 10
-    // pre-generate maxEggSpawns, trying at most maxAttempts times
     for index = 1, maxAttempts do
-    
-        // Note: We use kTechId.Skulk here instead of kTechId.Egg because they do not share the same extents.
-        // The Skulk is a bit bigger so there are cases where it would find a location big enough for an Egg
-        // but too small for a Skulk and the Skulk would be stuck when spawned.
         local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
         local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-        local spawnpoint = self:GetModelOrigin()
-        spawnpoint = ConditionalValue(self:GetHasActiveEggBeacon(), self:GetEggBeaconLocation(), spawnpoint)
-        spawnpoint = ConditionalValue(self:HasKingCyst(), self:GetKingCystLocation(), spawnpoint)
-        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, spawnpoint, kEggMinRange, kEggMaxRange, EntityFilterAll())
+        local whichtochoose = self:GetModelOrigin()
+        whichtochoose = ConditionalValue(haskingcyst, saidcyst:GetModelOrigin(), whichtochoose)
+        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, whichtochoose, kEggMinRange, kEggMaxRange, EntityFilterAll())
         
         if spawnPoint ~= nil then
             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
@@ -649,7 +528,7 @@ function Hive:GenerateEggSpawns(hiveLocationName)
         local location = spawnPoint and GetLocationForPoint(spawnPoint)
         local locationName = location and location:GetName() or ""
         
-        local sameLocation = spawnPoint ~= nil and locationName == hiveLocationName
+        local sameLocation = spawnPoint ~= nil and locationName == ConditionalValue(haskingcyst, saidcyst:GetLocationName(), self:GetLocationName())
         
         if spawnPoint ~= nil and sameLocation then
         
@@ -683,35 +562,40 @@ function Hive:GenerateEggSpawns(hiveLocationName)
     end
     
 end
-function Hive:GetHasActiveEggBeacon()
-      local nearest = GetNearest(self:GetOrigin(), "Shell", nil, function(ent) return ent:GetIsBuilt()  end)
-      
-   if nearest then 
-   return true
-   end
+ function Hive:FindFreeSpace()    
+        for index = 1, 24 do
+           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 24, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then
+           return spawnPoint
+           end
+        end
+        Print("No valid spot found for hive FindFreeSpace")
+        return self:GetModelOrigin()
 end
-function Hive:GetKingCystLocation()
-      for _, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do 
-       // return shell:GetOrigin()
-       if cyst.isking then return cyst:GetOrigin() end
-      end
+function Hive:MaintainDefense()
+           local shifts, crags, shades = self:GetDefenseEntsInRange()
+           local gamerules = GetGamerules()
+           gamerules:HiveDefenseMain(self,shifts, crags, shades)
+           
+           return true
+           
 end
-function Hive:HasKingCyst()
-      for _, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do 
-       // return shell:GetOrigin()
-       if cyst.isking then return true end
-      end
-end
-function Hive:GetEggBeaconLocation()
-      for _, shell in ientitylist(Shared.GetEntitiesWithClassname("Shell")) do 
-        return shell:GetOrigin()
-      end
-end
-function Hive:OnLocationChange(locationName)
-
-    CommandStructure.OnLocationChange(self, locationName)
-    self:GenerateEggSpawns(locationName)
-
+function Hive:GetDefenseEntsInRange()
+ local shifts = GetEntitiesForTeamWithinRange("Shift", 2, self:GetOrigin(), 24)
+ local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 24)
+ local shades = GetEntitiesForTeamWithinRange("Shade", 2, self:GetOrigin(), 24)
+return shifts, crags, shades
 end
 
 function Hive:OnOverrideSpawnInfestation(infestation)
@@ -839,6 +723,26 @@ function Hive:AutoUpgrade()
         end
         return false
 end
+function Hive:SpawnTunnel()
+
+local count = 0 
+
+             for index, pherome in ientitylist(Shared.GetEntitiesWithClassname("TunnelEntrance")) do
+                   count = count + 1
+              end
+              
+              if count <= 2 then
+                                  local entranceorigin = self:FindFreeSpace()
+                                  local entrance = CreateEntity(TunnelEntrance.kMapName, entranceorigin, 2) 
+                                  local exitorigin = self:FindFreeSpace()
+                                  local exit = CreateEntity(TunnelEntrance.kMapName, exitorigin, 2) 
+              end
+              
+              return true
+              
+              
+              
+end
 function Hive:OnConstructionComplete()
 
     self.bioMassLevel = 4   
@@ -851,7 +755,7 @@ function Hive:OnConstructionComplete()
         if team then
          team:UpdateBioMassLevel()
          end
-         
+         self:AddTimedCallback(Hive.SpawnTunnel, 8)  
     if not GetGamerules():GetFrontDoorsOpen() then
 
   //  self:AddTimedCallback(Hive.AutoUpgrade, 4)

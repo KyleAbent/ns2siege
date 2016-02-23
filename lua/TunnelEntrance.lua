@@ -85,48 +85,6 @@ AddMixinNetworkVars(TeleportMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(AlienStructureMoveMixin, networkVars)
 
-local function UpdateInfestationStatus(self)
-
-    local wasOnInfestation = self.onNormalInfestation
-    self.onNormalInfestation = false
-    
-    local origin = self:GetOrigin()
-    // use hives and cysts as "normal" infestation
-    local infestationEnts = GetEntitiesForTeamWithinRange("Hive", self:GetTeamNumber(), origin, 25)
-    table.copy(GetEntitiesForTeamWithinRange("Cyst", self:GetTeamNumber(), origin, 25), infestationEnts, true)
-    
-    // update own infestation status
-    for i = 1, #infestationEnts do
-    
-        if infestationEnts[i]:GetIsPointOnInfestation(origin) then
-            self.onNormalInfestation = true
-            break
-        end
-    
-    end
-    
-    local otherSideInfested = false
-    local tunnel = self:GetTunnelEntity()
-    
-    if tunnel then
-    
-        local exitA = tunnel:GetExitA()
-        local exitB = tunnel:GetExitB()
-        local otherSide = (exitA and exitA ~= self) and exitA or exitB
-        otherSideInfested = (otherSide and otherSide.onNormalInfestation) and true or false
-        
-    end
-        
-    if otherSideInfested ~= self.otherSideInfested then
-    
-        self.otherSideInfested = otherSideInfested
-        self:SetDesiredInfestationRadius(self:GetInfestationMaxRadius())
-    
-    end
-
-    return true
-
-end
 
 function TunnelEntrance:OnCreate()
 
@@ -195,8 +153,6 @@ function TunnelEntrance:OnInitialized()
             InitMixin(self, MapBlipMixin)
         end
         
-        self.onNormalInfestation = false
-        //self:AddTimedCallback(UpdateInfestationStatus, 1)
         
     elseif Client then
     
@@ -320,7 +276,6 @@ function TunnelEntrance:OnOverrideOrder(order)
              self:SetInfestationRadius(0)
     elseif order:GetType() == kTechId.Stop then
              order:SetType(kTechId.Stop)
-             //UpdateInfestationStatus(self)
            //  InitMixin(self, InfestationMixin)
              self:SetInfestationRadius(0)
            //  self.movedbycommander = false

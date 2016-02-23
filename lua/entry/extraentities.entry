@@ -1,7 +1,7 @@
 modEntry = [[
-	Client: lua/ExtraEntitiesMod/eem_Client.lua,
-	Server: lua/ExtraEntitiesMod/eem_Server.lua,
-	Predict: lua/ExtraEntitiesMod/eem_Predict.lua,
-	Shared: lua/ExtraEntitiesMod/eem_Shared.lua,
+	Client: lua/SiegeMod/Client.lua,
+	Server: lua/SiegeMod/Server.lua,
+	Predict: lua/SiegeMod/Predict.lua,
+	Shared: lua/SiegeMod/Shared.lua,
 	Priority: 3
 ]]

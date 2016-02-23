@@ -335,18 +335,6 @@ end
 
 function MarineBuy_GetCosts(techId)
     if techId ~= nil then
-    
-        if techId == kTechId.Exosuit then
-                local minResCost = 1337
-         for moduleType, moduleTypeName in ipairs(kExoModuleTypes) do
-            local moduleTypeData = kExoModuleTypesData[moduleType]
-            if moduleTypeData and moduleTypeData.category == kExoModuleCategories.PowerSupply then
-                minResCost = math.min(minResCost, moduleTypeData.resourceCost)
-            end
-            return minResCost
-        end
-        end
-    
         return LookupTechData(techId, kTechDataCostKey, 0)
     else
         return 0

@@ -411,21 +411,19 @@ end
 
 function GetIsUnitActive(unit, debug)
 
-    local powered = not HasMixin(unit, "PowerConsumer") or not unit:GetRequiresPower() or unit:GetIsPowered()
     local alive = not HasMixin(unit, "Live") or unit:GetIsAlive()
     local isBuilt = not HasMixin(unit, "Construct") or unit:GetIsBuilt()
     local isRecycled = HasMixin(unit, "Recycle") and (unit:GetIsRecycled() or unit:GetIsRecycling())
     
     if debug then
         Print("------------ GetIsUnitActive(%s) -----------------", ToString(unit))
-        Print("powered: %s", ToString(powered))
         Print("alive: %s", ToString(alive))
         Print("isBuilt: %s", ToString(isBuilt))
         Print("isRecycled: %s", ToString(isRecycled))
         Print("-----------------------------")
     end
     
-    return not GetIsVortexed(unit) and powered and alive and isBuilt and not isRecycled
+    return not GetIsVortexed(unit)  and alive and isBuilt and not isRecycled
     
 end
 
@@ -516,7 +514,7 @@ local function FindPoweredAttachEntities(className, teamNumber, origin, range)
     ASSERT(type(range) == "number")
     
     local function teamAndPoweredFilterFunction(entity)
-        return entity:GetTeamNumber() == teamNumber and entity:GetIsBuilt() and entity:GetIsPowered()
+        return entity:GetTeamNumber() == teamNumber and entity:GetIsBuilt()
     end
     
     return Shared.GetEntitiesWithTagInRange("class:" .. className, origin, range, teamAndPoweredFilterFunction)
@@ -1933,9 +1931,6 @@ function GetSelectionText(entity, teamNumber)
         local secondaryText = ""
         if HasMixin(entity, "Construct") and not entity:GetIsBuilt() then        
             secondaryText = "Unbuilt "
-            
-        elseif HasMixin(entity, "PowerConsumer") and entity:GetRequiresPower() and not entity:GetIsPowered() then
-            secondaryText = "Unpowered "
             
         elseif entity:isa("Whip") then
         

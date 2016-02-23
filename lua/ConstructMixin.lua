@@ -27,7 +27,8 @@ ConstructMixin.networkVars =
     constructionComplete    = "boolean",
 
     // Show different material when under construction
-    underConstruction       = "boolean"
+    underConstruction       = "boolean",
+    mainbattle = "boolean",
     
 }
 
@@ -74,6 +75,7 @@ function ConstructMixin:__initmixin()
     self:AddTimedCallback(ConstructMixin.OnConstructUpdate, 0)
     
     self.startsBuilt  = false
+    self.mainbattle = false
     
 end
 
@@ -237,11 +239,6 @@ function ConstructMixin:ModifyHeal(healTable)
     end
 
 end
-/*
-function ConstructMixin:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
- if not self:GetIsBuilt() and GetHasTech(self, kTechId.BluePrintTech) then damageTable.damage = damageTable.damage * 2 end
-end
-*/
 function ConstructMixin:ResetConstructionStatus()
 
     self.buildTime = 0
@@ -322,14 +319,11 @@ function ConstructMixin:Construct(elapsedTime, builder)
             
             local techTree = self:GetTeam():GetTechTree()
             local techNode = techTree:GetTechNode(self:GetTechId())
-
-            local modifier = (self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
+            local modifier = (not self:isa("PowerPoint") and self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
             modifier = modifier * kDynamicBuildSpeed 
             modifier = modifier * ConditionalValue(self:SetupAdvantage(), 2, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), 0.10, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType and self:SiegeDisAdvantageMarine(), .5, 1)
-            modifier = modifier * ConditionalValue(self:GetTeamType() == kMarineTeamType, kMapStatsMarineBuild, 1)
-            modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType, kMapStatsAlienBuild, 1)
             local startBuildFraction = self.buildFraction
             local newBuildTime = self.buildTime + elapsedTime * modifier
             local timeToComplete = self:GetTotalConstructionTime()            
@@ -618,7 +612,23 @@ function ConstructMixin:IsInRangeOfHive()
 end
 if Server then
 
-
+    function ConstructMixin:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
+    
+       
+        if not self.mainbattle or ( self:GetIsSiege() and not string.find(self:GetLocationName(), "Siege") and not string.find(self:GetLocationName(), "siege") ) then 
+         damageTable.damage = damageTable.damage * kMainRoomDamageMult
+        end
+        
+    end
+       function ConstructMixin:GetIsSiege()
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
+                   return true
+               end
+            end
+            return false
+      end
     function ConstructMixin:Reset()
 
         if self.startsBuilt then

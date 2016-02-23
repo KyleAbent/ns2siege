@@ -676,13 +676,7 @@ function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName, isbea
       local extraValues = {}
       
      if currentmod == SD then
-             extraValues = {
-            leftArmModuleType  = kExoModuleTypes.Minigun,
-            rightArmModuleType = kExoModuleTypes.Minigun,
-            utilityModuleType = kExoModuleTypes.Nano,
-            powerModuleType = kExoModuleTypes.None,
-
-        }
+             extraValues = {}
     end
  
     local newPlayer = player:Replace(spawnMapName, self:GetTeamNumber(), false, origin, extraValues)

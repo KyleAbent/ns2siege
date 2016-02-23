@@ -30,7 +30,6 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
-Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
@@ -65,7 +64,6 @@ AddMixinNetworkVars(StunMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
@@ -93,7 +91,6 @@ function SentryBattery:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
-    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -140,10 +137,6 @@ end
 
 function SentryBattery:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
-end
-
-function SentryBattery:GetRequiresPower()
-    return false
 end
 function SentryBattery:GetHealthbarOffset()
     return 0.75

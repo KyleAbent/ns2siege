@@ -159,17 +159,6 @@ function Hive:OnInitialized()
     
 end
 
-local kHelpArrowsCinematicName = PrecacheAsset("cinematics/alien/commander_arrow.cinematic")
-PrecacheAsset("models/misc/commander_arrow_aliens.model")
-
-if Client then
-
-    function Hive:GetHelpArrowsCinematicName()
-        return kHelpArrowsCinematicName
-    end
-    
-end
-
 function Hive:GetEvolutionChamber()
     return Shared.GetEntity( self.evochamberid )
 end

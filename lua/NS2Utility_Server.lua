@@ -606,7 +606,7 @@ function GetFairRespawnLength()
 --Works well as of 1.15
 local default = kMarineRespawnTime
  local gameRules = GetGamerules()
- if not gameRules:GetGameStarted() and not gameRules:GetCanUpdateRespawnTime() then return kMarineRespawnTime end 
+ if not gameRules:GetGameStarted() or not gameRules:GetCanUpdateRespawnTime() then return kMarineRespawnTime end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
              Print("roundlength is %s", roundlength)
       roundlength = Clamp(roundlength/kSiegeDoorTime, 0.1, 2) //So dependent on roundlength

@@ -1,11 +1,3 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\InfantryPortal.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) 
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -30,7 +22,6 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
-Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
@@ -68,16 +59,12 @@ InfantryPortal.kLoginAttachPoint = "keypad"
 local kPushRange = 3
 local kPushImpulseStrength = 40
 
-local kInfantryPortalGainXP = .1
-local kInfantryPortalMaxLevel = 10
-InfantryPortal.GainXp = .025
-
 local networkVars =
 {
     queuedPlayerId = "entityid",
-    level = "float (0 to " .. kInfantryPortalMaxLevel  .. " by .1)",
     creditstructre = "boolean",
     activebeacon = "boolean",
+    beacontime = "time",
    spawnedship = "entityid",
 }
 
@@ -97,7 +84,6 @@ AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
-AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -183,7 +169,6 @@ function InfantryPortal:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
-    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -199,10 +184,10 @@ function InfantryPortal:OnCreate()
     self:SetLagCompensated(true)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
-    self.level = 0
     self.creditstructre = false
     self.activebeacon = false
     self.spawnedship = Entity.invalidI
+    self.beacontime = 0
 end
 
 local function StopSpinning(self)
@@ -301,53 +286,17 @@ function InfantryPortal:OnInitialized()
     InitMixin(self, IdleMixin)
     
 end
-/*
-function InfantryPortal:GetLevelPercentage()
-return self.level / kInfantryPortalMaxLevel * kSentryScaleSize
-end
-
-function InfantryPortal:OnAdjustModelCoords(modelCoords)
-    local coords = modelCoords
-	local scale = self:GetLevelPercentage()
-       if scale >= 1 then
-        coords.xAxis = coords.xAxis * scale
-        coords.yAxis = coords.yAxis * scale
-        coords.zAxis = coords.zAxis * scale
-    end
-    return coords
-end
-*/
-function InfantryPortal:AddXP(amount)
-
-    local xpReward = 0
-        xpReward = math.min(amount, kInfantryPortalMaxLevel - self.level)
-        self.level = self.level + xpReward
-   
-    return xpReward
-    
-end
-function InfantryPortal:GetMaxLevel()
-return kInfantryPortalMaxLevel
-end
-function InfantryPortal:GetLevel()
-        return Round(self.level, 2)
-end
 function InfantryPortal:ActivateBeacons()
-       self.activebeacon = true
+       self.beacontime = Shared.GetTime()
        Print("BeaconActive")
-       self:AddTimedCallback(InfantryPortal.DeactivateBeacons, 28)
 end
 function InfantryPortal:DeactivateBeacons()
+       Print("BeaconPassive")
+            if self.beacontime + 28 < Shared.GetTime() then
                self.activebeacon = false
                self.spawnedship = Entity.invalidId 
-end
-  function InfantryPortal:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Level %s Infantry Portal"), self:GetLevel())
-return unitName
-end  
-function InfantryPortal:GetAddXPAmount()
-return InfantryPortal.GainXp
+               return true
+            end
 end
 function InfantryPortal:OnDestroy()
 
@@ -428,15 +377,7 @@ function InfantryPortal:GetReceivesStructuralDamage()
     return true
 end
 function InfantryPortal:GetSpawnTime()
-local fair = kMarineRespawnTime
- // Print("fair is %s", fair)
-//if Server then
-// fair = GetFairRespawnLength()
-//   Print("fair is %s", fair)
-//end
-    local length = ( fair - (self.level/100) * fair)
-      // Print("respawn length is %s", length)
-    return math.round(length, 2)
+    return kMarineRespawnTime
 end
 function InfantryPortal:OnReplace(newStructure)
     newStructure.queuedPlayerId = self.queuedPlayerId
@@ -654,7 +595,6 @@ if Server then
         SpawnPlayer(self)
         StopSpinning(self)
         self.timeSpinUpStarted = nil
-        self:AddXP(kInfantryPortalGainXP)  
     end
     
 end
@@ -764,15 +704,6 @@ function GetCommandStationIsBuilt(techId, origin, normal, commander)
     return false
 
 end
-if Server then
-    function InfantryPortal:OnUpdate(deltaTime)
-         local max = kInfantryPortalHealth * (self.level/100) + kInfantryPortalHealth
-        if self:GetMaxHealth() ~= max then
-         self:AdjustMaxHealth( max ) 
-        self:AdjustMaxArmor(kInfantryPortalArmor * (self.level/100) + kInfantryPortalArmor)
-        end
-     end
-end
 if Client then
 
     function InfantryPortal:PreventSpinEffect(duration)
@@ -807,17 +738,7 @@ function InfantryPortal:GetTechButtons()
 local techButtons = nil
   techButtons =  {kTechId.SetRally, kTechId.SpawnMarine, kTechId.None, kTechId.None, 
         kTechId.None, kTechId.None, kTechId.None, kTechId.None,}
-        if self.level ~= kInfantryPortalMaxLevel then
-    techButtons[5] = kTechId.LevelIP
-    end
       return techButtons
-end
- function InfantryPortal:PerformActivation(techId, position, normal, commander)
-     local success = false
-    if techId == kTechId.LevelIP then
-    success = self:AddXP(5)    
-    end
-      return success, true
 end
 function InfantryPortal:GetHealthbarOffset()
     return 0.5

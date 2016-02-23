@@ -627,11 +627,7 @@ function Alien:HandleButtons(input)
 end
 
 function Alien:GetIsCamouflaged()
-if not self:isa("Fade") then 
     return GetHasCamouflageUpgrade(self) and not self:GetIsInCombat()
-else
-    return GetHasCamouflageUpgrade(self) and ( self:GetEligableForProlongedInvisibility() or not self:GetIsInCombat() )
- end
 end
 function Alien:GetCanDoorInteract(inEntity)
 return false

@@ -481,16 +481,12 @@ function AlienTeam:OnEntityChange(oldEntityId, newEntityId)
 end
 
 local function CreateCysts(hive, harvester, teamNumber)
-    
-    // Spawn all the Cyst spawn points close to the hive.
-    for c = 1, #Server.cystSpawnPoints do
-    
-        local spawnPoint = Server.cystSpawnPoints[c]
-        
-            local cyst = CreateEntityForTeam(kTechId.Cyst, spawnPoint, teamNumber, nil)
+        for i = 1, math.random(4,8) do
+        local spawnPoint = GetRandomBuildPosition( kTechId.Cyst, hive:GetOrigin(), 12 )
+            local cyst = CreateEntity(Cyst.kMapName, spawnPoint, 2)
             cyst:SetConstructionComplete()
             cyst:SetInfestationFullyGrown()
-    end
+       end
     
 end
 
@@ -500,11 +496,8 @@ function AlienTeam:SpawnInitialStructures(techPoint)
     
     hive:SetFirstLogin()
     hive:SetInfestationFullyGrown()
-    
-    // It is possible there was not an available tower if the map is not designed properly.
-    if tower then
-        CreateCysts(hive, tower, self:GetTeamNumber())
-    end
+    CreateCysts(hive)
+
     
     return tower, hive
     

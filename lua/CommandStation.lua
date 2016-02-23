@@ -100,19 +100,12 @@ end
 function CommandStation:GetIsWallWalkingAllowed()
     return false
 end
-/*
-function CommandStation:GetCanBeWeldedOverride()
-return not self:GetIsSuddenDeath()
-end
-
-function CommandStation:GetAddConstructHealth()
-
-return not self:GetIsSuddenDeath()
-end
-*/
 function CommandStation:GetCanBeNanoShieldedOverride()
 return not self:GetIsVortexed()
 end
+    function CommandStation:OnConstructionComplete()
+            self:AddTimedCallback(CommandStation.SpawnEntities, 8)     
+    end
 function CommandStation:GetIsSuddenDeath()
         if Server then
             local gameRules = GetGamerules()
@@ -124,18 +117,40 @@ function CommandStation:GetIsSuddenDeath()
         end
             return false
 end
-local kHelpArrowsCinematicName = PrecacheAsset("cinematics/marine/commander_arrow.cinematic")
-PrecacheAsset("models/misc/commander_arrow.model")
-          
-if Client then
-
-    function CommandStation:GetHelpArrowsCinematicName()
-        return kHelpArrowsCinematicName
-    end
-    
-end
 if Server then
+    function CommandStation:FindFreeSpace()
+    
+        for index = 1, 24 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 6, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for CC spawn ips")
+           return nil
+    end
+function CommandStation:SpawnEntities()   
 
+
+                      local gameRules = GetGamerules()
+            if gameRules then
+                           gameRules:SpawnCommandStationEnts(self)  
+            end
+            
+          return true
+
+end
    function CommandStation:GetCanBeUsedConstructed(byPlayer)
    return not self:GetIsSiege() and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
    end
@@ -211,6 +226,10 @@ local amount = 0
     
 end
 if Server then
+function CommandStation:GETIPCount()   
+        return #GetEntitiesForTeamWithinRange("InfantryPortal", 1, self:GetOrigin(), 16) or 0
+                    
+end  
 function GetCCQualifications(techId, origin, normal, commander)
  if CommandStation:GetCCAmount() >= 3 then return false end
           /*

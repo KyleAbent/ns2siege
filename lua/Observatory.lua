@@ -32,7 +32,6 @@ Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
-Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
@@ -79,7 +78,6 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
-AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -121,7 +119,6 @@ function Observatory:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
-    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
 
     
@@ -599,7 +596,7 @@ end
 function Observatory:RevealCysts()
 
     for _, cyst in ipairs(GetEntitiesForTeamWithinRange("Cyst", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Observatory.kDetectionRange)) do
-        if self:GetIsBuilt() and self:GetIsPowered() then
+        if self:GetIsBuilt()  then
             cyst:SetIsSighted(true)
         end
     end
@@ -650,29 +647,10 @@ function Observatory:UpdatePassive()
    commander.isBotRequestedAction = true
    commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
 end
-function Observatory:ScanAtOrigin()
-         CreateEntity( Scan.kMapName, self:GetOrigin(), 1)
-         self.lastscantime = Shared.GetTime()
-end
-  function Observatory:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-    
-  //  if self:GetIsSiege() then //and not self:GetCanAutomaticTriggerInkAgain() then
-     local NowToInk = self:GetCoolDown() - (Shared.GetTime() - self.lastscantime)
-     local ScanLength =  math.ceil( Shared.GetTime() + NowToInk - Shared.GetTime() )
-     local time = ScanLength
-     unitName = string.format(Locale.ResolveString("Observatory (%s)"), Clamp(time, 0, self:GetCoolDown()))
-  //  end
- 
-return unitName
-end 
 function Observatory:GetLocationName()
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         return locationName
-end
-function Observatory:GetCoolDown()
-return kSiegeObsAutoScanCooldown
 end
 function Observatory:GetIsInSiege()
 if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
@@ -688,9 +666,7 @@ function Observatory:PerformActivation(techId, position, normal, commander)
             return self:TriggerDistressBeacon()
         end
         if techId == kTechId.AdvancedBeacon then
-                  if not self:GetIsPowered() then
                    self:SetPowerSurgeDuration(5)
-                   end
            return self:TriggerAdvancedBeacon()
          end
         

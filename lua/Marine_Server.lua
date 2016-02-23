@@ -598,50 +598,31 @@ local function StorePrevPlayer(self, exo)
 end
 
 function Marine:GiveExo(spawnPoint)
-
-        local extraValues = {
-            leftArmModuleType  = kExoModuleTypes.Claw,
-            rightArmModuleType = kExoModuleTypes.Minigun,
-            utilityModuleType = kExoModuleTypes.Nano,
-            powerModuleType = kExoModuleTypes.None
-        }
-        self:Replace("exo", self:GetTeamNumber(), false, nil, extraValues)
+    
+    return self:GiveDualExo(spawnPoint)
+    
     
 end
 
 function Marine:GiveDualExo(spawnPoint)
 
-        local extraValues = {
-            leftArmModuleType  = kExoModuleTypes.Minigun,
-            rightArmModuleType = kExoModuleTypes.Minigun,
-            utilityModuleType = kExoModuleTypes.Nano,
-            powerModuleType = kExoModuleTypes.None,
-
-        }
-        self:Replace("exo", self:GetTeamNumber(), false, nil, extraValues)
+    local exo = self:Replace(Exo.kMapName, self:GetTeamNumber(), false, spawnPoint, { layout = "MinigunMinigun" })
+    StorePrevPlayer(self, exo)
+    
+    return exo
     
 end
 
 function Marine:GiveClawRailgunExo(spawnPoint)
-
-        local extraValues = {
-            leftArmModuleType  = kExoModuleTypes.Claw,
-            rightArmModuleType = kExoModuleTypes.Railgun,
-            utilityModuleType = kExoModuleTypes.Nano,
-            powerModuleType = kExoModuleTypes.None
-        }
-        self:Replace("exo", self:GetTeamNumber(), false, nil, extraValues)
-    
+    return self:GiveDualRailgunExo(spawnPoint)
 end
 
 function Marine:GiveDualRailgunExo(spawnPoint)
 
-        local extraValues = {
-            leftArmModuleType  = kExoModuleTypes.Railgun,
-            rightArmModuleType = kExoModuleTypes.Railgun,
-            utilityModuleType = kExoModuleTypes.Nano,
-            powerModuleType = kExoModuleTypes.None
-        }
-        self:Replace("exo", self:GetTeamNumber(), false, nil, extraValues)
+
+    local exo = self:Replace(Exo.kMapName, self:GetTeamNumber(), false, spawnPoint, { layout = "RailgunRailgun" })
+    StorePrevPlayer(self, exo)
+    
+    return exo
     
 end

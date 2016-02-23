@@ -1,20 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\PowerPoint.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Every room has a power point in it, which starts built. It is placed on the wall, around
-// head height. When a power point is taking damage, lights nearby flicker. When a power point 
-// is at 35% health or lower, the lights cycle dramatically. When a power point is destroyed, 
-// the lights go completely black and all marine structures power down 5 long seconds later, the 
-// aux. power comes on, fading the lights back up to ~%35. When down, the power point has 
-// ambient electricity flowing around it intermittently, hinting at function. Marines can build 
-// the power point by +using it, MACs can build it as well. When it comes back on, all 
-// structures power back up and start functioning again and lights fade back up.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -445,13 +428,41 @@ SendTeamMessage(self:GetEnemyTeam(), kTeamMessageTypes.MainRoom, self:GetLocatio
   
   end
       
+      
+      local marineoffense = nil
+          local nearestalien = GetNearestMixin(self:GetOrigin(), "Combat", 2, function(ent) return not ent:isa("Commander") and not HasMixin(ent, "Construct") and ent:GetIsAlive() and ent:GetIsInCombat() end)
+         if nearestalien then
+              marineoffense = nearestalien
+        end
+  
+        
+  
           for _, player in ipairs(GetEntitiesWithinRange("Marine", self:GetOrigin(), 999)) do
-        if player:GetIsAlive() and not player:isa("Commander") then
-           local order = self:GetIsBuilt() and kTechId.Defend or kTechId.Build
-           player:GiveOrder(order, self:GetId(), self:GetOrigin(), nil, true, true)
+           if player:GetIsAlive() and not player:isa("Commander") then
+              if marineoffense ~= nil then 
+               player:GiveOrder(kTechId.Attack, marineoffense:GetId(), marineoffense:GetOrigin(), nil, true, true)
+               else
+                  if self:GetIsInCombat() then 
+                  local order = self:GetIsBuilt() and kTechId.Defend or kTechId.Build
+                  player:GiveOrder(order, self:GetId(), self:GetOrigin(), nil, true, true)
+                  else  --anything else :P
+                    local marineoffense = nil
+                     local nearestalien = GetNearestMixin(self:GetOrigin(), "Combat", 2, function(ent) return not ent:isa("Commander") and ent:GetIsAlive() and ent:GetIsInCombat() end)
+                      if nearestalien then
+                        marineoffense = nearestalien
+                         end
+                  end
+               end
+           end
+         end
+       
+          for _, mac in ipairs(GetEntitiesWithinRange("MAC", self:GetOrigin(), 999)) do
+           if mac:GetIsAlive() and not mac:GetHasOrder() and mac:GetLocationName() ~= self:GetLocationName() then
+           mac:GiveOrder(kTechId.Move, nil, self:FindFreeSpace())
+           end
         end
               
-    end   // Create marine order
+
 end
       
  end//server
@@ -630,11 +641,11 @@ end
            local locationName = location and location:GetName() or ""
            local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
         
-           if spawnPoint ~= nil and sameLocation then//and GetIsPointOnInfestation(spawnPoint) then
+           if spawnPoint ~= nil and sameLocation then
            return spawnPoint
            end
        end
-           Print("No valid spot found for phase cannon!")
+           Print("No valid spot found for powerpoint FindFreeSpace")
            return self:GetOrigin()
     end
               function PowerPoint:FindArcHiveSpawn()    

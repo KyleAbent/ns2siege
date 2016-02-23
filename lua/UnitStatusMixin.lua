@@ -54,10 +54,7 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
         if not GetIsUnitActive(self) then
         
             if HasMixin(self, "Construct") and not self:GetIsBuilt() and (forEntity:isa("Gorge") or forEntity:isa("Marine") or (forEntity.GetCanSeeConstructIcon and forEntity:GetCanSeeConstructIcon(self)) ) then
-                unitStatus = kUnitStatus.Unbuilt 
-
-            elseif HasMixin(self, "PowerConsumer") and self:GetRequiresPower() and not self:GetIsPowered() then
-                unitStatus = kUnitStatus.Unpowered         
+                unitStatus = kUnitStatus.Unbuilt    
             end
         
         else

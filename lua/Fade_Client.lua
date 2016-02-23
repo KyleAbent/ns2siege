@@ -87,19 +87,6 @@ function Fade:OnUpdateRender()
     PROFILE("Fade:OnUpdateRender")
 
     Alien.OnUpdateRender(self)
-                 
-                if GetHasCamouflageUpgrade(self) then
-                local opacity = 1
-                  if GetVeilLevel(2) == 3 then
-                  opacity = 0
-                  elseif GetVeilLevel(2) == 2 then
-                  opacity = .33
-                  elseif GetVeilLevel(2) == 1 then
-                  opacity = .66
-                  end
-                  self:SetOpacity((self:GetEligableForProlongedInvisibility()) and opacity or 1, "blinkAmount")
-                  return
-            else
 
     local model = self:GetRenderModel()
     if model and self.blinkDissolve then
@@ -111,7 +98,6 @@ function Fade:OnUpdateRender()
         self.blinkMaterial:SetParameter("blinkAmount", self.blinkDissolve)  
         
     end
-         end
 
 end  
 

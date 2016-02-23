@@ -1,3 +1,8 @@
+--Kyle Abent
+--Mac.lua Obviously by NS2 and UWE, 
+--this is just renamed to "Antibody" for creative reasons. 
+--IE - Easier to write creatively thinking as an "Antibody" than a "MAC" (for me anyways).
+
 Script.Load("lua/CommAbilities/Marine/EMPBlast.lua")
 
 Script.Load("lua/ScriptActor.lua")
@@ -35,74 +40,74 @@ Script.Load("lua/RolloutMixin.lua")
 Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 
-class 'MAC' (ScriptActor)
+class 'AntiBody' (ScriptActor)
 
-MAC.kMapName = "mac"
+AntiBody.kMapName = "mac"
 
-MAC.kModelName = PrecacheAsset("models/marine/mac/mac.model")
-MAC.kAnimationGraph = PrecacheAsset("models/marine/mac/mac.animation_graph")
+AntiBody.kModelName = PrecacheAsset("models/marine/mac/mac.model")
+AntiBody.kAnimationGraph = PrecacheAsset("models/marine/mac/mac.animation_graph")
 
-MAC.kConfirmSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/confirm")
-MAC.kConfirm2DSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/confirm_2d")
-MAC.kStartConstructionSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/constructing")
-MAC.kStartConstruction2DSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/constructing_2d")
-MAC.kStartWeldSound = PrecacheAsset("sound/NS2.fev/marine/structures/mac/weld_start")
-MAC.kHelpingSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/help_build")
-MAC.kPassbyMACSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/passby_mac")
-MAC.kPassbyDrifterSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/passby_driffter")
+AntiBody.kConfirmSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/confirm")
+AntiBody.kConfirm2DSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/confirm_2d")
+AntiBody.kStartConstructionSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/constructing")
+AntiBody.kStartConstruction2DSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/constructing_2d")
+AntiBody.kStartWeldSound = PrecacheAsset("sound/NS2.fev/marine/structures/mac/weld_start")
+AntiBody.kHelpingSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/help_build")
+AntiBody.kPassbyAntiBodySoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/passby_mac")
+AntiBody.kPassbyDrifterSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/passby_driffter")
 
-MAC.kUsedSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/use")
+AntiBody.kUsedSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/use")
 
 local kJetsCinematic = PrecacheAsset("cinematics/marine/mac/jet.cinematic")
 local kJetsSound = PrecacheAsset("sound/NS2.fev/marine/structures/mac/thrusters")
 
 local kRightJetNode = "fxnode_jet1"
 local kLeftJetNode = "fxnode_jet2"
-MAC.kLightNode = "fxnode_light"
-MAC.kWelderNode = "fxnode_welder"
+AntiBody.kLightNode = "fxnode_light"
+AntiBody.kWelderNode = "fxnode_welder"
 
 // Balance
-MAC.kConstructRate = 0.4
-MAC.kWeldRate = 0.5
-MAC.kOrderScanRadius = 10
-MAC.kRepairHealthPerSecond = 21 //15
-MAC.kHealth = kMACHealth
-MAC.kArmor = kMACArmor
-MAC.kMoveSpeed = 6
-MAC.kHoverHeight = .5
-MAC.kStartDistance = 3
-MAC.kWeldDistance = 2
-MAC.kBuildDistance = 2     // Distance at which bot can start building a structure. 
-MAC.kSpeedUpgradePercent = (1 + kMACSpeedAmount)
+AntiBody.kConstructRate = 0.4
+AntiBody.kWeldRate = 0.5
+AntiBody.kOrderScanRadius = 10
+AntiBody.kRepairHealthPerSecond = 21 //15
+AntiBody.kHealth = kAntiBodyHealth
+AntiBody.kArmor = kAntiBodyArmor
+AntiBody.kMoveSpeed = 6
+AntiBody.kHoverHeight = .5
+AntiBody.kStartDistance = 3
+AntiBody.kWeldDistance = 2
+AntiBody.kBuildDistance = 2     // Distance at which bot can start building a structure. 
+AntiBody.kSpeedUpgradePercent = (1 + kMACSpeedAmount)
 // how often we check to see if we are in a marines face when welding
 // Note: Need to be fairly long to allow it to weld marines with backs towards walls - the AI will
 // stop moving after a < 1 sec long interval, and the welding will be done in the time before it tries
 // to move behind their backs again
-MAC.kWeldPositionCheckInterval = 1 
+AntiBody.kWeldPositionCheckInterval = 1 
 
-// how fast the MAC rolls out of the ARC factory. Standard speed is just too fast.
-MAC.kRolloutSpeed = 2
+// how fast the AntiBody rolls out of the ARC factory. Standard speed is just too fast.
+AntiBody.kRolloutSpeed = 2
 
-MAC.kCapsuleHeight = .2
-MAC.kCapsuleRadius = .5
+AntiBody.kCapsuleHeight = .2
+AntiBody.kCapsuleRadius = .5
 
 // Greetings
-MAC.kGreetingUpdateInterval = 1
-MAC.kGreetingInterval = 10
-MAC.kGreetingDistance = 5
-MAC.kUseTime = 2.0
-MAC.MaxLevel = 99
-MAC.GainXp = 0.15
-MAC.WeldXp = 0.15
-MAC.ScaleSize = 1.8
-MAC.kGainXp = .5
-MAC.kTurnSpeed = 3 * math.pi // a mac is nimble
+AntiBody.kGreetingUpdateInterval = 1
+AntiBody.kGreetingInterval = 10
+AntiBody.kGreetingDistance = 5
+AntiBody.kUseTime = 2.0
+AntiBody.MaxLevel = 99
+AntiBody.GainXp = 0.15
+AntiBody.WeldXp = 0.15
+AntiBody.ScaleSize = 1.8
+AntiBody.kGainXp = .5
+AntiBody.kTurnSpeed = 3 * math.pi // a mac is nimble
 local networkVars =
 {
     welding = "boolean",
     constructing = "boolean",
     moving = "boolean",
-    level = "float (0 to " .. MAC.MaxLevel .. " by .1)",
+    level = "float (0 to " .. AntiBody.MaxLevel .. " by .1)",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -127,11 +132,11 @@ AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 
 
-local function GetIsWeldedByOtherMAC(self, target)
+local function GetIsWeldedByOtherAntiBody(self, target)
 
     if target then
     
-        for _, mac in ipairs(GetEntitiesForTeam("MAC", self:GetTeamNumber())) do
+        for _, mac in ipairs(GetEntitiesForTeam("AntiBody", self:GetTeamNumber())) do
         
             if self ~= mac then
             
@@ -159,7 +164,7 @@ local function GetIsWeldedByOtherMAC(self, target)
     
 end
 
-function MAC:OnCreate()
+function AntiBody:OnCreate()
 
     ScriptActor.OnCreate(self)
     
@@ -205,7 +210,7 @@ function MAC:OnCreate()
    self.level = .1
 end
 
-function MAC:OnInitialized()
+function AntiBody:OnInitialized()
     
     ScriptActor.OnInitialized(self)
 
@@ -255,13 +260,13 @@ function MAC:OnInitialized()
     self.timeOfLastConstruct = 0
     self.moving = false
     
-    self:SetModel(MAC.kModelName, MAC.kAnimationGraph)
+    self:SetModel(AntiBody.kModelName, AntiBody.kAnimationGraph)
     
     InitMixin(self, IdleMixin)
     
 end
 
-function MAC:OnEntityChange(oldId)
+function AntiBody:OnEntityChange(oldId)
 
     if oldId == self.secondaryTargetId then
     
@@ -293,7 +298,7 @@ local function GetAutomaticOrder(self)
         else
 
             // If there's a friendly entity nearby that needs constructing, constuct it.
-            local range = MAC.kOrderScanRadius
+            local range = AntiBody.kOrderScanRadius
               range = ConditionalValue(not self:GetIsFront(), 9999, range)
             local constructable =  GetNearestMixin(self:GetOrigin(), "Construct", self:GetTeamNumber(), function(ent) return not ent:GetIsBuilt() and self:GetDistance(ent) <= range and ent:GetCanConstruct(self) and self:CheckTarget(ent:GetOrigin()) and not (not self:GetIsFront() and ent:isa("PowerPoint") ) end)
                if constructable then
@@ -305,13 +310,13 @@ local function GetAutomaticOrder(self)
             if not target then
             
                 // Look for entities to heal with weld.
-                local weldables = GetEntitiesWithMixinForTeamWithinRange("Weldable", self:GetTeamNumber(), self:GetOrigin(), MAC.kOrderScanRadius)
+                local weldables = GetEntitiesWithMixinForTeamWithinRange("Weldable", self:GetTeamNumber(), self:GetOrigin(), AntiBody.kOrderScanRadius)
                 for w = 1, #weldables do
                 
                     local weldable = weldables[w]
                     // There are cases where the weldable's weld percentage is very close to
-                    // 100% but not exactly 100%. This second check prevents the MAC from being so pedantic.
-                    if weldable:GetCanBeWelded(self) and weldable:GetWeldPercentage() < 1 and not GetIsWeldedByOtherMAC(self, weldable) then
+                    // 100% but not exactly 100%. This second check prevents the AntiBody from being so pedantic.
+                    if weldable:GetCanBeWelded(self) and weldable:GetWeldPercentage() < 1 and not GetIsWeldedByOtherAntiBody(self, weldable) then
                     
                         target = weldable
                         orderType = kTechId.AutoWeld
@@ -333,34 +338,34 @@ local function GetAutomaticOrder(self)
 
 end
 
-function MAC:GetTurnSpeedOverride()
-    return MAC.kTurnSpeed
+function AntiBody:GetTurnSpeedOverride()
+    return AntiBody.kTurnSpeed
 end
 
-function MAC:GetCanSleep()
+function AntiBody:GetCanSleep()
     return self:GetCurrentOrder() == nil
 end
 
-function MAC:GetMinimumAwakeTime()
+function AntiBody:GetMinimumAwakeTime()
     return 5
 end
 
-function MAC:GetExtentsOverride()
-    return Vector(MAC.kCapsuleRadius, MAC.kCapsuleHeight / 2, MAC.kCapsuleRadius)
+function AntiBody:GetExtentsOverride()
+    return Vector(AntiBody.kCapsuleRadius, AntiBody.kCapsuleHeight / 2, AntiBody.kCapsuleRadius)
 end
 
-function MAC:GetFov()
+function AntiBody:GetFov()
     return 360
 end
 
-function MAC:GetIsFlying()
+function AntiBody:GetIsFlying()
     return true
 end
 
-function MAC:GetReceivesStructuralDamage()
+function AntiBody:GetReceivesStructuralDamage()
     return true
 end
-function MAC:GetIsFront()
+function AntiBody:GetIsFront()
         if Server then
             local gameRules = GetGamerules()
             if gameRules then
@@ -371,19 +376,19 @@ function MAC:GetIsFront()
         end
             return false
 end
-function MAC:GetCanBeUsed(player, useSuccessTable)
+function AntiBody:GetCanBeUsed(player, useSuccessTable)
   useSuccessTable.useSuccess = true //not self:GetIsFront() 
 end
-function MAC:OnUse(player, elapsedTime, useSuccessTable)
+function AntiBody:OnUse(player, elapsedTime, useSuccessTable)
 
-    // Play flavor sounds when using MAC.
+    // Play flavor sounds when using AntiBody.
     if Server then
     
         local time = Shared.GetTime()
         
-        if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + MAC.kUseTime)) then
+        if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + AntiBody.kUseTime)) then
         
-            Server.PlayPrivateSound(player, MAC.kUsedSoundName, self, 1.0, Vector(0, 0, 0))
+            Server.PlayPrivateSound(player, AntiBody.kUsedSoundName, self, 1.0, Vector(0, 0, 0))
             self.timeOfLastUse = time
             
         end
@@ -393,7 +398,7 @@ function MAC:OnUse(player, elapsedTime, useSuccessTable)
 end
 
 
-function MAC:PlayerUse(player)
+function AntiBody:PlayerUse(player)
    if Server then
        if not GetGamerules():GetFrontDoorsOpen() then 
           self:NotifyUse(player)
@@ -402,20 +407,20 @@ function MAC:PlayerUse(player)
    end    
    self:GiveOrder(kTechId.FollowAndWeld, player:GetId(), player:GetOrigin(), nil, true, true) 
 end
-function MAC:NotifyUse(player)
+function AntiBody:NotifyUse(player)
 
 end
-// avoid the MAC hovering inside (as that shows the MAC through the factory top)
-function MAC:GetHoverHeight()
+// avoid the AntiBody hovering inside (as that shows the AntiBody through the factory top)
+function AntiBody:GetHoverHeight()
     if self.rolloutSourceFactory then
         // keep it low until it leaves the factory, then go back to normal hover height
-        local h = MAC.kHoverHeight * (1.1 - self.cursor:GetRemainingDistance()) / 1.1
+        local h = AntiBody.kHoverHeight * (1.1 - self.cursor:GetRemainingDistance()) / 1.1
         return math.max(0, h)
     end
-    return MAC.kHoverHeight
+    return AntiBody.kHoverHeight
 end
 
-function MAC:OnOverrideOrder(order)
+function AntiBody:OnOverrideOrder(order)
 
     local orderTarget = nil
     if (order:GetParam() ~= nil) then
@@ -429,7 +434,7 @@ function MAC:OnOverrideOrder(order)
     
         order:SetType(kTechId.Construct)
 
-    elseif order:GetType() == kTechId.Default and GetOrderTargetIsWeldTarget(order, self:GetTeamNumber()) and not isSelfOrder and not GetIsWeldedByOtherMAC(self, orderTarget) then
+    elseif order:GetType() == kTechId.Default and GetOrderTargetIsWeldTarget(order, self:GetTeamNumber()) and not isSelfOrder and not GetIsWeldedByOtherAntiBody(self, orderTarget) then
     
         order:SetType(kTechId.FollowAndWeld)
 
@@ -450,15 +455,15 @@ function MAC:OnOverrideOrder(order)
     */
 end
 
-function MAC:GetLevelPercentage()
-return self.level / MAC.MaxLevel * MAC.ScaleSize
+function AntiBody:GetLevelPercentage()
+return self.level / AntiBody.MaxLevel * AntiBody.ScaleSize
 end
 
-function MAC:GetMaxLevel()
-return MAC.MaxLevel
+function AntiBody:GetMaxLevel()
+return AntiBody.MaxLevel
 end
 /*
-function MAC:OnAdjustModelCoords(modelCoords)
+function AntiBody:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
 	local scale = self:GetLevelPercentage()
        if scale >= 1 then
@@ -469,32 +474,32 @@ function MAC:OnAdjustModelCoords(modelCoords)
     return coords
 end
 */
-function MAC:AddXP(amount)
+function AntiBody:AddXP(amount)
 
     local xpReward = 0
-        xpReward = math.min(amount, MAC.MaxLevel - self.level)
+        xpReward = math.min(amount, AntiBody.MaxLevel - self.level)
         self.level = self.level + xpReward
         
-           self:AdjustMaxHealth(kMACHealth * (self.level/MAC.MaxLevel) + kMACHealth) 
-        self:AdjustMaxArmor(kMACArmor * (self.level/MAC.MaxLevel) + kMACArmor )
+           self:AdjustMaxHealth(kAntiBodyHealth * (self.level/AntiBody.MaxLevel) + kAntiBodyHealth) 
+        self:AdjustMaxArmor(kAntiBodyArmor * (self.level/AntiBody.MaxLevel) + kAntiBodyArmor )
         
     return xpReward
     
 end
-function MAC:GetLevel()
+function AntiBody:GetLevel()
         return Round(self.level, 2)
 end
-  function MAC:GetUnitNameOverride(viewer)
+  function AntiBody:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
     unitName = string.format(Locale.ResolveString("Level %s AntiBody"), self:GetLevel())
 return unitName
 end 
-function MAC:GetIsOrderHelpingOtherMAC(order)
+function AntiBody:GetIsOrderHelpingOtherAntiBody(order)
 
     if order:GetType() == kTechId.Construct then
     
-        // Look for friendly nearby MACs
-        local macs = GetEntitiesForTeamWithinRange("MAC", self:GetTeamNumber(), self:GetOrigin(), 3)
+        // Look for friendly nearby AntiBodys
+        local macs = GetEntitiesForTeamWithinRange("AntiBody", self:GetTeamNumber(), self:GetOrigin(), 3)
         for index, mac in ipairs(macs) do
         
             if mac ~= self then
@@ -514,7 +519,7 @@ function MAC:GetIsOrderHelpingOtherMAC(order)
     
 end
 
-function MAC:OnOrderChanged()
+function AntiBody:OnOrderChanged()
 
     local order = self:GetCurrentOrder()    
     
@@ -531,16 +536,16 @@ function MAC:OnOrderChanged()
         
         local currentComm = commanders and commanders[1] or nil
 
-        // Look for nearby MAC doing the same thing
-        if self:GetIsOrderHelpingOtherMAC(order) then
-            self:PlayChatSound(MAC.kHelpingSoundName) 
+        // Look for nearby AntiBody doing the same thing
+        if self:GetIsOrderHelpingOtherAntiBody(order) then
+            self:PlayChatSound(AntiBody.kHelpingSoundName) 
             self.lastOrderLocation = order:GetLocation()
         elseif order:GetType() == kTechId.Construct then
         
-            self:PlayChatSound(MAC.kStartConstructionSoundName)
+            self:PlayChatSound(AntiBody.kStartConstructionSoundName)
             
             if currentComm then
-                Server.PlayPrivateSound(currentComm, MAC.kStartConstruction2DSoundName, currentComm, 1.0, Vector(0, 0, 0))
+                Server.PlayPrivateSound(currentComm, AntiBody.kStartConstruction2DSoundName, currentComm, 1.0, Vector(0, 0, 0))
             end
             self.lastOrderLocation = order:GetLocation()
             
@@ -548,10 +553,10 @@ function MAC:OnOrderChanged()
             
             if order:GetLocation() ~= self.lastOrderLocation or self.lastOrderLocation == nil then
 
-                self:PlayChatSound(MAC.kStartWeldSound) 
+                self:PlayChatSound(AntiBody.kStartWeldSound) 
 
                 if currentComm then
-                    Server.PlayPrivateSound(currentComm, MAC.kStartWeldSound, currentComm, 1.0, Vector(0, 0, 0))
+                    Server.PlayPrivateSound(currentComm, AntiBody.kStartWeldSound, currentComm, 1.0, Vector(0, 0, 0))
                 end
                 
                 self.lastOrderLocation = order:GetLocation()
@@ -560,10 +565,10 @@ function MAC:OnOrderChanged()
             
         else
         
-            self:PlayChatSound(MAC.kConfirmSoundName)
+            self:PlayChatSound(AntiBody.kConfirmSoundName)
             
             if currentComm then
-                Server.PlayPrivateSound(currentComm, MAC.kConfirm2DSoundName, currentComm, 1.0, Vector(0, 0, 0))
+                Server.PlayPrivateSound(currentComm, AntiBody.kConfirm2DSoundName, currentComm, 1.0, Vector(0, 0, 0))
             end
             
             self.lastOrderLocation = order:GetLocation()
@@ -574,11 +579,11 @@ function MAC:OnOrderChanged()
 
 end
 
-function MAC:GetMoveSpeed()
+function AntiBody:GetMoveSpeed()
 
-    local maxSpeedTable = { maxSpeed = MAC.kMoveSpeed * (self.level/100) + MAC.kMoveSpeed }
+    local maxSpeedTable = { maxSpeed = AntiBody.kMoveSpeed * (self.level/100) + AntiBody.kMoveSpeed }
     if self.rolloutSourceFactory then
-        maxSpeedTable.maxSpeed = MAC.kRolloutSpeed
+        maxSpeedTable.maxSpeed = AntiBody.kRolloutSpeed
     end
     self:ModifyMaxSpeed(maxSpeedTable)
 
@@ -604,7 +609,7 @@ local function GetBackPosition(self, target)
     local weldPos = None    
     local dot = targetViewAxis:DotProduct(fromTarget)    
     // if we are in front or not sufficiently away from the target, we calculate a new weldPos
-    if dot > 0 or targetDist < MAC.kWeldDistance - 0.5 then
+    if dot > 0 or targetDist < AntiBody.kWeldDistance - 0.5 then
         // we are in front, find out back positon
         local obstacleSize = 0
         if HasMixin(target, "Extents") then
@@ -613,8 +618,8 @@ local function GetBackPosition(self, target)
         // we do not want to go straight through the player, instead we move behind and to the
         // left or right
         local targetPos = target:GetOrigin()
-        local toMidPos = targetViewAxis * (obstacleSize + MAC.kWeldDistance - 0.1)
-        local midWeldPos = targetPos - targetViewAxis * (obstacleSize + MAC.kWeldDistance - 0.1)
+        local toMidPos = targetViewAxis * (obstacleSize + AntiBody.kWeldDistance - 0.1)
+        local midWeldPos = targetPos - targetViewAxis * (obstacleSize + AntiBody.kWeldDistance - 0.1)
         local leftV = Vector(-targetViewAxis.z, targetViewAxis.y, targetViewAxis.x)
         local rightV = Vector(targetViewAxis.z, targetViewAxis.y, -targetViewAxis.x)
         local leftWeldPos = midWeldPos + leftV * 2
@@ -640,7 +645,7 @@ local function CheckBehindBackPosition(self, orderTarget)
     local toTarget = (orderTarget:GetOrigin() - self:GetOrigin())
     local distanceToTarget = toTarget:GetLength()
                     
-    if not self.timeOfLastBackPositionCheck or Shared.GetTime() > self.timeOfLastBackPositionCheck + MAC.kWeldPositionCheckInterval then
+    if not self.timeOfLastBackPositionCheck or Shared.GetTime() > self.timeOfLastBackPositionCheck + AntiBody.kWeldPositionCheckInterval then
  
         self.timeOfLastBackPositionCheck = Shared.GetTime()
         self.backPosition = GetBackPosition(self, orderTarget)
@@ -650,15 +655,15 @@ local function CheckBehindBackPosition(self, orderTarget)
     return self.backPosition    
 end
 
-function MAC:GetLocationName()
+function AntiBody:GetLocationName()
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         return locationName
 end
-function MAC:OverrideHintString( hintString, forEntity )
+function AntiBody:OverrideHintString( hintString, forEntity )
     
     if not GetAreEnemies(self, forEntity) then
-        if self.level ~= MAC.MaxLevel then
+        if self.level ~= AntiBody.MaxLevel then
             return string.format(Locale.ResolveString( "Weld me to level me up!" ) )
         end
     end
@@ -666,13 +671,13 @@ function MAC:OverrideHintString( hintString, forEntity )
     return hintString
     
 end
-function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
+function AntiBody:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
 
     local time = Shared.GetTime()
     local canBeWeldedNow = false
     local orderStatus = kOrderStatus.InProgress
 
-    if self.timeOfLastWeld == 0 or time > self.timeOfLastWeld + MAC.kWeldRate then
+    if self.timeOfLastWeld == 0 or time > self.timeOfLastWeld + AntiBody.kWeldRate then
     
     
         // It is possible for the target to not be weldable at this point.
@@ -698,7 +703,7 @@ function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
                 local forceMove = false
                 local targetPosition = orderTarget:GetOrigin()
                 
-                local closeEnoughToWeld = distanceToTarget - obstacleSize < MAC.kWeldDistance
+                local closeEnoughToWeld = distanceToTarget - obstacleSize < AntiBody.kWeldDistance
                 
                 if closeEnoughToWeld then
                     local backPosition = CheckBehindBackPosition(self, orderTarget)
@@ -711,8 +716,8 @@ function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
                 // If we're close enough to weld, weld (unless we must move to behind the player)
                 if not forceMove and closeEnoughToWeld and not GetIsVortexed(self) then
                 
-                    orderTarget:OnWeld(self, MAC.kWeldRate * (self.level/100) + MAC.kWeldRate)
-                    self:AddXP(MAC.GainXp)
+                    orderTarget:OnWeld(self, AntiBody.kWeldRate * (self.level/100) + AntiBody.kWeldRate)
+                    self:AddXP(AntiBody.GainXp)
                     self.timeOfLastWeld = time
                     self.moving = false
                     
@@ -747,7 +752,7 @@ function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
     return orderStatus
     
 end
-function MAC:GetIsSetup()
+function AntiBody:GetIsSetup()
         if Server then
             local gameRules = GetGamerules()
             if gameRules then
@@ -758,10 +763,10 @@ function MAC:GetIsSetup()
         end
             return false
 end
-function MAC:GetAddXPAmount()
-return self:GetIsSetup() and MAC.WeldXp * 4 or MAC.WeldXp
+function AntiBody:GetAddXPAmount()
+return self:GetIsSetup() and AntiBody.WeldXp * 4 or AntiBody.WeldXp
 end
-function MAC:ProcessMove(deltaTime, target, targetPosition, closeEnough)
+function AntiBody:ProcessMove(deltaTime, target, targetPosition, closeEnough)
 
     local hoverAdjustedLocation = GetHoverAt(self, targetPosition)
     local orderStatus = kOrderStatus.None
@@ -782,7 +787,7 @@ function MAC:ProcessMove(deltaTime, target, targetPosition, closeEnough)
     
 end
 
-function MAC:PlayChatSound(soundName)
+function AntiBody:PlayChatSound(soundName)
 
     if self.timeOfLastChatterSound == 0 or (Shared.GetTime() > self.timeOfLastChatterSound + 2) then
         self:PlaySound(soundName)
@@ -790,7 +795,7 @@ function MAC:PlayChatSound(soundName)
     end
     
 end
-function MAC:GetFrontDoorsOpen()
+function AntiBody:GetFrontDoorsOpen()
         if Server then
             local gameRules = GetGamerules()
             if gameRules then
@@ -801,24 +806,24 @@ function MAC:GetFrontDoorsOpen()
         end
             return false
 end
-// Look for other MACs and Drifters to greet as we fly by 
-function MAC:UpdateGreetings()
+// Look for other AntiBodys and Drifters to greet as we fly by 
+function AntiBody:UpdateGreetings()
 
     local time = Shared.GetTime()
-    if self.timeOfLastGreetingCheck == 0 or (time > (self.timeOfLastGreetingCheck + MAC.kGreetingUpdateInterval)) then
+    if self.timeOfLastGreetingCheck == 0 or (time > (self.timeOfLastGreetingCheck + AntiBody.kGreetingUpdateInterval)) then
     
-        if self.timeOfLastGreeting == 0 or (time > (self.timeOfLastGreeting + MAC.kGreetingInterval)) then
+        if self.timeOfLastGreeting == 0 or (time > (self.timeOfLastGreeting + AntiBody.kGreetingInterval)) then
         
-            local ents = GetEntitiesMatchAnyTypes({"MAC", "Drifter"})
+            local ents = GetEntitiesMatchAnyTypes({"AntiBody", "Drifter"})
             for index, ent in ipairs(ents) do
             
-                if (ent ~= self) and (self:GetOrigin() - ent:GetOrigin()):GetLength() < MAC.kGreetingDistance then
+                if (ent ~= self) and (self:GetOrigin() - ent:GetOrigin()):GetLength() < AntiBody.kGreetingDistance then
                 
                     if GetCanSeeEntity(self, ent) then
-                        if ent:isa("MAC") then
-                            self:PlayChatSound(MAC.kPassbyMACSoundName)
+                        if ent:isa("AntiBody") then
+                            self:PlayChatSound(AntiBody.kPassbyAntiBodySoundName)
                         elseif ent:isa("Drifter") then
-                            self:PlayChatSound(MAC.kPassbyDrifterSoundName)
+                            self:PlayChatSound(AntiBody.kPassbyDrifterSoundName)
                         end
                         
                         self.timeOfLastGreeting = time
@@ -838,11 +843,11 @@ function MAC:UpdateGreetings()
 
 end
 /*
-function MAC:GetCanBeWeldedOverride()
+function AntiBody:GetCanBeWeldedOverride()
     return self.lastTakenDamageTime + 1 < Shared.GetTime()
 end
 */
-function MAC:GetEngagementPointOverride()
+function AntiBody:GetEngagementPointOverride()
     return self:GetOrigin() + Vector(0, self:GetHoverHeight(), 0)
 end
 
@@ -850,7 +855,7 @@ local function GetCanConstructTarget(self, target)
     return target ~= nil and HasMixin(target, "Construct") and GetAreFriends(self, target)
 end
 
-function MAC:ProcessConstruct(deltaTime, orderTarget, orderLocation)
+function AntiBody:ProcessConstruct(deltaTime, orderTarget, orderLocation)
 
     local time = Shared.GetTime()
     
@@ -859,7 +864,7 @@ function MAC:ProcessConstruct(deltaTime, orderTarget, orderLocation)
     local orderStatus = kOrderStatus.InProgress
     local canConstructTarget = GetCanConstructTarget(self, orderTarget)   
     
-    if self.timeOfLastConstruct == 0 or (time > (self.timeOfLastConstruct + MAC.kConstructRate)) then
+    if self.timeOfLastConstruct == 0 or (time > (self.timeOfLastConstruct + AntiBody.kConstructRate)) then
 
         if canConstructTarget then
         
@@ -871,7 +876,7 @@ function MAC:ProcessConstruct(deltaTime, orderTarget, orderLocation)
                 else
             
                     // Otherwise, add build time to structure
-                        orderTarget:Construct(( MAC.kConstructRate * kMACConstructEfficacy) + (self.level/100) + ( MAC.kConstructRate * kMACConstructEfficacy) , self)
+                        orderTarget:Construct(( AntiBody.kConstructRate * kAntiBodyConstructEfficacy) + (self.level/100) + ( AntiBody.kConstructRate * kAntiBodyConstructEfficacy) , self)
                         self.timeOfLastConstruct = time
                         self:AddXP(self:GetAddXPAmount())
                 
@@ -913,20 +918,20 @@ local function FindSomethingToDo(self)
     
 end
 
-function MAC:OnOrderGiven(order)
+function AntiBody:OnOrderGiven(order)
 
-    -- Clear out secondary order when an order is explicitly given to this MAC.
+    -- Clear out secondary order when an order is explicitly given to this AntiBody.
     self.secondaryOrderType = nil
     self.secondaryTargetId = nil
     
 end
 
 // for marquee selection
-function MAC:GetIsMoveable()
+function AntiBody:GetIsMoveable()
     return true
 end
 
-function MAC:ProcessFollowAndWeldOrder(deltaTime, orderTarget, targetPosition)
+function AntiBody:ProcessFollowAndWeldOrder(deltaTime, orderTarget, targetPosition)
 
     local currentOrder = self:GetCurrentOrder()
     local orderStatus = kOrderStatus.InProgress
@@ -1022,7 +1027,7 @@ local function UpdateOrders(self, deltaTime)
         local orderLocation = currentOrder:GetLocation()
     
       if currentOrder:GetType() == kTechId.Attack then
-            self:ProcessAttackOrder(1, MAC.kMoveSpeed, deltaTime)
+            self:ProcessAttackOrder(1, AntiBody.kMoveSpeed, deltaTime)
         elseif currentOrder:GetType() == kTechId.FollowAndWeld then
             orderStatus = self:ProcessFollowAndWeldOrder(deltaTime, orderTarget, orderLocation)    
         elseif currentOrder:GetType() == kTechId.Move then
@@ -1046,7 +1051,7 @@ local function UpdateOrders(self, deltaTime)
     
 end
 
-function MAC:OnUpdate(deltaTime)
+function AntiBody:OnUpdate(deltaTime)
 
     ScriptActor.OnUpdate(self, deltaTime)
         
@@ -1054,8 +1059,8 @@ function MAC:OnUpdate(deltaTime)
         
     if Server and self:GetIsAlive() then 
      /*
-            self:AdjustMaxHealth(kMACHealth * (self.level/100) + kMACHealth) 
-        self:AdjustMaxArmor(kMACArmor * (self.level/100) + kMACArmor )
+            self:AdjustMaxHealth(kAntiBodyHealth * (self.level/100) + kAntiBodyHealth) 
+        self:AdjustMaxArmor(kAntiBodyArmor * (self.level/100) + kAntiBodyArmor )
         
      */
      
@@ -1095,7 +1100,7 @@ function MAC:OnUpdate(deltaTime)
     
         if self.constructing then
         
-            if not self.timeLastConstructEffect or self.timeLastConstructEffect + MAC.kConstructRate < Shared.GetTime()  then
+            if not self.timeLastConstructEffect or self.timeLastConstructEffect + AntiBody.kConstructRate < Shared.GetTime()  then
             
                 self:TriggerEffects("mac_construct")
                 self.timeLastConstructEffect = Shared.GetTime()
@@ -1106,7 +1111,7 @@ function MAC:OnUpdate(deltaTime)
         
         if self.welding then
         
-            if not self.timeLastWeldEffect or self.timeLastWeldEffect + MAC.kWeldRate < Shared.GetTime()  then
+            if not self.timeLastWeldEffect or self.timeLastWeldEffect + AntiBody.kWeldRate < Shared.GetTime()  then
             
                 self:TriggerEffects("mac_weld")
                 self.timeLastWeldEffect = Shared.GetTime()
@@ -1137,21 +1142,21 @@ function MAC:OnUpdate(deltaTime)
     
 end
 
-function MAC:TriggerEMP()
-    self:AddXP(MAC.kGainXp)
+function AntiBody:TriggerEMP()
+    self:AddXP(AntiBody.kGainXp)
     CreateEntity(EMPBlast.kMapName,  self:GetOrigin(), self:GetTeamNumber())
     return true
     
 end
-function MAC:GetTechButtons(techId)
+function AntiBody:GetTechButtons(techId)
 
     local techButtons ={ kTechId.Move, kTechId.Stop, kTechId.Attack, kTechId.Welding,
              kTechId.None, kTechId.None, kTechId.None, kTechId.Recycle }
     return techButtons
 end
- function MAC:PerformActivation(techId, position, normal, commander)
+ function AntiBody:PerformActivation(techId, position, normal, commander)
      local success = false
-    if  techId == kTechId.MACEMP then
+    if  techId == kTechId.AntiBodyEMP then
     
         success = self:TriggerEMP()
     
@@ -1159,12 +1164,12 @@ end
         return success, true
 end
 /*
-function MAC:OnKill(attacker, doer, point, direction)
+function AntiBody:OnKill(attacker, doer, point, direction)
 self:TriggerEMP()
 end
 */
-function MAC:OnOverrideDoorInteraction(inEntity)
-    // MACs will not open the door if they are currently
+function AntiBody:OnOverrideDoorInteraction(inEntity)
+    // AntiBodys will not open the door if they are currently
     // welding it shut
     if self:GetHasOrder() then
         local order = self:GetCurrentOrder()
@@ -1178,45 +1183,45 @@ function MAC:OnOverrideDoorInteraction(inEntity)
     end
     return self.moving and not inEntity:GetIsInCombat(), 4
 end
-function MAC:OnDamageDone(doer, target)
+function AntiBody:OnDamageDone(doer, target)
 if doer == self then
-self:AddXP(MAC.kGainXp)
+self:AddXP(AntiBody.kGainXp)
 end
 end
 /*
-function MAC:GetCanDoorInteract(inEntity)
+function AntiBody:GetCanDoorInteract(inEntity)
 return self.maclockedoors, 1
 end
 */
-function MAC:GetIdleSoundInterval()
+function AntiBody:GetIdleSoundInterval()
     return 25
 end
 
-function MAC:UpdateIncludeRelevancyMask()
+function AntiBody:UpdateIncludeRelevancyMask()
     SetAlwaysRelevantToCommander(self, true)
 end
 
 if Server then
     
-    function MAC:GetCanReposition()
+    function AntiBody:GetCanReposition()
         return true
     end
     
-    function MAC:OverrideRepositioningSpeed()
-        return MAC.kMoveSpeed *.4
+    function AntiBody:OverrideRepositioningSpeed()
+        return AntiBody.kMoveSpeed *.4
     end    
     
-    function MAC:OverrideRepositioningDistance()
+    function AntiBody:OverrideRepositioningDistance()
         return 0.4
     end    
 
-    function MAC:OverrideGetRepositioningTime()
+    function AntiBody:OverrideGetRepositioningTime()
         return .5
     end
 
 end
 
-local function GetOrderMovesMAC(orderType)
+local function GetOrderMovesAntiBody(orderType)
 
     return orderType == kTechId.Move or
            orderType == kTechId.Attack or
@@ -1226,15 +1231,15 @@ local function GetOrderMovesMAC(orderType)
 
 end
 
-function MAC:OnUpdateAnimationInput(modelMixin)
+function AntiBody:OnUpdateAnimationInput(modelMixin)
 
-    PROFILE("MAC:OnUpdateAnimationInput")
+    PROFILE("AntiBody:OnUpdateAnimationInput")
     
     local move = "idle"
     local currentOrder = self:GetCurrentOrder()
     if currentOrder then
     
-        if GetOrderMovesMAC(currentOrder:GetType()) then
+        if GetOrderMovesAntiBody(currentOrder:GetType()) then
             move = "run"
         end
     
@@ -1251,34 +1256,34 @@ function MAC:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("activity", activity)
 
 end
-function MAC:GetTimeLastDamageTaken()
+function AntiBody:GetTimeLastDamageTaken()
     return self.lastTakenDamageTime
 end
-function MAC:GetTimeOfLastAttackOrder()
+function AntiBody:GetTimeOfLastAttackOrder()
     return self.timeOfLastAttackOrder
 end
-function MAC:GetShowHitIndicator()
+function AntiBody:GetShowHitIndicator()
     return false
 end
 
-function MAC:GetPlayIdleSound()
+function AntiBody:GetPlayIdleSound()
     return not self:GetHasOrder() and GetIsUnitActive(self)
 end
 
-function MAC:GetHealthbarOffset()
+function AntiBody:GetHealthbarOffset()
     return 1.4
 end 
-function MAC:GetMeleeAttackDamage()
+function AntiBody:GetMeleeAttackDamage()
     return 5 * (self.level/100) + 5
 end
 
-function MAC:GetMeleeAttackInterval()
+function AntiBody:GetMeleeAttackInterval()
     return 0.6
 end
-function MAC:GetMeleeAttackOrigin()
+function AntiBody:GetMeleeAttackOrigin()
     return self:GetAttachPointOrigin("fxnode_welder")
 end
-function MAC:OnDestroy()
+function AntiBody:OnDestroy()
 
     Entity.OnDestroy(self)
 
@@ -1295,7 +1300,7 @@ function MAC:OnDestroy()
     
 end
 
-Shared.LinkClassToMap("MAC", MAC.kMapName, networkVars, true)
+Shared.LinkClassToMap("AntiBody", AntiBody.kMapName, networkVars, true)
 
 if Server then
 
@@ -1304,7 +1309,7 @@ if Server then
         if client ~= nil and Shared.GetCheatsEnabled() then
         
             local player = client:GetControllingPlayer()
-            for _, mac in ipairs(GetEntitiesForTeamWithinRange("MAC", player:GetTeamNumber(), player:GetOrigin(), 10)) do
+            for _, mac in ipairs(GetEntitiesForTeamWithinRange("AntiBody", player:GetTeamNumber(), player:GetOrigin(), 10)) do
                 mac:GiveOrder(kTechId.FollowAndWeld, player:GetId(), player:GetOrigin(), nil, false, false)
             end
             

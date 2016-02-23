@@ -16,7 +16,6 @@ Script.Load("lua/NanoShieldMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
-Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
@@ -47,7 +46,6 @@ AddMixinNetworkVars(CorrodeMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
-AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
@@ -64,7 +62,6 @@ function Extractor:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
-    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, HiveVisionMixin)
     InitMixin(self, UpgradableMixin)
@@ -101,9 +98,6 @@ function Extractor:OnInitialized()
 
 end
 
-function Extractor:GetRequiresPower()
-    return true
-end
 function Extractor:OnUpdateAnimationInput(modelMixin)
 
     modelMixin:SetAnimationInput("powered", true)

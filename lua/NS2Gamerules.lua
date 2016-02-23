@@ -1,4 +1,5 @@
 ----Hewavily modified within siege
+---Kyle Abent
 
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
@@ -141,6 +142,7 @@ if Server then
             self.playedfrontsound = false
             self.playedsiegesound = false
             self.lastaliencreatedentity = 0
+            self.lastmarinecreatedentity = 0
             self.respawnedplayers = false
             self.issuddendeath = false
             self.mainrooms = Shared.GetTime()
@@ -150,6 +152,7 @@ if Server then
             self.sideopened = false
             self.siegedoorsopened = false
             self.alienteamcanupgeggs = false
+            self.lastupgeggtime = 0
             self.setuppowernodecount = 0
             self.setuppowernodecountbuilt = 0
             self.lastnode = false
@@ -246,6 +249,7 @@ if Server then
         self.marinepacksdropped = 0
         self.lastrespawnupdate = 0
         self.alienteamcanupgeggs = false
+        self.lastupgeggtime = 0
         self.setuppowernodecount = 0
         self.setuppowernodecountbuilt= 0
         self.lastnode = false
@@ -266,6 +270,7 @@ if Server then
         self.playedsiegesound = false
         self.respawnedplayers = false
         self.lastaliencreatedentity = 0
+        self.lastmarinecreatedentity = 0
         
     end
 
@@ -1627,7 +1632,10 @@ function NS2Gamerules:GetFrontDoorsOpen()
 return self.doorsopened
 end
 function NS2Gamerules:GetCanAlienTeamUpgEggs()
-return self.alienteamcanupgeggs
+return self.alienteamcanupgeggs and ( (self.lastupgeggtime + 4) < Shared.GetTime() )
+end
+function NS2Gamerules:SetEggTimer()
+self.lastupgeggtime = Shared.GetTime()
 end
 function NS2Gamerules:GetSideDoorsOpen()
 return self.sideopened
@@ -1727,7 +1735,7 @@ function NS2Gamerules:PickMainRoom(force)
                                end
                               
                     for _, entity in ipairs(entities) do
-                      if HasMixin(entity, "PowerConsumer") then entity.mainbattle = true end
+                      if (entity.GetTeamNumber and entity:GetTeamNumber() == 1) and HasMixin(entity, "Construct") then entity.mainbattle = true end
                     end
                  self:TriggerZedTime()
                   end
@@ -1931,8 +1939,8 @@ end
     
         for index = 1, 24 do
            local extents = Vector(1,1,1)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)                                  --not sure about filter?
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, where, 0, 24, EntityFilterAll())
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)                             
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, where, 1, 24, EntityFilterAll())
         
            if spawnPoint ~= nil then
              spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
@@ -1995,29 +2003,29 @@ end
     
     end
     function NS2Gamerules:NodeKilledFront(powerpoint)
-    --Kyle Abent =] based on almost 2 years of ns2siege gameplay observations this dynamic timer for all situations WIP
+    --Kyle Abent 
                   local amount = 1
                local built, unbuilt = self:CountCurrentNodes()       
             local nearestdoor = GetNearestMixin(powerpoint:GetOrigin(), "Moveable", nil, function(ent) return ent:isa("FrontDoor")  end)
-                  Print("nearestdoor is %s", nearestdoor)
+                --  Print("nearestdoor is %s", nearestdoor)
                 if nearestdoor then
                       local distance = powerpoint:GetDistance(nearestdoor)
-                       Print("nearestdoor Distance is %s", distance)
+                  --     Print("nearestdoor Distance is %s", distance)
                        amount = Clamp(distance*4, 10, (built*30))
                   end
                   local gameRules = GetGamerules()
-                Print("NodeBuiltFront built = %s, unbuilt =%s", built, unbuilt)
+                --Print("NodeBuiltFront built = %s, unbuilt =%s", built, unbuilt)
                 local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
-                Print("gameLength == %s", gameLength)
+              --  Print("gameLength == %s", gameLength)
                 local oldtimer = math.abs(kSiegeDoorTime - gameLength )
-                Print("oldtimer == %s", oldtimer)
-                Print("self.lastnode == %s", self.lastnode)
+              --  Print("oldtimer == %s", oldtimer)
+              --  Print("self.lastnode == %s", self.lastnode)
                 local percentage = (oldtimer * 0.35)/(self.setuppowernodecount-1)
-                Print("percentage == %s", percentage)
+             --   Print("percentage == %s", percentage)
                 percentage = percentage/GetReversedRoundLengthToSiege()
-                Print("percentage == %s", percentage)
+             --   Print("percentage == %s", percentage)
                 amount = ConditionalValue(self.lastnode == true,  math.abs(oldtimer-percentage), amount) --last node rules
-                Print("amount == %s", amount)
+             --   Print("amount == %s", amount)
              local subtractamount = math.round(math.abs(amount),0)
              Shared.ConsoleCommand(string.format("sh_addsiegetime %s", subtractamount * -  1))
              SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, subtractamount * -  1)
@@ -2043,6 +2051,7 @@ end
     end
 
 function NS2Gamerules:CountNodes()
+--Kyle Abent
 local built = 0
 local unbuilt = 0
                  for index, powerpoint in ientitylist(Shared.GetEntitiesWithClassname("PowerPoint")) do
@@ -2164,31 +2173,8 @@ function NS2Gamerules:SwitchCragsToSiegeMode()
                 Crag:PerformActivation(kTechId.HealWave, nil, normal, commander) 
                 end
           end
-                   //Ends with SuddenDeath
                return self.issuddendeath == false
 end
-function NS2Gamerules:SwitchObservatoryToSiegeMode()
-
-          for index, Observatory in ipairs(GetEntitiesForTeam("Observatory", 1)) do
-               if Observatory:GetIsInSiege() and Observatory:GetIsPowered() and Observatory:GetIsBuilt() then 
-                Observatory:ScanAtOrigin()
-                end
-          end
-                   //Ends with SuddenDeath
-               return self.issuddendeath == false
-end
-/*
-function NS2Gamerules:GiveArcOrders()
-
-          for index, arc in ipairs(GetEntitiesForTeam("ARC", 1)) do
-               if not arc:GetInAttackMode() and not arc:GetIsInSiegeHive() and not arc.moving then 
-                arc:GotoSiege()
-                end
-          end
-                   //Ends with SuddenDeath
-               return self.siegedoorsopened --self.issuddendeath == false
-end
-*/
 function NS2Gamerules:GetSiegePowerPoint()
 local powernode = nil
              for index, powerpoint in ipairs(GetEntitiesForTeam("PowerPoint", 1)) do
@@ -2223,13 +2209,62 @@ function NS2Gamerules:DropshipArcs()
 
          if arcspawnpoint ~= nil then
          local dropship = CreateEntity(Dropship.kMapName, arcspawnpoint, 1) 
-          self.team1:SetTeamResources(self.team2:GetTeamResources()  - 8)
+          self.team1:SetTeamResources(self.team1:GetTeamResources()  - 8)
         end
      end
      
      self:MakeSureArcsCanShootHive(self:GetSiegePowerPoint())
      
-     return true
+     if  self.team1:GetTeamResources() >= 3 then
+          CreateEntity( Scan.kMapName, arcspawnpoint, 1)
+          self.team1:SetTeamResources(self.team1:GetTeamResources()  - 3)
+     end
+     
+     return self.siegedoorsopened
+
+end
+function NS2Gamerules:MaintainHiveDefense()
+             for index, hive in ipairs(GetEntitiesForTeam("Hive", 2)) do
+               if hive:GetIsAlive() then 
+                 hive:MaintainDefense()
+                 break
+                end
+          end
+end
+function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
+         local tres = kStructureDropCost
+         local origin = hive:FindFreeSpace()
+         local spawned = false
+                   if #shifts <= math.random(1,3) then
+                      if self:GetCanSpawnAlienEntity(tres, 0) then  
+                      self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
+                      local shift = CreateEntity(Shift.kMapName, origin, 2) 
+                      shift:SetConstructionComplete()
+                      end
+                    end
+                    
+                    if #crags <= math.random(1,3) then
+                      if not spawned then
+                      if self:GetCanSpawnAlienEntity(tres, 0) then  
+                      self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
+                      local crag = CreateEntity(Crag.kMapName, origin, 2) 
+                      crag:SetConstructionComplete()
+                      end
+                      end
+                    end
+                    
+                    if #shades <= math.random(1,3) then
+                       if not spawned then 
+                      if self:GetCanSpawnAlienEntity(tres, 0) then  
+                      self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
+                       local shade = CreateEntity(Shade.kMapName, origin, 2) 
+                      shade:SetConstructionComplete()
+                       end
+                       end
+                    end
+
+        
+        return true
 
 end
 function NS2Gamerules:OpenSiegeDoors()
@@ -2237,9 +2272,9 @@ function NS2Gamerules:OpenSiegeDoors()
   
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
-               self:AddTimedCallback(NS2Gamerules.SwitchObservatoryToSiegeMode, kSiegeObsAutoScanCooldown)
                
-               self:AddTimedCallback(NS2Gamerules.DropshipArcs, 8)
+               self:AddTimedCallback(NS2Gamerules.DropshipArcs, 12)
+               self:AddTimedCallback(NS2Gamerules.MaintainHiveDefense, 8)
 
                 
                for index, siegedoor in ientitylist(Shared.GetEntitiesWithClassname("SiegeDoor")) do
@@ -2296,7 +2331,7 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, shades, cyst, origin)
 --Kyle Abent
             local spawned = false 
             local tres = not self.doorsopened and kStructureDropCost * .5 or kStructureDropCost
-            self.alienteamcanupgeggs = false
+            self.alienteamcanupgeggs = ConditionalValue(self.team2:GetTeamResources()>= 100, true,false)
         if self:GetCanSpawnAlienEntity(tres, nil, cyst:GetIsInCombat()) then
          
         
@@ -2413,6 +2448,85 @@ function NS2Gamerules:GetCanSpawnAlienEntity(trescount, timeywimey, isincombat)
     time = ConditionalValue(self.doorsopened or self.siegedoorsopened, time *.5, time)
     time = ConditionalValue(isincombat, time * math.random(.7, .90), time)
     time = time - (self.team2:GetTeamResources()/200) * time
+    timeywimey = time
+    end
+        if timeywimey < Shared.GetTime() then
+              return canafford
+         end
+end
+function NS2Gamerules:SpawnPrototypeEnts(proto)
+--kyle abent
+     if self:GetCanSpawnMarineEntity(8,nil, proto:GetIsInCombat()) then 
+local location = GetLocationForPoint(proto:GetOrigin())
+
+if location then
+
+local jps, exos = proto:GetJPExoEntitiesCount()
+local spawnpoint = proto:FindFreeSpace()
+  if spawnpoint ~= nil then
+   local spawned = false
+    if jps <= math.random(1,2) then
+            local dropship = CreateEntity(Dropship.kMapName, spawnpoint, 1)  
+              dropship:SetTechId(kTechId.Jetpack)
+              dropship:SetMapName(Jetpack.kMapName)
+              local lulz = 4
+              lulz = ConditionalValue(proto:GetIsInCombat(), 8, lulz)
+              dropship.flyspeed = lulz
+         self.lastmarinecreatedentity = Shared.GetTime()
+               self.team1:SetTeamResources(self.team1:GetTeamResources()  - 8)
+               spawned= true
+    elseif exos <= math.random(1,2) then
+       if not spawned then
+            local dropship = CreateEntity(Dropship.kMapName, spawnpoint, 1)  
+              local lulz = 2
+              lulz = ConditionalValue(proto:GetIsInCombat(), 4, lulz)
+              dropship.flyspeed = lulz
+              dropship:SetTechId(kTechId.Exosuit)
+              dropship:SetMapName(Exosuit.kMapName)
+         self.lastmarinecreatedentity = Shared.GetTime()
+         self.team1:SetTeamResources(self.team1:GetTeamResources()  - 8)
+         end
+    end
+    
+ end
+ end
+ 
+ end
+ 
+end
+function NS2Gamerules:SpawnCommandStationEnts(CC)
+--kyle abent
+local tres = 14
+     if self:GetCanSpawnMarineEntity(tres,nil, CC:GetIsInCombat()) then 
+local location = GetLocationForPoint(CC:GetOrigin())
+
+if location then
+
+local infantryportals = CC:GETIPCount()
+local spawnpoint = CC:FindFreeSpace()
+  if spawnpoint ~= nil then
+   local spawned = false
+          if infantryportals <= math.random(1,2) then
+            local dropship = CreateEntity(Dropship.kMapName, spawnpoint, 1)  
+              dropship:SetTechId(kTechId.InfantryPortal)
+              dropship:SetMapName(InfantryPortal.kMapName)
+         self.lastmarinecreatedentity = Shared.GetTime()
+               self.team1:SetTeamResources(self.team1:GetTeamResources()  - tres)
+               spawned= true
+    end
+    end
+ end
+ 
+ end
+ 
+end
+function NS2Gamerules:GetCanSpawnMarineEntity(trescount, timeywimey, isincombat)
+   local canafford = self.team1:GetTeamResources() >= trescount
+   if not timeywimey then
+    local time = self.lastmarinecreatedentity + math.random(4,32)
+    time = ConditionalValue(self.doorsopened or self.siegedoorsopened, time *.5, time)
+    time = ConditionalValue(isincombat, time * math.random(.7, .90), time)
+    time = time - (self.team1:GetTeamResources()/200) * time
     timeywimey = time
     end
         if timeywimey < Shared.GetTime() then

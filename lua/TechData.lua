@@ -311,7 +311,22 @@ function BuildTechData()
       [kTechDataTooltipInfo] =  "At the moment just kills the entity - For commander control"},
       
       
-        { [kTechDataId] = kTechId.MAC,    [kTechDataSupply] = kMACSupply,    [kTechDataHint] = "MAC_HINT",           [kTechDataMapName] = MAC.kMapName,                      [kTechDataDisplayName] = "MAC",  [kTechDataMaxHealth] = MAC.kHealth, [kTechDataMaxArmor] = MAC.kArmor, [kTechDataCostKey] = kMACCost, [kTechDataResearchTimeKey] = kMACBuildTime, [kTechDataModel] = MAC.kModelName, [kTechDataDamageType] = kMACAttackDamageType, [kTechDataInitialEnergy] = kMACInitialEnergy, [kTechDataMaxEnergy] = kMACMaxEnergy, [kTechDataMenuPriority] = 2, [kTechDataPointValue] = kMACPointValue, [kTechDataHotkey] = Move.M, [kTechDataTooltipInfo] = "MAC_TOOLTIP"},
+        { [kTechDataId] = kTechId.MAC,   
+        [kTechDataSupply] = kMACSupply,
+         [kTechDataHint] = "MAC_HINT",        
+      [kTechDataMapName] = AntiBody.kMapName,         
+              [kTechDataDisplayName] = "MAC",  
+ [kTechDataMaxHealth] = MAC.kHealth, 
+ [kTechDataMaxArmor] = MAC.kArmor, 
+ [kTechDataCostKey] = kMACCost, 
+ [kTechDataResearchTimeKey] = kMACBuildTime, [kTechDataModel] = MAC.kModelName, 
+ [kTechDataDamageType] = kMACAttackDamageType, 
+ [kTechDataInitialEnergy] = kMACInitialEnergy, 
+ [kTechDataMaxEnergy] = kMACMaxEnergy, 
+[kTechDataMenuPriority] = 2, [kTechDataPointValue] = kMACPointValue, 
+[kTechDataHotkey] = Move.M, [kTechDataTooltipInfo] = "MAC_TOOLTIP"},
+
+
         { [kTechDataId] = kTechId.CatPackTech, 
           [kTechDataCostKey] = kCatPackTechResearchCost,
           [kTechDataResearchTimeKey] = kCatPackTechResearchTime, 

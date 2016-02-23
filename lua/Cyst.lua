@@ -294,9 +294,14 @@ function Cyst:ActivateMagnetize()
                       self:AddTimedCallback(Cyst.Magnetize, 8)
 end
 if Server then
+
+    function Cyst:GetHasUmbra(position)
+        return #GetEntitiesWithinRange("CragUmbra", self:GetOrigin(), 17) > 0
+    end
+    
     function Cyst:OnTakeDamage(damage, attacker, doer, point, direction, damageType)
               --suppose to be for king but kinda fits the role for all cysts
-           if self:GetIsBuilt() and self:GetHealthScalar()<= 0.5 and (self.lastumbra + math.random(4,8)) < Shared.GetTime() then
+           if not self:GetHasUmbra() and self:GetIsBuilt() and self:GetHealthScalar()<= 0.5 and (self.lastumbra + math.random(4,8)) < Shared.GetTime() then
                     CreateEntity(CragUmbra.kMapName,  self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
                     self:TriggerEffects("crag_trigger_umbra")
                     self.lastumbra = Shared.GetTime()
@@ -316,9 +321,9 @@ function Cyst:Synchronize()
 
 end
 function Cyst:DoICreateShadeWhipCrag()
- local whips = GetEntitiesForTeamWithinRange("Whip", 2, self:GetOrigin(), 24)
- local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 24)
- local shades = GetEntitiesForTeamWithinRange("Shade", 2, self:GetOrigin(), 24)
+ local whips = GetEntitiesForTeamWithinRange("Whip", 2, self:GetOrigin(), 28)
+ local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 28)
+ local shades = GetEntitiesForTeamWithinRange("Shade", 2, self:GetOrigin(), 28)
 return whips, crags, shades
 end
 function Cyst:GetCanAffordEgg()
@@ -326,6 +331,15 @@ function Cyst:GetCanAffordEgg()
 end
 function Cyst:GetAddXPAmount()
  if self.isking then return Cyst.GainXP / 4 else return 0 end
+end
+function Cyst:UpdateEggSpawn()
+    
+        for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
+            if hive:GetIsAlive() then
+                hive:GenerateEggSpawns(true, self:GetLocationName(), self)
+                break
+            end
+        end
 end
 function Cyst:Magnetize()
 --Kyle Abent
@@ -338,7 +352,7 @@ function Cyst:Magnetize()
           
           self:AddTimedCallback(Cyst.Cook, 4)
           self:Synchronize()
-          if self.hasMagnetized == false then self.hasMagnetized = true end
+          if self.hasMagnetized == false then self.hasMagnetized = true self:UpdateEggSpawn() end
           return self.isking
 end
 
@@ -437,6 +451,7 @@ function Cyst:AddXP(amount)
         self.level = self.level + xpReward
         local bonus = (420 * (self.level/100) + 420)
         bonus = Clamp(bonus, 420, 1000)
+        bonus = bonus * 4 
         self:AdjustMaxHealth( bonus )
       //  self:AdjustMaxArmor(Clamp(420 * (self.level/100) + 420), 420, 500)
         

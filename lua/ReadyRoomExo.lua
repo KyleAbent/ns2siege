@@ -10,12 +10,7 @@ local networkVars = {}
 function ReadyRoomExo:OnCreate()
     Exo.OnCreate( self )
     self.creationTime = 0
-                self.leftArmModuleType  = kExoModuleTypes.Minigun
-            self.rightArmModuleType = kExoModuleTypes.Minigun
-            self.utilityModuleType = kExoModuleTypes.Nano
-           self.powerModuleType = kExoModuleTypes.Minigun
 end
-
 
 function ReadyRoomExo:OnGetMapBlipInfo()
     return false

@@ -105,7 +105,7 @@ function MarineTeam:OnRespawnQueueChanged()
     
     for index, current in ipairs(spawningStructures) do
     
-        if current:GetIsBuilt() and current:GetIsPowered() then
+        if current:GetIsBuilt() then
             current:FillQueueIfFree()
         end
         
@@ -190,129 +190,6 @@ local function SpawnBaseEntities(self, techPoint)
     CreateEntity(PrototypeLab.kMapName, PrototypeLabPoint, self:GetTeamNumber())
     CreateEntity(PhaseGate.kMapName, PhaseGatePoint, self:GetTeamNumber())
         
-    
-end
-   local function FindFreeSpace(origin)
-    
-        for index = 1, 100 do
-           local extents = Vector(1,1,1)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, 1, 24, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == GetLocationForPoint(origin)
-        
-           if spawnPoint ~= nil and sameLocation  then
-           return spawnPoint
-           end
-       end
-           Print("No valid spot found for marine initial structure spawn!")
-           return origin
-    end
-local function SpawnMac(self, techPoint)
-
-    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
-    
-    local spawnPoint = nil
-    
-		
-        spawnPoint = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, kInfantryPortalAttachRange + 5 )
-        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
-		
-    
-    if spawnPoint then
-    
-        local pt = CreateEntity(MAC.kMapName, spawnPoint, self:GetTeamNumber())
-        
-        
-    end
-    
-end
-local function SpawnArc(self, techPoint)
-
-    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
-    
-    local spawnPoint = nil
-    
-		
-        spawnPoint = GetRandomBuildPosition( kTechId.ARC, techPointOrigin, kInfantryPortalAttachRange - 5)
-        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
-		
-    
-    if spawnPoint then
-    
-        local arc = CreateEntity(ARC.kMapName, spawnPoint, self:GetTeamNumber())
-        arc:GiveOrder(kTechId.ARCDeploy, arc:GetId(), arc:GetOrigin(), nil, false, false)
-        
-        
-    end
-    
-end
-local function SpawnObservatory(self, techPoint)
-
-    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
-    
-    local spawnPoint = nil
-    
-		
-        spawnPoint = GetRandomBuildPosition( kTechId.Observatory, techPointOrigin, kInfantryPortalAttachRange )
-        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
-		
-    
-    if spawnPoint then
-    
-        local pt = CreateEntity(Observatory.kMapName, spawnPoint, self:GetTeamNumber())
-        SetRandomOrientation(pt)
-        pt:SetConstructionComplete()
-        
-    end
-    
-end
-local function SpawnPrototypeLab(self, techPoint)
-
-    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
-    
-    local spawnPoint = nil
-    
-		
-        spawnPoint = GetRandomBuildPosition( kTechId.PrototypeLab, techPointOrigin, kInfantryPortalAttachRange + 5)
-        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
-		
-    
-    if spawnPoint then
-    
-        local pt = CreateEntity(PrototypeLab.kMapName, spawnPoint, self:GetTeamNumber())
-        
-        SetRandomOrientation(pt)
-        pt:SetConstructionComplete()
-        
-    end
-    
-end
-local function SpawnArmory(self, techPoint)
-
-    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
-    
-    local spawnPoint = nil
-    
-		
-        spawnPoint = GetRandomBuildPosition( kTechId.Armory, techPointOrigin, kInfantryPortalAttachRange + 5)
-        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
-		
-    
-    if spawnPoint then
-    
-        local aa = CreateEntity(Armory.kMapName, spawnPoint, self:GetTeamNumber())
-        
-        SetRandomOrientation(aa)
-        aa:SetConstructionComplete()
-        
-    end
     
 end
 
@@ -532,14 +409,14 @@ function MarineTeam:InitTechTree()
     self.techTree:AddResearchNode(kTechId.ExosuitTech,           kTechId.PrototypeLab, kTechId.None)
     self.techTree:AddBuyNode(kTechId.Exosuit,                    kTechId.None, kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.DropExosuit,     kTechId.None, kTechId.None)
-    self.techTree:AddResearchNode(kTechId.DualMinigunTech,       kTechId.None, kTechId.TwoCommandStations)
-    self.techTree:AddResearchNode(kTechId.DualMinigunExosuit,    kTechId.DualMinigunTech, kTechId.TwoCommandStations)
+    self.techTree:AddResearchNode(kTechId.DualMinigunTech,       kTechId.None, kTechId.None)
+    self.techTree:AddResearchNode(kTechId.DualMinigunExosuit,    kTechId.None, kTechId.None)
     self.techTree:AddResearchNode(kTechId.ClawRailgunExosuit,    kTechId.None, kTechId.None)
     self.techTree:AddResearchNode(kTechId.DualRailgunTech,       kTechId.None, kTechId.TwoCommandStations)
     self.techTree:AddResearchNode(kTechId.DualRailgunExosuit,    kTechId.DualMinigunTech, kTechId.TwoCommandStations)
     
-    self.techTree:AddBuyNode(kTechId.UpgradeToDualMinigun, kTechId.DualMinigunTech, kTechId.TwoCommandStations)
-    self.techTree:AddBuyNode(kTechId.UpgradeToDualRailgun, kTechId.DualMinigunTech, kTechId.TwoCommandStations)
+    self.techTree:AddBuyNode(kTechId.UpgradeToDualMinigun, kTechId.None, kTechId.TwoCommandStations)
+    self.techTree:AddBuyNode(kTechId.UpgradeToDualRailgun, kTechId.None, kTechId.TwoCommandStations)
 
     self.techTree:AddActivation(kTechId.SocketPowerNode,    kTechId.None,   kTechId.None)
     

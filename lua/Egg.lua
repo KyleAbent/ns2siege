@@ -234,7 +234,7 @@ function Egg:UpdateManually()
 end
 if Server then
 function Egg:GetTeamCanAfford(tres)
-  return false --self:GetTeam():GetTeamResources() >= tres and self:GetIsFront() and self:GetCanTeamPrioritizeIt()
+  return self:GetTeam():GetTeamResources() >= tres and self:GetCanTeamPrioritizeIt()
 end
 function Egg:GetCanTeamPrioritizeIt()
             local gameRules = GetGamerules()
@@ -260,6 +260,7 @@ function Egg:UpdateToGorgeEgg()
             self:DeductTres(4)
           local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.GorgeEgg ) 
          self:SetResearching(techNode, self)
+         self:SetRulesEggTimer()
          end
    return not self:isa("GorgeEgg")
 end
@@ -268,6 +269,7 @@ function Egg:UpdateToLerkEgg()
             self:DeductTres(8)
    local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.LerkEgg ) 
          self:SetResearching(techNode, self)
+         self:SetRulesEggTimer()
           end
    return not self:isa("LerkEgg")
 end
@@ -276,6 +278,7 @@ function Egg:UpdateToFadeEgg()
             self:DeductTres(12)
    local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.FadeEgg ) 
          self:SetResearching(techNode, self)
+         self:SetRulesEggTimer()
          end
    return not self:isa("FadeEgg")
 end
@@ -284,10 +287,12 @@ function Egg:UpdateToOnosEgg()
             self:DeductTres(20)
    local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.OnosEgg ) 
          self:SetResearching(techNode,self)
+         self:SetRulesEggTimer()
           end
    return not self:isa("OnosEgg")
 end
 end
+
 function Egg:GetIsInSiege() --return true because sometimes the eggs may be re-beaconed outside of siege?
 if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
 return false
@@ -357,7 +362,10 @@ local function RequeuePlayer(self)
 end
 
 if Server then
-
+function Egg:SetRulesEggTimer() --return true because sometimes the eggs may be re-beaconed outside of siege?
+        local gameRules = GetGamerules()
+       return gameRules:SetEggTimer()
+end
     function Egg:OnKill(attacker, doer, point, direction)
     
         RequeuePlayer(self)

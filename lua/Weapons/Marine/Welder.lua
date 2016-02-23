@@ -286,7 +286,7 @@ function Welder:PerformWeld(player)
             if HasMixin(target, "Construct") and target:GetCanConstruct(player) then
                 target:Construct(ConditionalValue(player.buildspeed == .1,kWelderFireDelay, player.buildspeed +.1), player)
             end
-            if ( target:isa("InfantryPortal") or target:isa("Sentry") or target:isa("Armory") and target:GetIsBuilt() ) or target:isa("MAC") and target:GetHealthScalar() == 1 then
+            if ( target:isa("Sentry") or target:isa("Armory") and target:GetIsBuilt() ) or target:isa("MAC") and target:GetHealthScalar() == 1 then
                  local prevlevel = target.level
                 target:AddXP(target:GetAddXPAmount())
                 local success = false

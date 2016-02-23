@@ -11,15 +11,6 @@
 
 local kMoveParam = "move_speed"
 local kMuzzleNode = "fxnode_arcmuzzle"
-/*
-function ARC:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
-local damage = 1
-     if doer:isa("DotMarker") or doer:isa("Gore") then
-       damage = damage - (self.level/100) * damage
-    end
-  damageTable.damage = damageTable.damage * damage 
-end
-*/
 function ARC:OnEntityChange(oldId)
 
     if self.targetedEntity == oldId then

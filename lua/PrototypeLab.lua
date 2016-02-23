@@ -1,12 +1,3 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\PrototypeLab.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -29,7 +20,6 @@ Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
-Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
@@ -86,7 +76,6 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
-AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -116,7 +105,6 @@ function PrototypeLab:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
-    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, StunMixin)
     
@@ -261,7 +249,57 @@ function PrototypeLab:OnUpdate(deltaTime)
     ScriptActor.OnUpdate(self, deltaTime)
     
 end
+    function PrototypeLab:OnConstructionComplete()
+        self:AddTimedCallback(PrototypeLab.SpawnEntities, 8)      
+    end
 if Server then
+function PrototypeLab:GetJPExoEntitiesCount()   
+      local jps = 0
+      local exos = 0
+                    local entities = GetEntitiesForTeamWithinRange("ScriptActor", 1, self:GetOrigin(), 8)
+                     for i = 1, #entities do
+                     local ent = entities[i]
+                           if ent:isa("Exosuit") then 
+                             exos = exos + 1
+                           elseif ent:isa("Jetpack") then
+                                 jps = jps + 1
+                           end
+                     end
+                     return jps, exos
+end        
+function PrototypeLab:SpawnEntities()   
+
+
+                      local gameRules = GetGamerules()
+            if gameRules then
+                           gameRules:SpawnPrototypeEnts(self)  
+            end
+            
+          return true
+
+end
+    function PrototypeLab:FindFreeSpace()
+    
+        for index = 1, 24 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 6, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for prototype spawn jp exo")
+           return nil
+    end
 function PrototypeLab:OnStun()   
               //  local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
                // bonewall.modelsize = 0.5
@@ -310,12 +348,19 @@ function PrototypeLab:GetIsStunAllowed()
 end
 function PrototypeLab:GetItemList(forPlayer)
 
-    
     if forPlayer:isa("Exo") then
-        return { kTechId.Exosuit }
-    end
     
-       local otherbuttons =  { kTechId.Jetpack, kTechId.Exosuit, kTechId.JumpPack, kTechId.None, kTechId.HeavyArmor}
+        if forPlayer:GetHasDualGuns() then
+            return {}
+        elseif forPlayer:GetHasRailgun() then
+            return { kTechId.UpgradeToDualRailgun }    
+        elseif forPlayer:GetHasMinigun() then
+            return { kTechId.UpgradeToDualMinigun }
+        end    
+
+    end    
+    
+       local otherbuttons =  { kTechId.Jetpack, kTechId.Exosuit, kTechId.ClawRailgunExosuit, kTechId.JumpPack, kTechId.HeavyArmor}
           
           if forPlayer.hasjumppack or forPlayer:isa("JetpackMarine")  or forPlayer:isa("Exo") or forPlayer.heavyarmor then
               otherbuttons[1] = kTechId.None
@@ -323,9 +368,6 @@ function PrototypeLab:GetItemList(forPlayer)
                otherbuttons[5] = kTechId.None
            end
            
-           if forPlayer.hasreupply then
-            otherbuttons[4] = kTechId.None
-           end
            
          return otherbuttons
     

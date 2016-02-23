@@ -375,11 +375,6 @@ end
 function Fade:GetRecentlyBlinked(player)
     return Shared.GetTime() - self.etherealEndTime < kMinEnterEtherealTime
 end
-function Fade:GetEligableForProlongedInvisibility()
-local currentlyblinking = self:GetIsBlinking()
-local recentlyblinked = Shared.GetTime() - self.etherealEndTime < 1.2
-if currentlyblinking or recentlyblinked then return true else return false end
-end
 function Fade:GetMovementSpecialTechId()
           
     if self:GetCanMetabolizeHealth() then

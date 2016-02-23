@@ -164,15 +164,11 @@ local function SelectNearest(self, className )
     for _, entity in ipairs(GetEntitiesForTeam(className, self:GetTeamNumber())) do
         
         if entity:GetIsBuilt() then
-            if entity:GetIsPowered() then
                 if not entity:GetIsRecycling() then
                     priority = 1
                 else
                     priority = 2
                 end
-            else
-                priority = 3
-            end
         else
             priority = 4
         end
