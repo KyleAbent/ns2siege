@@ -159,7 +159,8 @@ if Server then
             self.lastexploitcheck = Shared.GetTime()
             self:AddTimedCallback(NS2Gamerules.CollectResources, kResourceTowerResourceInterval) 
             self:AddTimedCallback(NS2Gamerules.ExpandKingCyst, kExpandCystInterval)
-
+            self:AddTimedCallback(NS2Gamerules.OpenFrontMaybe, 1)
+            self:AddTimedCallback(NS2Gamerules.OpenSiegeMaybe, 1)
             
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
@@ -180,6 +181,8 @@ if Server then
                 self.gameStartTime = Shared.GetTime()
                 
                 self.gameInfo:SetStartTime(self.gameStartTime)
+                self.gameInfo:SetFrontTime(kFrontDoorTime)
+                self.gameInfo:SetSiegeTime(kSiegeDoorTime)
                 
                 SendTeamMessage(self.team1, kTeamMessageTypes.GameStarted)
                 SendTeamMessage(self.team2, kTeamMessageTypes.GameStarted)
@@ -963,19 +966,8 @@ function NS2Gamerules:OnUpdate(timePassed)
         GetEffectManager():OnUpdate(timePassed)
         
         if Server then
-        
-        /*
-        local NowToFront = kFrontDoorTime - (Shared.GetTime() - GetGamerules():GetGameStartTime())
-        local FrontLength =  math.ceil( Shared.GetTime() + NowToFront - Shared.GetTime() )
-        SendTeamMessage(self.team1,  text = "Front Door Opens in %s"..FrontLength)
-        SendTeamMessage(self.team2, text = "Front Door Opens in %s"..FrontLength)                     
-*/
-    
-        //Siege Front & Siege Doors
          if self:GetGameStarted() and not self.siegedoorsopened and not Shared.GetCheatsEnabled() and (self.lastexploitcheck + 30) < Shared.GetTime()  then
          self.lastexploitcheck = Shared.GetTime()
-        // self.siegedoorsopened = true  
-     //  if not self.alreadyhookedsiege then self:HookSiegeOpen() self.alreadyhookesiege = true end
           for _, entity in ipairs(GetEntitiesWithMixin("Live")) do
                if not entity:isa("PowerPoint") and not entity:isa("Player") and entity.GetLocationName then
                    if string.find(entity:GetLocationName(), "siege") or string.find(entity:GetLocationName(), "Siege") then
@@ -984,11 +976,11 @@ function NS2Gamerules:OnUpdate(timePassed)
                         then
                         entity:GetTeam():AddTeamResources(LookupTechData(entity:GetTechId(), kTechDataCostKey))
                         DestroyEntity(entity)
-                        end //
-                   end  //
-               end  //
-           end // 
-         end  //
+                        end 
+                   end  
+               end 
+           end 
+         end  
       
             if self.justCreated then
             
@@ -2119,6 +2111,20 @@ local ent = nil
      end
      return true
 end
+    function NS2Gamerules:OpenFrontMaybe()
+       local fronttime = self.gameInfo:GetFrontTime()
+          if Shared.GetTime() - self:GetGameStartTime() > fronttime and not self.doorsopened then
+            self:OpenFrontDoors()
+          end
+          return not self.doorsopened
+    end
+    function NS2Gamerules:OpenSiegeMaybe()
+       local siegetime = self.gameInfo:GetSiegeTime()
+          if Shared.GetTime() - self:GetGameStartTime() > siegetime and not self.siegedoorsopened then
+            self:OpenSiegeDoors()
+          end
+          return not self.siegedoorsopened
+    end
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  self:CountNodes()
@@ -2327,7 +2333,7 @@ end
 function NS2Gamerules:GetIsZedTime()
   return self.iszedtime 
 end
-function NS2Gamerules:SynrhonizeCystEntities(whips, crags, shades, cyst, origin)
+function NS2Gamerules:SynrhonizeCystEntities(whips, crags, cyst, origin)
 --Kyle Abent
             local spawned = false 
             local tres = not self.doorsopened and kStructureDropCost * .5 or kStructureDropCost
@@ -2351,13 +2357,6 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, shades, cyst, origin)
                       end
                     end
                     
-                    if #shades <= math.random(1,3) then
-                       if not spawned then
-                       local shade = CreateEntity(Shade.kMapName, origin, 2) 
-                      self.lastaliencreatedentity = Shared.GetTime()
-                        spawned = true
-                      end
-                    end
         end   
         
 

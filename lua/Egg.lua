@@ -234,7 +234,7 @@ function Egg:UpdateManually()
 end
 if Server then
 function Egg:GetTeamCanAfford(tres)
-  return self:GetTeam():GetTeamResources() >= tres and self:GetCanTeamPrioritizeIt()
+  return not self:GetIsResearching() and self:GetTeam():GetTeamResources() >= tres and self:GetCanTeamPrioritizeIt()
 end
 function Egg:GetCanTeamPrioritizeIt()
             local gameRules = GetGamerules()
@@ -261,8 +261,11 @@ function Egg:UpdateToGorgeEgg()
           local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.GorgeEgg ) 
          self:SetResearching(techNode, self)
          self:SetRulesEggTimer()
+         else
+            return self:GetTechId() == kTechId.Egg
          end
-   return not self:isa("GorgeEgg")
+
+   
 end
 function Egg:UpdateToLerkEgg()
                  if self:GetTeamCanAfford(8) then
@@ -270,8 +273,10 @@ function Egg:UpdateToLerkEgg()
    local techNode = self:GetTeam():GetTechTree():GetTechNode( kTechId.LerkEgg ) 
          self:SetResearching(techNode, self)
          self:SetRulesEggTimer()
-          end
+          else
    return not self:isa("LerkEgg")
+   end
+   return self:GetTechId() ~= kTechId.Egg
 end
 function Egg:UpdateToFadeEgg()
                    if self:GetTeamCanAfford(12) then

@@ -511,6 +511,13 @@ Script.Load("lua/Ballistics.lua")
 
 function Whip:PreOnKill(attacker, doer, point, direction)
 if self.level ~= 1 then self.level = 1 end
+
+    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
+        if cyst.occupied  then
+           cyst.occupied = false
+        end
+    end
+
 end
 function Whip:UpdateOrders(deltaTime)
 

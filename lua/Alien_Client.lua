@@ -646,7 +646,12 @@ end
 function Alien:GetFirstPersonDeathEffect()
     return Alien.kFirstPersonDeathEffect
 end
+function Alien:UpdateTimer()
 
+GetGUIManager():DestroyGUIScriptSingle("GUIInsight_TopBar")
+GetGUIManager():CreateGUIScriptSingle("GUIInsight_TopBar")
+
+end
 function Alien:UpdateRegenerationEffect()
     
     local GUIRegenerationFeedback = ClientUI.GetScript("GUIRegenerationFeedback")

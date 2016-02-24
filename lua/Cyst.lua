@@ -65,19 +65,12 @@ local networkVars =
     // or delta encoded
     m_origin = "position (by 0.05 [], by 0.05 [], by 0.05 [])",
     m_angles = "angles (by 0.1 [], by 10 [], by 0.1 [])",
-    
-    // Cysts are never attached to anything, so remove the fields inherited from Entity
-    //m_attachPoint = "integer (-1 to 0)",
-    //m_parentId = "integer (-1 to 0)",
-    
-    // Track our parentId
-    parentId = "entityid",
-    hasChild = "boolean",
     isKing = "boolean",
     level = "float (0 to " .. Cyst.MaxLevel .. " by .1)",
     wasking = "boolean",
     lastumbra = "time",
     hasMagnetized = "private boolean",
+    occupied = "boolean",
 
 }
 
@@ -139,12 +132,12 @@ function Cyst:OnCreate()
     self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)
     
     self:SetLagCompensated(false)
-    self.parentId = Entity.invalidId
     self.isKing = false
     self.level = 0
     self.wasking = false
     self.lastumbra = 0
     self.hasMagnetized = false
+    self.occupied = false
 end
 
 
@@ -311,11 +304,11 @@ if Server then
 end
 function Cyst:Synchronize()
 --Kyle Abent
-                     local whips, crags, shades = self:DoICreateShadeWhipCrag()
+                     local whips, crags = self:DoICreateShadeWhipCrag()
                     if Server then
             local gameRules = GetGamerules()
             if gameRules then
-                  gameRules:SynrhonizeCystEntities(whips, crags, shades, self, self:FindFreeSpace())
+                  gameRules:SynrhonizeCystEntities(whips, crags, self, self:FindFreeSpace())
                 end
                 end
 
@@ -323,8 +316,7 @@ end
 function Cyst:DoICreateShadeWhipCrag()
  local whips = GetEntitiesForTeamWithinRange("Whip", 2, self:GetOrigin(), 28)
  local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 28)
- local shades = GetEntitiesForTeamWithinRange("Shade", 2, self:GetOrigin(), 28)
-return whips, crags, shades
+return whips, crags
 end
 function Cyst:GetCanAffordEgg()
   return self:GetTeam():GetTeamResources() >= 4
@@ -363,20 +355,30 @@ function Cyst:Dethrone()
                       self.isking = false
                       self.wasking = true
 end
+function Cyst:FindUnOccupiedCystInRoom()
+ location = GetLocationForPoint(self:GetOrigin())
+    if location then
+       return location:FindUnOccupiedCyst()
+    else
+    return 
+    self:FindFreeSpace()
+    end                  
+end
 function Cyst:MagnetizeStructures()
+
           for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
                if crag:GetIsBuilt() and self:GetDistance(crag) >= 24 then 
-               crag:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
+               crag:GiveOrder(kTechId.Move, self:GetId(), self:FindUnOccupiedCystInRoom(), nil, true, true) 
                 end
           end
           for index, shade in ipairs(GetEntitiesForTeam("Shade", 2)) do
                if shade:GetIsBuilt() and self:GetDistance(shade) >= 24 then 
-               shade:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
+               shade:GiveOrder(kTechId.Move, self:GetId(), self:FindUnOccupiedCystInRoom(), nil, true, true) 
                 end
           end
           for index, whip in ipairs(GetEntitiesForTeam("Whip", 2)) do
                if whip:GetIsBuilt() and self:GetDistance(whip) >= 24 then 
-               whip:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
+               whip:GiveOrder(kTechId.Move, self:GetId(), self:FindUnOccupiedCystInRoom(), nil, true, true) 
                 end
           end
           

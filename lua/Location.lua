@@ -128,6 +128,16 @@ if Server then
         end
             return false
       end
+    function Location:FindUnOccupiedCyst()
+             local entities = self:GetEntitiesInTrigger()
+                     for i = 1, #entities do
+                     local ent = entities[i]
+                           if ent:isa("Cyst") and ent:GetIsBuilt() and not ent.occupied then 
+                                 ent.occupied = true
+                                 return ent:GetOrigin()
+                           end
+                     end
+    end                 
     function Location:OnTriggerEntered(entity, triggerEnt)
         ASSERT(self == triggerEnt)
           if self:GetIsSetup() then

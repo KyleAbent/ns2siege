@@ -354,7 +354,7 @@ function Marine:OnInitialized()
         
         self.notifications = { }
         self.timeLastSpitHitEffect = 0
-        
+        GetGUIManager():CreateGUIScriptSingle("GUIInsight_TopBar")
     end
     
 
@@ -366,7 +366,7 @@ function Marine:OnInitialized()
     // -1 = leftmost, +1 = right-most
     self.horizontalSwing = 0
     // -1 = up, +1 = down
-    
+
 
     
 end

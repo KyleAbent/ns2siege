@@ -294,7 +294,12 @@ function Marine:OnUpdateRender()
     */
 
 end
+function Marine:UpdateTimer()
 
+GetGUIManager():DestroyGUIScriptSingle("GUIInsight_TopBar")
+GetGUIManager():CreateGUIScriptSingle("GUIInsight_TopBar")
+
+end
 function Marine:AddNotification(locationId, techId)
 
     local locationName = ""

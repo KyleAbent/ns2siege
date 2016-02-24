@@ -259,7 +259,15 @@ function Crag:GetArcsInRange()
       local arc= GetEntitiesWithinRange("ARC", self:GetOrigin(), Crag.kHealRadius)
            return Clamp(#arc, 0, 4)
 end
-
+function Crag:PreOnKill(attacker, doer, point, direction)
+     
+    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
+        if cyst.occupied  then
+           cyst.occupied = false
+        end
+    end
+    
+end
   function Crag:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
     local NowToHeal = kHealWaveCooldown - (Shared.GetTime() - self.lasthealwavetrigger)

@@ -252,7 +252,7 @@ function Alien:OnInitialized()
         if self:GetIsLocalPlayer() and self.hatched then
             self:TriggerHatchEffects()
         end
-        
+        GetGUIManager():CreateGUIScriptSingle("GUIInsight_TopBar")  
     end
     
     if Client and Client.GetLocalPlayer() == self then
@@ -334,7 +334,6 @@ function Alien:SetHatched()
     self:SetRepresentingHealthValues()
     self:AddTimedCallback(Alien.UpdateAutoHeal, kAlienRegenerationTime)
 end
-
 function Alien:GetCanRepairOverride(target)
     return false
 end
