@@ -302,6 +302,11 @@ function Egg:GetIsInSiege() --return true because sometimes the eggs may be re-b
 if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
 return false
 end
+function Egg:GetLocationName()
+        local location = GetLocationForPoint(self:GetOrigin())
+        local locationName = location and location:GetName() or ""
+        return locationName
+end
 function Egg:OnResearchComplete(techId)
     
     local success = false    

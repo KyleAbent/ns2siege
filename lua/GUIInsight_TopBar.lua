@@ -138,7 +138,7 @@ function GUIInsight_TopBar:Initialize()
     siegeDoor:SetAnchor(GUIItem.Middle, GUIItem.Top)
        
     
-    siegeDoor:SetPosition(Vector(-GUIScale(195),GUIScale(4),0))
+    siegeDoor:SetPosition(Vector(-GUIScale(130),GUIScale(4),0))
     siegeDoor:SetTextAlignmentX(GUIItem.Align_Center)
     siegeDoor:SetTextAlignmentY(GUIItem.Align_Min)
     siegeDoor:SetColor(Color(1, 1, 1, 1))
@@ -290,7 +290,8 @@ end
 function GUIInsight_TopBar:Update(deltaTime)
     
     PROFILE("GUIInsight_TopBar:Update")
-    
+                                              --Update every 1 second rather than 25 times per second :x
+    if self.lastupdatedtime == nil or self.lastupdatetime + 1 < Shared.GetTime() then 
     local startTime = PlayerUI_GetGameStartTime()
         
     if startTime ~= 0 then
@@ -303,44 +304,57 @@ function GUIInsight_TopBar:Update(deltaTime)
     minutes = minutes - hours * 60
     seconds = seconds - minutes * 60 - hours * 3600
     
+
+    
     local gameTimeText = string.format("%d:%02d", minutes, seconds)
+    
+    
+        local frontTimeText = nil
+        
+        
     if frontTime ~= 0 then
         local timerlength = PlayerUI_GetFrontLength()
         local NowToFront = timerlength - (Shared.GetTime() - PlayerUI_GetGameStartTime())
         local FrontLength =  math.ceil( Shared.GetTime() + NowToFront - Shared.GetTime() )
         frontTime = FrontLength
-    end
-
     local seconds = math.round(frontTime)
     local minutes = math.floor(seconds / 60)
     local hours = math.floor(minutes / 60)
     minutes = minutes - hours * 60
     seconds = seconds - minutes * 60 - hours * 3600
     
-    local frontTimeText = string.format("%d:%02d", minutes, seconds)
+     frontTimeText = string.format("FrontDoor: %d:%02d", minutes, seconds)
+    else
+      frontTimeText = string.format("FrontDoor: Open", minutes, seconds)
+     end
 
 
-    
+        local siegeTimeText = nil
       if siegeTime ~= 0 then  
            local timerlength = PlayerUI_GetSiegeLength()
            local NowToSiege = timerlength - (Shared.GetTime() - PlayerUI_GetGameStartTime())
           -- Print("kSiegeDoorTime is %s", timerlength)
            local SiegeLength =  math.ceil( Shared.GetTime() + NowToSiege - Shared.GetTime() )
            siegeTime = SiegeLength
-    end  
-    
     local seconds = math.round(siegeTime)
     local minutes = math.floor(seconds / 60)
     local hours = math.floor(minutes / 60)
     minutes = minutes - hours * 60
     seconds = seconds - minutes * 60 - hours * 3600
     
-    local siegeTimeText = string.format("%d:%02d", minutes, seconds)
+    siegeTimeText = string.format("SiegeDoor: %d:%02d", minutes, seconds)
+     else
+       siegeTimeText = string.format("SiegeDoor: Open")
+      end
 
     gameTime:SetText(gameTimeText)
     siegeDoor:SetText(siegeTimeText)
     frontDoor:SetText(frontTimeText)
 
+
+    self.lastupdatetime = Shared.GetTime()
+    
+    end
    
     local cursor = MouseTracker_GetCursorPos()
     local inBackground, posX, posY = GUIItemContainsPoint(scoresBackground, cursor.x, cursor.y)

@@ -1624,7 +1624,7 @@ function NS2Gamerules:GetFrontDoorsOpen()
 return self.doorsopened
 end
 function NS2Gamerules:GetCanAlienTeamUpgEggs()
-return self.alienteamcanupgeggs and ( (self.lastupgeggtime + 4) < Shared.GetTime() )
+return self.alienteamcanupgeggs and ( (self.lastupgeggtime + 6) < Shared.GetTime() )
 end
 function NS2Gamerules:SetEggTimer()
 self.lastupgeggtime = Shared.GetTime()
@@ -2143,7 +2143,7 @@ function NS2Gamerules:OpenFrontDoors()
                 
               self:AddTimedCallback(NS2Gamerules.PickMainRoom, 10)
               self:EnableIPsBeacon()
-              self:AddTimedCallback(NS2Gamerules.EnableIPsBeacon, 90)
+              self:AddTimedCallback(NS2Gamerules.EnableIPsBeacon, 28)
                 
               for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
               StartSoundEffectForPlayer(NS2Gamerules.kFrontDoorSound, player)           
@@ -2232,19 +2232,20 @@ end
 function NS2Gamerules:MaintainHiveDefense()
              for index, hive in ipairs(GetEntitiesForTeam("Hive", 2)) do
                if hive:GetIsAlive() then 
-                 hive:MaintainDefense()
+                 self:HiveDefenseMain(hive, hive:GetDefenseEntsInRange())
                  break
                 end
           end
+          
+                  return true
 end
 function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
          local tres = kStructureDropCost
-         local origin = hive:FindFreeSpace()
          local spawned = false
                    if #shifts <= math.random(1,3) then
                       if self:GetCanSpawnAlienEntity(tres, 0) then  
                       self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
-                      local shift = CreateEntity(Shift.kMapName, origin, 2) 
+                      local shift = CreateEntity(Shift.kMapName, hive:FindFreeSpace(), 2) 
                       shift:SetConstructionComplete()
                       end
                     end
@@ -2253,7 +2254,7 @@ function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
                       if not spawned then
                       if self:GetCanSpawnAlienEntity(tres, 0) then  
                       self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
-                      local crag = CreateEntity(Crag.kMapName, origin, 2) 
+                      local crag = CreateEntity(Crag.kMapName, hive:FindFreeSpace(), 2) 
                       crag:SetConstructionComplete()
                       end
                       end
@@ -2263,14 +2264,14 @@ function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
                        if not spawned then 
                       if self:GetCanSpawnAlienEntity(tres, 0) then  
                       self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
-                       local shade = CreateEntity(Shade.kMapName, origin, 2) 
+                       local shade = CreateEntity(Shade.kMapName, hive:FindFreeSpace(), 2) 
                       shade:SetConstructionComplete()
                        end
                        end
                     end
 
         
-        return true
+
 
 end
 function NS2Gamerules:OpenSiegeDoors()
@@ -2341,7 +2342,7 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, cyst, origin)
         if self:GetCanSpawnAlienEntity(tres, nil, cyst:GetIsInCombat()) then
          
         
-                    if #whips <= math.random(1,7) then
+                    if #whips <= math.random(1,19) then
                        if not spawned then
                       local whip = CreateEntity(Whip.kMapName, origin, 2) 
                       self.lastaliencreatedentity = Shared.GetTime()
@@ -2349,7 +2350,7 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, cyst, origin)
                       end
                     end
                     
-                    if #crags <= math.random(1,7) then
+                    if #crags <= math.random(1,19) then
                        if not spawned then
                       local crag = CreateEntity(Crag.kMapName, origin, 2) 
                       self.lastaliencreatedentity = Shared.GetTime()
@@ -2365,8 +2366,9 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, cyst, origin)
                  self.alienteamcanupgeggs = true
             else
               self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)
+              cyst.MinKingShifts = Clamp(cyst.MinKingShifts + 1, 0, Cyst.MinimumKingShifts)
             end     
-
+            
 end
 function NS2Gamerules:SpawnNewHive(origin)
    

@@ -58,6 +58,8 @@ Cyst.kCystMaxParentRange = kCystMaxParentRange
 Cyst.kInfestationRadius = kInfestationRadius
 Cyst.kInfestationGrowthDuration = Cyst.kInfestationRadius / kCystInfestDuration
 
+Cyst.MinimumKingShifts = 4
+
 local networkVars =
 {
 
@@ -69,8 +71,9 @@ local networkVars =
     level = "float (0 to " .. Cyst.MaxLevel .. " by .1)",
     wasking = "boolean",
     lastumbra = "time",
-    hasMagnetized = "private boolean",
+    MinKingShifts = "float (0 to " .. Cyst.MinimumKingShifts .. " by 1)",
     occupied = "boolean",
+    UpdatedEggs = "boolean",
 
 }
 
@@ -136,8 +139,9 @@ function Cyst:OnCreate()
     self.level = 0
     self.wasking = false
     self.lastumbra = 0
-    self.hasMagnetized = false
+    self.MinKingShifts = 0
     self.occupied = false
+    self.UpdatedEggs = false
 end
 
 
@@ -190,6 +194,19 @@ function Cyst:GetInfestationGrowthRate()
 end
 function Cyst:OnConstructionComplete()
     self:AddTimedCallback(Cyst.EnergizeInRange, 4)
+    self:AttractWhipsCrags()
+    self:AddTimedCallback(Cyst.AttractWhipsCrags, 8)
+end
+function Cyst:AttractWhipsCrags()
+    if not self.isking and not self.occupied then
+       --Print("Mating Ritual Attempting.. :O ")
+     local kingcyst = GetNearest(self:GetOrigin(), "Cyst", 2, function(ent) return ent.isking and GetLocationForPoint(ent:GetOrigin()) == GetLocationForPoint(self:GetOrigin()) end)
+           if kingcyst then
+                 self:MagnetizeStructures()
+                 Print("Non King found King, therefore calculating checkers  board appropriately... (fuck chess ;) )")
+           end
+    end
+    return self:GetIsAlive()
 end
 function Cyst:EnergizeInRange()
     if self:GetIsBuilt() and not self:GetIsOnFire() and self.isking and self:GetLevel() == self:GetMaxLevel() then
@@ -218,7 +235,20 @@ local kYExtents = 0.1 * self:GetLevelPercentage()
 local crouchshrink = 0
      return Vector(kXZExtents, kYExtents, kXZExtents)
 end
- function Cyst:FindFreeSpace()    
+function Cyst:ReturnFreeCystSpaceOrigin()  
+     
+
+
+
+end
+ function Cyst:FindFreeSpace()  
+     local spotfound = self:ReturnFreeCystSpaceOrigin()
+       if spotfound ~= nil then return spotfound end 
+       
+      return self:FindAlternateSpace()
+end
+function Cyst:FindAlternateSpace()
+ 
         for index = 1, 100 do
            local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
            local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
@@ -236,7 +266,7 @@ end
            return spawnPoint
            end
         end
-        Print("No valid spot found for kingcyst magnetize")
+        Print("No valid spot found for kingcyst find alternatespace")
         return self:GetOrigin()
 end
 function Cyst:GetLocationName()
@@ -314,8 +344,8 @@ function Cyst:Synchronize()
 
 end
 function Cyst:DoICreateShadeWhipCrag()
- local whips = GetEntitiesForTeamWithinRange("Whip", 2, self:GetOrigin(), 28)
- local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 28)
+ local whips = GetEntitiesForTeamWithinRange("Whip", 2, self:GetOrigin(), 999999)
+ local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 999999)
 return whips, crags
 end
 function Cyst:GetCanAffordEgg()
@@ -344,46 +374,70 @@ function Cyst:Magnetize()
           
           self:AddTimedCallback(Cyst.Cook, 4)
           self:Synchronize()
-          if self.hasMagnetized == false then self.hasMagnetized = true self:UpdateEggSpawn() end
+          self.MinKingShifts = Clamp(self.MinKingShifts + 1, 0, Cyst.MinimumKingShifts)
+          if not self.UpdatedEggs then self.UpdatedEggs = true self:UpdateEggSpawn()  end
           return self.isking
 end
 
 function Cyst:GetCanDethrone()
-      return self.hasMagnetized
+      return self.MinKingShifts == Cyst.MinimumKingShifts
 end
 function Cyst:Dethrone()
                       self.isking = false
                       self.wasking = true
-end
-function Cyst:FindUnOccupiedCystInRoom()
- location = GetLocationForPoint(self:GetOrigin())
-    if location then
-       return location:FindUnOccupiedCyst()
-    else
-    return 
-    self:FindFreeSpace()
-    end                  
+                      self.UpdatedEggs = false
 end
 function Cyst:MagnetizeStructures()
 
+      if self.isking then
+         return self:KingRules()
+      else
+        return self:NonKingRules()
+     end          
+
+end
+function Cyst:KingRules()
           for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
                if crag:GetIsBuilt() and self:GetDistance(crag) >= 24 then 
-               crag:GiveOrder(kTechId.Move, self:GetId(), self:FindUnOccupiedCystInRoom(), nil, true, true) 
-                end
-          end
-          for index, shade in ipairs(GetEntitiesForTeam("Shade", 2)) do
-               if shade:GetIsBuilt() and self:GetDistance(shade) >= 24 then 
-               shade:GiveOrder(kTechId.Move, self:GetId(), self:FindUnOccupiedCystInRoom(), nil, true, true) 
+               crag:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
                 end
           end
           for index, whip in ipairs(GetEntitiesForTeam("Whip", 2)) do
                if whip:GetIsBuilt() and self:GetDistance(whip) >= 24 then 
-               whip:GiveOrder(kTechId.Move, self:GetId(), self:FindUnOccupiedCystInRoom(), nil, true, true) 
+               whip:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
                 end
           end
-          
+end  
+function Cyst:NonKingRules()
+   Print("Non king rules")
+   if not self.occupied then
 
-end
+       
+          for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
+               if crag:GetIsBuilt() and self:GetDistance(crag) >= 2  and not crag:GetHasOrder() and crag:GetCanOccupy(self) then 
+                local success = false 
+                success = crag:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
+                 if success then self.occupied = true  crag:SetIsOccupying(true) Print("Order give to crag break end") break end
+                end
+          end
+    end
+    
+       if not  self.occupied then
+          for index, whip in ipairs(GetEntitiesForTeam("Whip", 2)) do
+               local success = false 
+               if whip:GetIsBuilt() and self:GetDistance(whip) >= 2 and not whip:GetHasOrder() and whip:GetCanOccupy(self) then 
+                 success = whip:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
+                   if success then self.occupied = true whip:SetIsOccupying(true) Print("Order give to whip break end")  break end
+                end
+          end
+      end
+      
+         
+   
+   
+   return self:GetIsAlive()
+   
+end  
   function Cyst:Cook()
          for index, Egg in ipairs(GetEntitiesForTeam("Egg", 2)) do
                if self:GetDistance(Egg) >= 22 and (self.isking and self:GetLevel() == self:GetMaxLevel()) and self:GetCanAffordEgg() and Egg:GetCanBeacon() then 

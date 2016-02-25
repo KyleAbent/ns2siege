@@ -355,7 +355,9 @@ function Hive:UpdateSpawnEgg()
 
     local eggCount = GetNumEggs(self)
     if eggCount < 8 then  
+         for i = 1, 8 - eggCount do
         SpawnEgg(self, eggCount)
+         end
     end
     
     return true
@@ -583,14 +585,6 @@ end
         Print("No valid spot found for hive FindFreeSpace")
         return self:GetModelOrigin()
 end
-function Hive:MaintainDefense()
-           local shifts, crags, shades = self:GetDefenseEntsInRange()
-           local gamerules = GetGamerules()
-           gamerules:HiveDefenseMain(self,shifts, crags, shades)
-           
-           return true
-           
-end
 function Hive:GetDefenseEntsInRange()
  local shifts = GetEntitiesForTeamWithinRange("Shift", 2, self:GetOrigin(), 24)
  local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 24)
@@ -755,7 +749,7 @@ function Hive:OnConstructionComplete()
         if team then
          team:UpdateBioMassLevel()
          end
-         self:AddTimedCallback(Hive.SpawnTunnel, 8)  
+       --  self:AddTimedCallback(Hive.SpawnTunnel, 8)  
     if not GetGamerules():GetFrontDoorsOpen() then
 
   //  self:AddTimedCallback(Hive.AutoUpgrade, 4)

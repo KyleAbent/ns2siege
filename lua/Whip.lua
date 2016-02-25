@@ -67,6 +67,7 @@ local networkVars =
     // used for rooting/unrooting
     unblockTime = "time",
     level = "float (0 to " .. kWhipMaxLevel .. " by .1)",
+    occupying = "boolean",
 }
 
 AddMixinNetworkVars(UpgradableMixin, networkVars)
@@ -111,6 +112,7 @@ function Whip:OnCreate()
     
     end
    self.level = 0
+    self.occupying = false
 end
 
 function Whip:OnInitialized()
@@ -140,6 +142,16 @@ end
 
 function Whip:GetInfestationRadius()
     return kWhipInfestationRadius
+end
+function Whip:GetIsOccupying()
+    return not self.opccupying
+end
+function Whip:SetIsOccupying(LosAngelesCityHall)
+    self.opccupying = LosAngelesCityHall
+    self:AddTimedCallback(function()  self.opccupying = not LosAngelesCityHall end, 8)
+end
+function Whip:GetCanOccupy(cyst)
+    return not self:GetIsOccupying() or self:GetLocationName() ~= GetLocationForPoint(cyst:GetOrigin())
 end
 function Whip:GetInfestationMaxRadius()
     return kWhipInfestationRadius
@@ -518,6 +530,13 @@ if self.level ~= 1 then self.level = 1 end
         end
     end
 
+end
+function Whip:OnOrderGiven(order)
+    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
+        if cyst.occupied  then
+           cyst.occupied = false
+        end
+    end
 end
 function Whip:UpdateOrders(deltaTime)
 

@@ -33,12 +33,12 @@ function Plugin:OnFirstThink()
                 if isReachable then
                     local distance = GetPointDistance(points)
                     Print("Distance is %s, isReachable", distance)
-                    local time = Clamp(distance*8, 900, 1200)
+                    local time = Clamp(distance*8, 900, 1500)
                     Print("time is %s", time)
                 else
                     local distance = (neutralorigin-nearestdoor:GetOrigin()):GetLength()
                      Print("Distance is %s, is not isReachable", distance)
-                     time = Clamp(distance*8, 900, 1200)
+                     time = Clamp(distance*8, 900, 1500)
                      Print("time is %s", time)
                 end      
                 
@@ -52,7 +52,7 @@ function Plugin:OnFirstThink()
                 end
           end
              kFrontDoorTime = (300-60)+21
-              time = Clamp(time,600, 1200)
+              time = Clamp(time,600, 1500)
              kSiegeDoorTime = time
              self.siegetimer = time
                Print("time is %s", time)
@@ -63,7 +63,7 @@ function Plugin:AdjustTimer(Number)
 
 local newtimer = 0
 local calculation = kSiegeDoorTime + (Number)
-kSiegeDoorTime = Clamp(calculation, 0, 1200)
+kSiegeDoorTime = Clamp(calculation, 0, 1500)
 self:UpdateGameInfo(kSiegeDoorTime)                     
 end
 function Plugin:UpdateGameInfo(time)

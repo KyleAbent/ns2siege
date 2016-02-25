@@ -69,6 +69,7 @@ local networkVars =
     healWaveActive = "boolean",
     moving = "boolean",
     lasthealwavetrigger = "time",
+    occupying = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -140,6 +141,7 @@ function Crag:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     self.lasthealwavetrigger = 0
+    self.occupying = false
 end
 
 function Crag:OnInitialized()
@@ -192,7 +194,16 @@ end
 function Crag:GetCanSleep()
     return not self.healingActive
 end
-
+function Crag:GetIsOccupying()
+    return not self.opccupying
+end
+function Crag:GetCanOccupy(cyst)
+    return not self:GetIsOccupying() or self:GetLocationName() ~= GetLocationForPoint(cyst:GetOrigin())
+end
+function Crag:SetIsOccupying(LosAngelesCityHall)
+    self.opccupying = LosAngelesCityHall
+    self:AddTimedCallback(function()  self.opccupying = not LosAngelesCityHall end, 8)
+end
 local function GetHealTargets(self)
 
     local targets = {}
@@ -259,6 +270,7 @@ function Crag:GetArcsInRange()
       local arc= GetEntitiesWithinRange("ARC", self:GetOrigin(), Crag.kHealRadius)
            return Clamp(#arc, 0, 4)
 end
+
 function Crag:PreOnKill(attacker, doer, point, direction)
      
     for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
@@ -267,6 +279,13 @@ function Crag:PreOnKill(attacker, doer, point, direction)
         end
     end
     
+end
+function Crag:OnOrderGiven(order)
+    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
+        if cyst.occupied  then
+           cyst.occupied = false
+        end
+    end
 end
   function Crag:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
