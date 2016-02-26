@@ -67,8 +67,9 @@ function TeleportMixin:GetTeleportSinkIn()
     return TeleportMixin.kDefaultSinkin
     
 end   
-function TeleportMixin:GetEligableForBeacon()
-return Shared.GetTime() > self.lastbeacontime  + kSBCooldown 
+function TeleportMixin:GetEligableForBeacon(who)
+local boolean = self:GetIsBuilt() and self:GetDistance(who) >= 2  and not self:GetHasOrder() 
+return Shared.GetTime() > self.lastbeacontime  + kSBCooldown and boolean
 end
 function TeleportMixin:GetIsTeleporting()
     return self.isTeleporting
@@ -275,7 +276,16 @@ function TeleportMixin:OnUpdate(deltaTime)
 end
 function TeleportMixin:TriggerBeacon(location)
  local locationto = location
- self:AddTimedCallback(function() self:SetOrigin(locationto) end, 4)
+
+ self:AddTimedCallback(function()  self:TriggerEffects("blink_in") self:SetOrigin(locationto) self:TriggerEffects("blink_out")  end, math.random(0.1,4))
+ self.lastbeacontime = Shared.GetTime()
+
+end
+function TeleportMixin:TriggerEggBeacon(location)
+ local locationto = location
+
+ self:AddTimedCallback(function() self:SetOrigin(locationto)  end, math.random(0.1,4))
+ self.lastbeacontime = Shared.GetTime()
 
 end
 function TeleportMixin:TriggerTeleport(delay, destinationEntityId, destinationPos, cost)

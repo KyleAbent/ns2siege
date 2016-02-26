@@ -67,7 +67,7 @@ local networkVars =
     // used for rooting/unrooting
     unblockTime = "time",
     level = "float (0 to " .. kWhipMaxLevel .. " by .1)",
-    occupying = "boolean",
+     cystid = "entityid",
 }
 
 AddMixinNetworkVars(UpgradableMixin, networkVars)
@@ -112,7 +112,7 @@ function Whip:OnCreate()
     
     end
    self.level = 0
-    self.occupying = false
+   self.cystid =  Entity.invalidI
 end
 
 function Whip:OnInitialized()
@@ -144,11 +144,24 @@ function Whip:GetInfestationRadius()
     return kWhipInfestationRadius
 end
 function Whip:GetIsOccupying()
-    return not self.opccupying
+    return  self.cystid ~= Entity.invalidI
 end
-function Whip:SetIsOccupying(LosAngelesCityHall)
-    self.opccupying = LosAngelesCityHall
-    self:AddTimedCallback(function()  self.opccupying = not LosAngelesCityHall end, 8)
+function Whip:SetIsOccupying(who, LosAngelesCityHall)
+
+   local cyst = Shared.GetEntity(self.cystid)
+   
+      if cyst then
+         if LosAngelesCityHall == false then
+            cyst:SetOccupied(self, false)
+            self.cystid =  Entity.invalidI
+            end
+      else
+        if LosAngelesCityHall == true then
+      self.cystid = who:GetId()
+     self.opccupying = LosAngelesCityHall
+    -- self:AddTimedCallback(function()  self:SetIsOccupying(not LosAngelesCityHall) end, 8)
+         end
+     end
 end
 function Whip:GetCanOccupy(cyst)
     return not self:GetIsOccupying() or self:GetLocationName() ~= GetLocationForPoint(cyst:GetOrigin())
@@ -523,20 +536,20 @@ Script.Load("lua/Ballistics.lua")
 
 function Whip:PreOnKill(attacker, doer, point, direction)
 if self.level ~= 1 then self.level = 1 end
-
-    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
-        if cyst.occupied  then
-           cyst.occupied = false
-        end
-    end
+                  
+                  local cyst = Shared.GetEntity(self.cystid)
+                  if cyst then
+                  cyst:SetOccupied(self, false)
+                 self:SetIsOccupying(cyst, false)
+                  end
 
 end
 function Whip:OnOrderGiven(order)
-    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
-        if cyst.occupied  then
-           cyst.occupied = false
-        end
-    end
+                  local cyst = Shared.GetEntity(self.cystid)
+                  if cyst then
+                  cyst:SetOccupied(self, false)
+                  self.cystid =  Entity.invalidI
+                  end
 end
 function Whip:UpdateOrders(deltaTime)
 

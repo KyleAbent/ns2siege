@@ -69,7 +69,7 @@ local networkVars =
     healWaveActive = "boolean",
     moving = "boolean",
     lasthealwavetrigger = "time",
-    occupying = "boolean",
+     cystid = "entityid",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -141,7 +141,7 @@ function Crag:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     self.lasthealwavetrigger = 0
-    self.occupying = false
+    self.cystid =  Entity.invalidI
 end
 
 function Crag:OnInitialized()
@@ -195,14 +195,27 @@ function Crag:GetCanSleep()
     return not self.healingActive
 end
 function Crag:GetIsOccupying()
-    return not self.opccupying
+    return self.cystid ~= Entity.invalidI
 end
 function Crag:GetCanOccupy(cyst)
     return not self:GetIsOccupying() or self:GetLocationName() ~= GetLocationForPoint(cyst:GetOrigin())
 end
-function Crag:SetIsOccupying(LosAngelesCityHall)
-    self.opccupying = LosAngelesCityHall
-    self:AddTimedCallback(function()  self.opccupying = not LosAngelesCityHall end, 8)
+function Crag:SetIsOccupying(who, LosAngelesCityHall)
+
+   local cyst = Shared.GetEntity(self.cystid)
+   
+      if cyst then
+         if LosAngelesCityHall == false then
+            cyst:SetOccupied(self, false)
+            self.cystid =  Entity.invalidI
+            end
+      else
+        if LosAngelesCityHall == true then
+      self.cystid = who:GetId()
+     self.opccupying = LosAngelesCityHall
+    -- self:AddTimedCallback(function()  self:SetIsOccupying(not LosAngelesCityHall) end, 8)
+         end
+     end
 end
 local function GetHealTargets(self)
 
@@ -272,20 +285,20 @@ function Crag:GetArcsInRange()
 end
 
 function Crag:PreOnKill(attacker, doer, point, direction)
-     
-    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
-        if cyst.occupied  then
-           cyst.occupied = false
-        end
-    end
+                  local cyst = Shared.GetEntity(self.cystid)
+                  if cyst then
+                  cyst:SetOccupied(self, false)
+                 self:SetIsOccupying(cyst, false)
+                  end
+                 
     
 end
 function Crag:OnOrderGiven(order)
-    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", self:GetOrigin(), 1)) do
-        if cyst.occupied  then
-           cyst.occupied = false
-        end
-    end
+                  local cyst = Shared.GetEntity(self.cystid)
+                  if cyst then
+                     cyst:SetOccupied(self, false)
+                  self.cystid =  Entity.invalidI
+                  end
 end
   function Crag:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   

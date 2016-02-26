@@ -1791,35 +1791,45 @@ function NS2Gamerules:AutoBuildResTowers()
          respoint:AutoDrop()
     end//
 end
-
-    function NS2Gamerules:NodeBuiltFront(powerpoint)
-    --Kyle Abent =] based on almost 2 years of ns2siege gameplay observations this dynamic timer for all situations WIP
-                  local amount = 1
+    function NS2Gamerules:NodeRules(powerpoint)
+               --Ratios
+               local frontdooropenratio = self.setuppowernodecount 
                local built, unbuilt = self:CountCurrentNodes()       
-            local nearestdoor = GetNearestMixin(powerpoint:GetOrigin(), "Moveable", nil, function(ent) return ent:isa("FrontDoor")  end)
-                  Print("nearestdoor is %s", nearestdoor)
-                if nearestdoor then
-                      local distance = powerpoint:GetDistance(nearestdoor)
-                       Print("nearestdoor Distance is %s", distance)
-                       amount = Clamp(distance*4, 10, (built*30))
-                  end
-                  local gameRules = GetGamerules()
-                Print("NodeBuiltFront built = %s, unbuilt =%s", built, unbuilt)
-                local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
-                Print("gameLength == %s", gameLength)
-                local oldtimer = math.abs(kSiegeDoorTime - gameLength )
-                Print("oldtimer == %s", oldtimer)
-                Print("self.lastnode == %s", self.lastnode)
-                local percentage = (oldtimer * 0.35)/(self.setuppowernodecountbuilt-1)
-                Print("percentage == %s", percentage)
-                percentage = percentage/GetReversedRoundLengthToSiege()
-                Print("percentage == %s", percentage)
-                amount = ConditionalValue(self.lastnode == true,  math.abs(oldtimer-percentage), amount) --last node rules
-                Print("amount == %s", amount)
-             local subtractamount = math.round(math.abs(amount),0)
-             Shared.ConsoleCommand(string.format("sh_addsiegetime %s", subtractamount *  1))
-             SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, subtractamount *  1)
-             SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, subtractamount *  1)
+               local currentstatusratio = (built/unbuilt)
+               --Time
+               local gameRules = GetGamerules()
+               local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
+               local currenttimeleft = math.abs(kSiegeDoorTime - gameLength )
+               local currentroundratio = GetRoundLengthToSiege()
+               --Positive or Negative?
+                local positive = false
+                local negative = false
+                
+                  if currentstatusratio >= frontdooropenratio then
+                    positive = true
+                   else
+                    negative = true
+                   end
+               -- Okay, how much time?
+               local setsiegedoortime = 0
+                 setsiegedoortime = ConditionalValue(positive == true, currentroundratio * currentstatusratio + (currenttimeleft * currentroundratio), frontdooropenratio - currentstatusratio * (currenttimeleft * currentroundratio ))  
+                  Print("setsiegedoortime is %s", setsiegedoortime)
+               setsiegedoortime = ConditionalValue(self.lastnode == true, setsiegedoortime * 4 , setsiegedoortime) --last node rules
+                  Print("setsiegedoortime is %s", setsiegedoortime)
+             --  setsiegedoortime = math.abs(currenttimeleft - (kSiegeDoorTime - gameLength) )
+             --      Print("setsiegedoortime is %s", setsiegedoortime)
+               
+             --  if negative == true then setsiegedoortime = setsiegedoortime * -1 end
+             --      Print("setsiegedoortime is %s", setsiegedoortime)
+             local amount = math.round(setsiegedoortime,0)
+             Shared.ConsoleCommand(string.format("sh_addsiegetime %s", amount ))
+             SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, amount)
+             SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, amount)
+end
+    function NS2Gamerules:NodeBuiltFront(powerpoint)
+    --Kyle Abent =] 
+    
+         self:NodeRules(powerpoint)
            
     end
         function NS2Gamerules:SetupRoomBluePrint(location, powerpoint, hasfrontdoor, issiege)
@@ -1996,32 +2006,7 @@ end
     end
     function NS2Gamerules:NodeKilledFront(powerpoint)
     --Kyle Abent 
-                  local amount = 1
-               local built, unbuilt = self:CountCurrentNodes()       
-            local nearestdoor = GetNearestMixin(powerpoint:GetOrigin(), "Moveable", nil, function(ent) return ent:isa("FrontDoor")  end)
-                --  Print("nearestdoor is %s", nearestdoor)
-                if nearestdoor then
-                      local distance = powerpoint:GetDistance(nearestdoor)
-                  --     Print("nearestdoor Distance is %s", distance)
-                       amount = Clamp(distance*4, 10, (built*30))
-                  end
-                  local gameRules = GetGamerules()
-                --Print("NodeBuiltFront built = %s, unbuilt =%s", built, unbuilt)
-                local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
-              --  Print("gameLength == %s", gameLength)
-                local oldtimer = math.abs(kSiegeDoorTime - gameLength )
-              --  Print("oldtimer == %s", oldtimer)
-              --  Print("self.lastnode == %s", self.lastnode)
-                local percentage = (oldtimer * 0.35)/(self.setuppowernodecount-1)
-             --   Print("percentage == %s", percentage)
-                percentage = percentage/GetReversedRoundLengthToSiege()
-             --   Print("percentage == %s", percentage)
-                amount = ConditionalValue(self.lastnode == true,  math.abs(oldtimer-percentage), amount) --last node rules
-             --   Print("amount == %s", amount)
-             local subtractamount = math.round(math.abs(amount),0)
-             Shared.ConsoleCommand(string.format("sh_addsiegetime %s", subtractamount * -  1))
-             SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, subtractamount * -  1)
-             SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, subtractamount *  - 1)
+          self:NodeRules(powerpoint)
     end
     function NS2Gamerules:CountCurrentNodes()
     local built = 0
@@ -2216,6 +2201,7 @@ function NS2Gamerules:DropshipArcs()
          if arcspawnpoint ~= nil then
          local dropship = CreateEntity(Dropship.kMapName, arcspawnpoint, 1) 
           self.team1:SetTeamResources(self.team1:GetTeamResources()  - 8)
+            dropship.flyspeed = .4
         end
      end
      
@@ -2362,7 +2348,6 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, cyst, origin)
         
 
             if not spawned then
-                 cyst:MagnetizeStructures()
                  self.alienteamcanupgeggs = true
             else
               self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)

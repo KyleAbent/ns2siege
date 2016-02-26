@@ -72,8 +72,8 @@ local networkVars =
     wasking = "boolean",
     lastumbra = "time",
     MinKingShifts = "float (0 to " .. Cyst.MinimumKingShifts .. " by 1)",
-    occupied = "boolean",
     UpdatedEggs = "boolean",
+    occupiedid = "entityid",
 
 }
 
@@ -140,8 +140,8 @@ function Cyst:OnCreate()
     self.wasking = false
     self.lastumbra = 0
     self.MinKingShifts = 0
-    self.occupied = false
     self.UpdatedEggs = false
+    self.occupiedid =  Entity.invalidI
 end
 
 
@@ -195,10 +195,11 @@ end
 function Cyst:OnConstructionComplete()
     self:AddTimedCallback(Cyst.EnergizeInRange, 4)
     self:AttractWhipsCrags()
-    self:AddTimedCallback(Cyst.AttractWhipsCrags, 8)
+   -- self:AddTimedCallback(Cyst.AttractWhipsCrags, 8)
 end
 function Cyst:AttractWhipsCrags()
-    if not self.isking and not self.occupied then
+   local mate = Shared.GetEntity(self.occupiedid)
+    if not self.isking and not mate then
        --Print("Mating Ritual Attempting.. :O ")
      local kingcyst = GetNearest(self:GetOrigin(), "Cyst", 2, function(ent) return ent.isking and GetLocationForPoint(ent:GetOrigin()) == GetLocationForPoint(self:GetOrigin()) end)
            if kingcyst then
@@ -206,7 +207,7 @@ function Cyst:AttractWhipsCrags()
                  Print("Non King found King, therefore calculating checkers  board appropriately... (fuck chess ;) )")
            end
     end
-    return self:GetIsAlive()
+    return false
 end
 function Cyst:EnergizeInRange()
     if self:GetIsBuilt() and not self:GetIsOnFire() and self.isking and self:GetLevel() == self:GetMaxLevel() then
@@ -304,7 +305,7 @@ function Cyst:Derp()
                self:MarkPhysicsDirty()    
 end
 function Cyst:OnKill(attacker, doer, point, direction)
-if self.isking then self.isking = false self:SetIsVisible(false) self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
+if self.isking then  CreateEntity(Rupture.kMapName, self:GetOrigin(), self:GetTeamNumber()) self.isking = false self:SetIsVisible(false) self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
 end
 function Cyst:SetKing(whom)
    self.king = true
@@ -314,6 +315,7 @@ function Cyst:GetHealthbarOffset()
 end 
 function Cyst:ActivateMagnetize()
 --Kyle Abent
+                      self:Magnetize()
                       self:AddTimedCallback(Cyst.Magnetize, 8)
 end
 if Server then
@@ -351,9 +353,12 @@ end
 function Cyst:GetCanAffordEgg()
   return self:GetTeam():GetTeamResources() >= 4
 end
+
 function Cyst:GetAddXPAmount()
- if self.isking then return Cyst.GainXP / 4 else return 0 end
-end
+local value = Cyst.GainXP / 4
+if Server then value = value * (GetRoundLengthToSiege()) + value end
+ if self.isking then return value else return 0 end
+end 
 function Cyst:UpdateEggSpawn()
     
         for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
@@ -366,11 +371,16 @@ end
 function Cyst:Magnetize()
 --Kyle Abent
  if self:GetLevel() ~= self:GetMaxLevel() then return true end--Be fully grown king first
-          for index, Tunnel in ipairs(GetEntitiesForTeam("TunnelEntrance", 2)) do
-               if Tunnel:GetIsBuilt() and Tunnel:GetIsExit() and self:GetDistance(Tunnel) >= 22 then 
-               Tunnel:GiveOrder(kTechId.Move, self:GetId(), self:FindFreeSpace(), nil, true, true) 
-                end
-          end
+ 
+            Print("Kingcyst Magnetsize Activated")
+            
+   for _, cyst in ipairs(GetEntitiesForTeamWithinRange("Cyst", 2, self:GetOrigin(), 24)) do
+               if cyst:GetIsAlive() then 
+               Print("Kingcyst telling cyst to attact whips crags")
+                 cyst:AddTimedCallback(Cyst.AttractWhipsCrags, math.random(1,4) )
+               end
+      end
+          
           
           self:AddTimedCallback(Cyst.Cook, 4)
           self:Synchronize()
@@ -408,31 +418,55 @@ function Cyst:KingRules()
                 end
           end
 end  
-function Cyst:NonKingRules()
-   Print("Non king rules")
-   if not self.occupied then
+function Cyst:SetOccupied(who, istrue)
+--It's True, It's True!
 
+if istrue then
+   self.occupiedid = who:GetId()
+else
+self.occupiedid =  Entity.invalidI
+end
+
+
+
+end
+function Cyst:NonKingRules()
+--Kyle Abent
+   Print("Non king rules")
+    local mate = Shared.GetEntity(self.occupiedid)
+   if not mate then
+     local entities = {}
        
           for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
-               if crag:GetIsBuilt() and self:GetDistance(crag) >= 2  and not crag:GetHasOrder() and crag:GetCanOccupy(self) then 
+                  if  crag:GetCanOccupy(self) and crag:GetEligableForBeacon(self) then 
                 local success = false 
-                success = crag:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
-                 if success then self.occupied = true  crag:SetIsOccupying(true) Print("Order give to crag break end") break end
+                success = table.insert(entities,crag)
+                   if  success then break end
                 end
           end
-    end
     
-       if not  self.occupied then
           for index, whip in ipairs(GetEntitiesForTeam("Whip", 2)) do
                local success = false 
-               if whip:GetIsBuilt() and self:GetDistance(whip) >= 2 and not whip:GetHasOrder() and whip:GetCanOccupy(self) then 
-                 success = whip:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
-                   if success then self.occupied = true whip:SetIsOccupying(true) Print("Order give to whip break end")  break end
+                  if  whip:GetCanOccupy(self) and whip:GetEligableForBeacon(self) then 
+                success = table.insert(entities,whip)
+                   if success then break end
                 end
           end
-      end
       
-         
+       
+    if #entities == 0 then return end  
+     
+      local entity = table.random(entities)
+      
+       if entity then
+           if entity:GetCanOccupy(self) and entity:GetEligableForBeacon(self) then 
+             local success = false 
+             success = entity:TriggerBeacon(self:GetOrigin()) 
+             if success then self:SetOccupied(entity, true)  entity:SetIsOccupying(self, true) Print("Cyst `ing entity!!!")  end
+            end
+        end
+        
+ end
    
    
    return self:GetIsAlive()
@@ -441,7 +475,7 @@ end
   function Cyst:Cook()
          for index, Egg in ipairs(GetEntitiesForTeam("Egg", 2)) do
                if self:GetDistance(Egg) >= 22 and (self.isking and self:GetLevel() == self:GetMaxLevel()) and self:GetCanAffordEgg() and Egg:GetCanBeacon() then 
-               Egg:TriggerBeacon(self:FindEggSpawn())
+               Egg:TriggerEggBeacon(self:FindEggSpawn())
               self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources()  - 4)
                 end
           end
