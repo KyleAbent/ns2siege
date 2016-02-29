@@ -183,28 +183,24 @@ end  // Client
 
 if Server then
     function ConstructMixin:TypesOfSelfInRoomNonCredit()
-     --  local location = GetLocationForPoint(self:GetOrigin()
        local count = 0
-       if self:GetIsBuilt() and self:GetTeamNumber() == 1 and not self:isa("Dropship") then count = count + 1 end 
-         /*
-       if location then
-                     local entities = location:GetEntitiesInTrigger()
-                     for i = 1, #entities do
-                     local ent = entities[i]
-                           if ent:GetClassName() == self:GetClassName() then 
-                              count = count + 1
-                           end
-                     end
-        
-        end
-        */
+       if ( self:GetIsBuilt() or self:isa("ArmsLab") ) and self:GetTeamNumber() == 1 and not self:isa("Dropship") then count = count + 1 end 
         return count
     end
     function ConstructMixin:PreOnKill(attacker, doer, point, direction)
       if not self:isa("PowerPoint") and not self:isa("Extractor") then
                   local gameRules = GetGamerules()
               if gameRules then
-                 gameRules:DelayedAllowance(self:GetOrigin(), self:TypesOfSelfInRoomNonCredit(), self:GetTechId(), self:GetMapName())
+              
+                 local origin = self:GetOrigin()
+                 if self:isa("ArmsLab") then
+                   local nearestCC = GetNearest(origin, "CommandStation", 1)  
+                   if nearestCC then 
+                     origin = nearestCC:GetOrigin()
+                     end
+                  end
+  
+                 gameRules:DelayedAllowance(origin, self:TypesOfSelfInRoomNonCredit(), self:GetTechId(), self:GetMapName())
                end
        end
     end

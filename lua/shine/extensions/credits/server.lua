@@ -80,7 +80,8 @@ local Client = controlling:GetClient()
         if player:GetResources() == 0 then
         self:NotifyBuy( Client, "Medpack costs 1 resource, you have %s resources. Purchase invalid.", true, player:GetResources())
         else
-        self:SimpleTimer(2, function () if not player or not player:GetIsAlive() then return else player:GiveItem(MedPack.kMapName) player:SetResources(player:GetResources() - 1) end end)
+        local position = GetGamerules():FindCustomFreeSpace(player, 0, 4)
+        self:SimpleTimer(2, function () if not player or not player:GetIsAlive() then return else CreateEntity(MedPack.kMapName, position, 1) player:SetResources(player:GetResources() - 1) end end)
         end
 end
 function Plugin:BuyAmmo(player)
@@ -91,7 +92,8 @@ local Client = controlling:GetClient()
         if player:GetResources() < 1 then
         self:NotifyBuy( Client, "AmmoPack costs 1 resource, you have %s resources. Purchase invalid.", true, player:GetResources()) 
         else
-       self:SimpleTimer(2, function () if not player or not player:GetIsAlive() then return else player:GiveItem(AmmoPack.kMapName) player:SetResources(player:GetResources() - 1) end end)
+        local position = GetGamerules():FindCustomFreeSpace(player, 0, 4)
+       self:SimpleTimer(2, function () if not player or not player:GetIsAlive() then return else CreateEntity(AmmoPack.kMapName, position, 1) player:SetResources(player:GetResources() - 1) end end)
         end
 end
 function Plugin:ToggleAlltalk(player)
@@ -532,7 +534,7 @@ local function Generate( Client )
         Player.credits = math.round(credits, 2)
 end
 
-local GenerateCommand = self:BindCommand( "sh_generate", "generate", Generate )
+local GenerateCommand = self:BindCommand( "sh_generate", "generate", Generate, true )
 GenerateCommand:Help( "bleh" )
 
 

@@ -2711,7 +2711,7 @@ function GetTexCoordsForTechId(techId)
         gTechIdPosition[kTechId.Xenocide] = kDeathMessageIcon.Xenocide
         
         gTechIdPosition[kTechId.Spit] = kDeathMessageIcon.Spit
-        gTechIdPosition[kTechId.BuildAbility] = kDeathMessageIcon.BuildAbility
+--        gTechIdPosition[kTechId.BuildAbility] = kDeathMessageIcon.BuildAbility
         gTechIdPosition[kTechId.Spray] = kDeathMessageIcon.Spray
         gTechIdPosition[kTechId.BileBomb] = kDeathMessageIcon.BileBomb
         gTechIdPosition[kTechId.AcidRocket] = kDeathMessageIcon.Babbler

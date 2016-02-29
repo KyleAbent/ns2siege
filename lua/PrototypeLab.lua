@@ -360,11 +360,11 @@ function PrototypeLab:GetItemList(forPlayer)
 
     end    
     
-       local otherbuttons =  { kTechId.Jetpack, kTechId.Exosuit, kTechId.ClawRailgunExosuit, kTechId.JumpPack, kTechId.HeavyArmor}
+       local otherbuttons =  { kTechId.Jetpack, kTechId.Exosuit, kTechId.DualRailgunExosuit, kTechId.JumpPack, kTechId.HeavyArmor}
           
           if forPlayer.hasjumppack or forPlayer:isa("JetpackMarine")  or forPlayer:isa("Exo") or forPlayer.heavyarmor then
               otherbuttons[1] = kTechId.None
-              otherbuttons[3] = kTechId.None
+              otherbuttons[4] = kTechId.None
                otherbuttons[5] = kTechId.None
            end
            

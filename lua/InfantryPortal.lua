@@ -64,8 +64,8 @@ local networkVars =
     queuedPlayerId = "entityid",
     creditstructre = "boolean",
     activebeacon = "boolean",
-    beacontime = "time",
    spawnedship = "entityid",
+   allowspawn = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -187,7 +187,7 @@ function InfantryPortal:OnCreate()
     self.creditstructre = false
     self.activebeacon = false
     self.spawnedship = Entity.invalidI
-    self.beacontime = 0
+    self.allowspawn = true
 end
 
 local function StopSpinning(self)
@@ -241,8 +241,7 @@ local function InfantryPortalUpdate(self)
             end
 
         end
-    
-        if remainingSpawnTime == 0 and not self.activebeacon then
+        if remainingSpawnTime == 0 and self.allowspawn then
             self:FinishSpawn()
         end
         
@@ -286,17 +285,22 @@ function InfantryPortal:OnInitialized()
     InitMixin(self, IdleMixin)
     
 end
+function InfantryPortal:GetIsBeaconActive()
+ return  self.activebeacon
+end
 function InfantryPortal:ActivateBeacons()
-       self.beacontime = Shared.GetTime()
+       self.activebeacon = true
+       self.allowspawn = false
        Print("BeaconActive")
+       self:AddTimedCallback(InfantryPortal.DeactivateBeacons, 30)
 end
 function InfantryPortal:DeactivateBeacons()
-       Print("BeaconPassive")
-            if self.beacontime + 28 < Shared.GetTime() then
+               Print("BeaconPassive")
                self.activebeacon = false
+               self.allowspawn = true
                self.spawnedship = Entity.invalidId 
-               return true
-            end
+               return false
+            
 end
 function InfantryPortal:OnDestroy()
 
@@ -468,7 +472,7 @@ function InfantryPortal:GetDistressOrigin(averageorigin)
     
     local nearest = GetNearest(averageorigin, "Observatory", self:GetTeamNumber(), function(ent) return ent:GetIsBuilt() and ent:GetIsAlive() end)
     if nearest then
-        origin = nearest:GetModelOrigin()
+        origin = nearest:GetOrigin()
     end
     
     return origin
@@ -479,7 +483,6 @@ function InfantryPortal:GetDropShipBeaconLocation()
             local gameRules = GetGamerules()
       if gameRules then
           local averageorigin = gameRules:SetupRulesTest()
-          
           if averageorigin then 
           return gameRules:FindFreeDropShipSpace(self:GetDistressOrigin(averageorigin))
           end

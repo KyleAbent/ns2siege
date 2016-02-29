@@ -152,7 +152,7 @@ function Alien:TeleportToHive(usedhive)
 	local selectedhive = GetRelocationHive(usedhive, self:GetOrigin(), self:GetTeamNumber())
     local success = false
     if selectedhive then 
-            local position = table.random(selectedhive.eggSpawnPoints)
+            local position = selectedhive:FindFreeSpace()
                 SpawnPlayerAtPoint(self, position)
 //               Shared.Message("LOG - %s SuccessFully Redeemed", self:GetClient():GetControllingPlayer():GetUserId() )
                 success = true

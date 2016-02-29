@@ -160,7 +160,7 @@ kTechId = createTechIdEnum({
     'Bite', 'Sneak', 'Parasite', 'Leap', 'Xenocide',
     
     // gorge abilities
-    'Spit', 'Spray', 'BellySlide', 'BabblerTech', 'BuildAbility', 'BabblerAbility', 'Babbler', 'BabblerEgg', 'GorgeTunnelTech', 'BileBomb',  'WebTech', 'DrifterGorge', 'SpiderGorge', 'WhipFlameThrowerChanceDrop',  'Web', 'HydraTech',
+    'Spit', 'Spray', 'BellySlide', 'BabblerTech', 'BuildAbility', 'BuildHydraAbility',  'BuildClogAbility', 'BuildTunnelAbility', 'BabblerAbility', 'Babbler', 'BabblerEgg', 'GorgeTunnelTech', 'BileBomb',  'WebTech', 'DrifterGorge', 'SpiderGorge', 'WhipFlameThrowerChanceDrop',  'Web', 'HydraTech',
 
     // lerk abilities
     'LerkBite', 'Cling', 'Spikes', 'Umbra', 'Spores', 'PrimalScream',

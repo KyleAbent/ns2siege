@@ -197,6 +197,8 @@ if Server then
 end
 end
 function Dropship:Derp()
+
+
     self.flying = false 
     self:SetModel(Dropship.kCrashgedModelName, kAnimationGraph)
     if self.isbeacon then 
@@ -207,21 +209,29 @@ function Dropship:Derp()
              end
        end
     
-                    self:UpdateModelCoords()
+                self:UpdateModelCoords()
                 self:UpdatePhysicsModel()
                if (self._modelCoords and self.boneCoords and self.physicsModel) then
               self.physicsModel:SetBoneCoords(self._modelCoords, self.boneCoords)
                end  
                self:MarkPhysicsDirty()   
+               
+               
+               
      if Server then 
+     
               if not self.isbeacon then
-       local entity = CreateEntity(self:GetDropMapName(), self:GetOrigin(), 1) 
-         if entity:isa("ARC") then
-         entity:GiveOrder(kTechId.ARCDeploy, self:GetId(), orderOrigin, nil, false, false)    
-         elseif HasMixin(entity, "Construct") then
-          entity.isGhostStructure = false
-         end 
+              
+               local entity = CreateEntity(self:GetDropMapName(), self:GetOrigin(), 1) 
+               
+                      if entity:isa("ARC") then
+                       entity:GiveOrder(kTechId.ARCDeploy, self:GetId(), orderOrigin, nil, false, false)    
+                      elseif HasMixin(entity, "Construct") then
+                       entity.isGhostStructure = false
+                     end 
+                     
                end
+               
                    self:AddTimedCallback(Dropship.Delete, 1)      
        end   
  

@@ -36,7 +36,7 @@ Babbler.kRestitution = .65
 
 local kTargetSearchRange = 12
 local kAttackRate = 0.37
-local kLifeTime = 60 * 5
+local kLifeTime = 25
 
 local kUpdateMoveInterval = 0.5
 local kUpdateAttackInterval = 1
@@ -772,13 +772,21 @@ if Server then
     function Babbler:OnKill()
 
         self:TriggerEffects("death", {effecthostcoords = Coords.GetTranslation(self:GetOrigin()) })
+        self:SetIsVisible(false)
+         local kingcyst = GetNearest(self:GetOrigin(), "Cyst", 2, function(ent) return ent.isking end)
+        if kingcyst then
+            kingcyst.spawnedbabblers = Clamp(kingcyst.spawnedbabblers - 1, 0, 4)
+        end
         DestroyEntity(self)
-        
     end
     
     function Babbler:TimeUp()
 
         self:TriggerEffects("death", {effecthostcoords = Coords.GetTranslation(self:GetOrigin()) })
+         local kingcyst = GetNearest(self:GetOrigin(), "Cyst", 2, function(ent) return ent.isking end)
+        if kingcyst then
+            kingcyst.spawnedbabblers = Clamp(kingcyst.spawnedbabblers - 1, 0, 4)
+        end
         DestroyEntity(self)
         
     end

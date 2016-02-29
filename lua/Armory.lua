@@ -403,7 +403,13 @@ local function UpdateArmoryAnim(self, extension, loggedIn, scanTime, timePassed)
     self.scannedParamValue[extension] = ConditionalValue(scanTime == 0 or (Shared.GetTime() > scanTime + 3), 0, 1)
     
 end
+function Armory:OnUpdateAnimationInput(modelMixin)
 
+
+    modelMixin:SetAnimationInput("powered", true)
+
+
+end
 function Armory:OnUpdate(deltaTime)
 
     if Client then
@@ -570,7 +576,6 @@ end
 function ArmoryAddon:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ArmoryAddon:OnUpdateAnimationInput")
-    
     local parent = self:GetParent()
     if parent then
         modelMixin:SetAnimationInput("built", parent:GetTechId() == kTechId.AdvancedArmory)        

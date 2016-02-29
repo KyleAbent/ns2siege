@@ -17,7 +17,7 @@ end
 function Plugin:OnFirstThink() 
  local neutralorigin = Vector(0, 0, 0)
  local count = 0 
- local time = kSiegeDoorTime
+ local time = kSiegeDoorTimey
      for _, tech in ientitylist(Shared.GetEntitiesWithClassname("TechPoint")) do
               neutralorigin = neutralorigin + tech:GetOrigin()
               count = count + 1
@@ -27,18 +27,17 @@ function Plugin:OnFirstThink()
       local nearestdoor = GetNearestMixin(neutralorigin, "Moveable", nil, function(ent) return ent:isa("FrontDoor")  end)
            Print("nearestdoor is %s", nearestdoor)
         if nearestdoor then
-         --every 1 distance == 8 seconds?
                 local points = PointArray()
                 local isReachable = Pathing.GetPathPoints(neutralorigin, nearestdoor:GetOrigin(), points)
                 if isReachable then
                     local distance = GetPointDistance(points)
                     Print("Distance is %s, isReachable", distance)
-                    local time = Clamp(distance*8, 900, 1500)
+                    local time = Clamp(distance*12, 900, 1500)
                     Print("time is %s", time)
                 else
                     local distance = (neutralorigin-nearestdoor:GetOrigin()):GetLength()
                      Print("Distance is %s, is not isReachable", distance)
-                     time = Clamp(distance*8, 900, 1500)
+                     time = Clamp(distance*12, 900, 1500)
                      Print("time is %s", time)
                 end      
                 
@@ -53,7 +52,7 @@ function Plugin:OnFirstThink()
           end
              kFrontDoorTime = (300-60)+21
               time = Clamp(time,600, 1500)
-             kSiegeDoorTime = time
+             kSiegeDoorTimey = time
              self.siegetimer = time
                Print("time is %s", time)
 
@@ -63,7 +62,7 @@ function Plugin:AdjustTimer(Number)
 
 local newtimer = 0
 local calculation = kSiegeDoorTimey + (Number)
-kSiegeDoorTime = Clamp(calculation, 0, 1500)
+kSiegeDoorTimey = Clamp(calculation, 0, 1500)
 self:UpdateGameInfo(kSiegeDoorTimey)                     
 end
 function Plugin:UpdateGameInfo(time)

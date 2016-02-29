@@ -238,7 +238,7 @@ function ArmsLab:UpdateResearch(deltaTime)
         end
       
        
-        local progress = Clamp( (currentroundlength/kSiegeDoorTime) / percentageofround, 0, 1)
+        local progress = Clamp( (currentroundlength/kSiegeDoorTimey) / percentageofround, 0, 1)
         //Print("%s", progress)
         
         if progress ~= self.researchProgress then

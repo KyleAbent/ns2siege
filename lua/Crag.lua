@@ -195,27 +195,33 @@ function Crag:GetCanSleep()
     return not self.healingActive
 end
 function Crag:GetIsOccupying()
-    return self.cystid ~= Entity.invalidI
+    local mate = Shared.GetEntity(self.cystid)
+    return not mate
 end
 function Crag:GetCanOccupy(cyst)
-    return not self:GetIsOccupying() or self:GetLocationName() ~= GetLocationForPoint(cyst:GetOrigin())
+    return true --not self:GetIsOccupying() or GetLocationForPoint(self:GetOrigin()) ~= GetLocationForPoint(cyst:GetOrigin())
 end
 function Crag:SetIsOccupying(who, LosAngelesCityHall)
 
    local cyst = Shared.GetEntity(self.cystid)
    
       if cyst then
+      
          if LosAngelesCityHall == false then
             cyst:SetOccupied(self, false)
             self.cystid =  Entity.invalidI
-            end
-      else
-        if LosAngelesCityHall == true then
-      self.cystid = who:GetId()
-     self.opccupying = LosAngelesCityHall
-    -- self:AddTimedCallback(function()  self:SetIsOccupying(not LosAngelesCityHall) end, 8)
-         end
-     end
+          elseif LosAngelesCityHall == true then
+             cyst:SetOccupied(self, false)
+             self.cystid = who:GetId()
+          end
+          
+    elseif not cyst then
+      
+         if LosAngelesCityHall == true then
+          self.cystid = who:GetId()
+           end
+   end
+   
 end
 local function GetHealTargets(self)
 
@@ -285,6 +291,7 @@ function Crag:GetArcsInRange()
 end
 
 function Crag:PreOnKill(attacker, doer, point, direction)
+           self:SetIsVisible(false)
                   local cyst = Shared.GetEntity(self.cystid)
                   if cyst then
                   cyst:SetOccupied(self, false)
@@ -338,6 +345,11 @@ function Crag:TryHeal(target)
    // if self:GetIsSiege() and self:IsInRangeOfHive() and target:isa("Hive") or target:isa("Crag") then
    //    heal = heal * kMapStatsCragStacks
    // end
+     
+     if target:isa("Cyst") and target.isking then
+       heal = heal * 4
+     end
+      
     
     if target:GetHealthScalar() ~= 1 and (not target.timeLastCragHeal or target.timeLastCragHeal + Crag.kHealInterval <= Shared.GetTime()) then
        local amountHealed = target:AddHealth(heal)

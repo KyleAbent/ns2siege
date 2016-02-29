@@ -73,6 +73,12 @@ function Exosuit:OnCreate ()
         InitMixin(self, UnitStatusMixin)
     end
     
+                local random = math.random(1,2)
+              if random == 1 then
+              elseif random == 2 then
+               self:SetLayout("RailgunRailgun")
+              end
+    
 end
 /*
 function Exosuit:GetCheckForRecipient()

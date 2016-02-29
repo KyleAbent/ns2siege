@@ -74,6 +74,7 @@ local networkVars =
     MinKingShifts = "float (0 to " .. Cyst.MinimumKingShifts .. " by 1)",
     UpdatedEggs = "boolean",
     occupiedid = "entityid",
+    spawnedbabblers = "float",
 
 }
 
@@ -142,6 +143,7 @@ function Cyst:OnCreate()
     self.MinKingShifts = 0
     self.UpdatedEggs = false
     self.occupiedid =  Entity.invalidI
+    self.spawnedbabblers = 0
 end
 
 
@@ -204,7 +206,7 @@ function Cyst:AttractWhipsCrags()
      local kingcyst = GetNearest(self:GetOrigin(), "Cyst", 2, function(ent) return ent.isking and GetLocationForPoint(ent:GetOrigin()) == GetLocationForPoint(self:GetOrigin()) end)
            if kingcyst then
                  self:MagnetizeStructures()
-                 Print("Non King found King, therefore calculating checkers  board appropriately... (fuck chess ;) )")
+               --  Print("Non King found King, therefore calculating checkers  board appropriately... (fuck chess ;) )")
            end
     end
     return false
@@ -270,6 +272,13 @@ function Cyst:FindAlternateSpace()
         Print("No valid spot found for kingcyst find alternatespace")
         return self:GetOrigin()
 end
+function Cyst:SmashCyst(exo, exo, origin, vectors)
+       if self:GetIsAlive() and not self.isking and not self.wasking then
+       self:Kill(exo, exo, origin, vectors)
+       self:TriggerEffects("egg_death")
+       DestroyEntity(self)
+       end
+end
 function Cyst:GetLocationName()
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
@@ -305,7 +314,8 @@ function Cyst:Derp()
                self:MarkPhysicsDirty()    
 end
 function Cyst:OnKill(attacker, doer, point, direction)
-if self.isking then  CreateEntity(Rupture.kMapName, self:GetOrigin(), self:GetTeamNumber()) self.isking = false self:SetIsVisible(false) self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
+self:SetIsVisible(false)
+if self.isking then  CreateEntity(Rupture.kMapName, self:GetOrigin(), self:GetTeamNumber()) self.isking = false self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
 end
 function Cyst:SetKing(whom)
    self.king = true
@@ -326,10 +336,21 @@ if Server then
     
     function Cyst:OnTakeDamage(damage, attacker, doer, point, direction, damageType)
               --suppose to be for king but kinda fits the role for all cysts
-           if not self:GetHasUmbra() and self:GetIsBuilt() and self:GetHealthScalar()<= 0.5 and (self.lastumbra + math.random(4,8)) < Shared.GetTime() then
+           if self:GetIsAlive() and not self:GetHasUmbra() and self:GetIsBuilt() and self:GetHealthScalar()<= 0.5 and (self.lastumbra + math.random(4,8)) < Shared.GetTime() then
                     CreateEntity(CragUmbra.kMapName,  self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
                     self:TriggerEffects("crag_trigger_umbra")
                     self.lastumbra = Shared.GetTime()
+           end
+           
+           if self.isking then
+              if self.spawnedbabblers <= 3 then
+                  for i = 1, 4 - self.spawnedbabblers do
+                  local babbler = CreateEntity(Babbler.kMapName,  self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
+                  babbler.scale = math.random(50,100)
+                  self.spawnedbabblers = Clamp(self.spawnedbabblers + 1, 0, 4)
+                  end
+              end
+           
            end
         
     end
@@ -372,11 +393,11 @@ function Cyst:Magnetize()
 --Kyle Abent
  if self:GetLevel() ~= self:GetMaxLevel() then return true end--Be fully grown king first
  
-            Print("Kingcyst Magnetsize Activated")
+         --   Print("Kingcyst Magnetsize Activated")
             
-   for _, cyst in ipairs(GetEntitiesForTeamWithinRange("Cyst", 2, self:GetOrigin(), 24)) do
+   for _, cyst in ipairs(GetEntitiesForTeamWithinRange("Cyst", 2, self:GetOrigin(), 48)) do
                if cyst:GetIsAlive() then 
-               Print("Kingcyst telling cyst to attact whips crags")
+              -- Print("Kingcyst telling cyst to attact whips crags")
                  cyst:AddTimedCallback(Cyst.AttractWhipsCrags, math.random(1,4) )
                end
       end
@@ -407,6 +428,11 @@ function Cyst:MagnetizeStructures()
 
 end
 function Cyst:KingRules()
+          for index, Tunnel in ipairs(GetEntitiesForTeam("TunnelEntrance", 2)) do
+               if Tunnel:GetIsBuilt() and self:GetDistance(Tunnel) >= 24 then 
+               Tunnel:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
+                end
+          end
           for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
                if crag:GetIsBuilt() and self:GetDistance(crag) >= 24 then 
                crag:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
@@ -432,7 +458,7 @@ end
 end
 function Cyst:NonKingRules()
 --Kyle Abent
-   Print("Non king rules")
+  -- Print("Non king rules")
     local mate = Shared.GetEntity(self.occupiedid)
    if not mate then
      local entities = {}
@@ -446,8 +472,8 @@ function Cyst:NonKingRules()
           end
     
           for index, whip in ipairs(GetEntitiesForTeam("Whip", 2)) do
-               local success = false 
                   if  whip:GetCanOccupy(self) and whip:GetEligableForBeacon(self) then 
+                 local success = false 
                 success = table.insert(entities,whip)
                    if success then break end
                 end
@@ -462,7 +488,7 @@ function Cyst:NonKingRules()
            if entity:GetCanOccupy(self) and entity:GetEligableForBeacon(self) then 
              local success = false 
              success = entity:TriggerBeacon(self:GetOrigin()) 
-             if success then self:SetOccupied(entity, true)  entity:SetIsOccupying(self, true) Print("Cyst `ing entity!!!")  end
+             if success then self:SetOccupied(entity, true)  entity:SetIsOccupying(self, true) end --Print("Cyst `ing entity!!!")  end
             end
         end
         

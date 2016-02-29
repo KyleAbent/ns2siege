@@ -1,12 +1,3 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Hive_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 // Send out an impulse to maintain infestations every 10 seconds.
 local kImpulseInterval = 10
 
@@ -188,61 +179,6 @@ local function GetNumEggs(self)
     
 end
 
-local function SpawnEgg(self, eggCount)
-
-    if self.eggSpawnPoints == nil or #self.eggSpawnPoints == 0 then
-    
-        //Print("Can't spawn egg. No spawn points!")
-        return nil
-        
-    end
-
-    if not eggCount then
-        eggCount = 0
-    end
-
-    for i = 1, #self.eggSpawnPoints do
-
-        local position = eggCount == 0 and table.random(self.eggSpawnPoints) or self.eggSpawnPoints[i]  
-
-        // Need to check if this spawn is valid for an Egg and for a Skulk because
-        // the Skulk spawns from the Egg.
-        local validForEgg = GetIsPlacementForTechId(position, false, kTechId.Egg)
-        local validForSkulk = GetIsPlacementForTechId(position, false, kTechId.Skulk)
-
-        // Prevent an Egg from spawning on top of a Resource Point.
-        local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0
-        
-        if validForEgg and validForSkulk and notNearResourcePoint then
-        
-            local egg = CreateEntity(Egg.kMapName, position, self:GetTeamNumber())
-            egg:SetHive(self)
-            
-
-            if egg ~= nil then
-            
-                // Randomize starting angles
-                local angles = self:GetAngles()
-                angles.yaw = math.random() * math.pi * 2
-                egg:SetAngles(angles)
-                
-                // To make sure physics model is updated without waiting a tick
-                egg:UpdatePhysicsModel()
-                
-                self.timeOfLastEgg = Shared.GetTime()
-                
-                return egg
-                
-            end
-            
-        end
-
-    
-    end
-    
-    return nil
-    
-end
 
 local function CreateDrifter(self, commander)
 
@@ -304,117 +240,6 @@ function Hive:GetGameStartedHive()
             end
             return false
 end
-/*
-function Hive:GetCanBeHealedOverride()
-    return not self:GetIsSuddenDeathEnabled() and self:GetIsAlive()
-end
-function Hive:GetAddConstructHealth()
-return not self:GetIsSuddenDeathEnabled()
-end
-*/
-function Hive:PerformActivation(techId, position, normal, commander)
-
-    local success = false
-    local continue = true
-    
-
-    if techId == kTechId.ShiftHatch then
-    
-        local egg = nil
-    
-        for j = 1, kEggsPerHatch do    
-            egg = SpawnEgg(self, eggCount)        
-        end
-        
-        success = egg ~= nil
-        continue = not success
-        
-        if egg then
-            egg.manuallySpawned = true
-        end
-        
-        if success then
-            self:TriggerEffects("hatch")
-        end
-        
-    elseif techId == kTechId.Drifter then
-    
-        success = CreateDrifter(self, commander) ~= nil
-        continue = not success
-    
-    end
-    
-    return success, continue
-
-end
-
-function Hive:UpdateSpawnEgg()
-
-    local success = false
-    local egg = nil
-
-    local eggCount = GetNumEggs(self)
-    if eggCount < 8 then  
-         for i = 1, 8 - eggCount do
-        SpawnEgg(self, eggCount)
-         end
-    end
-    
-    return true
-
-end
-
-// Spawn a new egg around the hive if needed. Returns true if it did.
-local function UpdateEggs(self)
-
-    local createdEgg = false
-    
-    // Count number of eggs nearby and see if we need to create more, but only every so often
-    local eggCount = GetNumEggs(self)
-    if GetCanSpawnEgg(self) and eggCount < kAlienEggsPerHive then
-        createdEgg = SpawnEgg(self) ~= nil
-    end 
-    
-    return createdEgg
-    
-end
-
-local function FireImpulses(self) 
-
-    local now = Shared.GetTime()
-    
-    if not self.lastImpulseFireTime then
-        self.lastImpulseFireTime = now
-    end    
-    
-    if now - self.lastImpulseFireTime > kImpulseInterval then
-    
-        local removals = {}
-        for key, id in pairs(self.cystChildren) do
-        
-            local child = Shared.GetEntity(id)
-            if child == nil then
-                removals[key] = true
-            else
-                if child.TriggerImpulse and child:isa("Cyst") then
-                    child:TriggerImpulse(now)
-                else
-                    Print("Hive.cystChildren contained a: %s", ToString(child))
-                    removals[key] = true
-                end
-            end
-            
-        end
-        
-        for key,_ in pairs(removals) do
-            self.cystChildren[key] = nil
-        end
-        
-        self.lastImpulseFireTime = now
-        
-    end
-    
-end
 
 local function CheckLowHealth(self)
 
@@ -461,7 +286,6 @@ function Hive:OnUpdate(deltaTime)
     
     UpdateHealing(self)
     
-    FireImpulses(self)
     
     CheckLowHealth(self)
     //if Server then self:UpdatePassive() end
@@ -509,14 +333,21 @@ function Hive:OnKill(attacker, doer, point, direction)
      GetGamerules():SpawnNewHive(self:GetOrigin())
      
 end
-
+function Hive:SpawnEggs()
+      local haasking = GetNearest(self:GetOrigin() , "Cyst", nil, function(ent) return ent:GetIsBuilt() and ent.isking end)
+      local SaidLocation = haasking and GetLocationForPoint(haasking:GetOrigin()) or GetLocationForPoint(self:GetOrigin())
+      local SaidKing = haasking or self
+      self:GenerateEggSpawns(haasking, SaidLocation, SaidKing)
+      return true
+end
 function Hive:GenerateEggSpawns(haskingcyst, kingcystlocation,saidcyst)
     PROFILE("Hive:GenerateEggSpawns")
-    self.eggSpawnPoints = { }
-    local minNeighbourDistance = 1.5
-    local maxEggSpawns = 20
-    local maxAttempts = maxEggSpawns * 10
-    for index = 1, maxAttempts do
+    local eggCount = GetNumEggs(self)
+    local success = false
+    local egg = nil
+    local tospawn = Clamp(8 - eggCount, 0, 8)
+    
+         for i = 1, tospawn do
         local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
         local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
         local whichtochoose = self:GetModelOrigin()
@@ -533,35 +364,32 @@ function Hive:GenerateEggSpawns(haskingcyst, kingcystlocation,saidcyst)
         local sameLocation = spawnPoint ~= nil and locationName == ConditionalValue(haskingcyst, saidcyst:GetLocationName(), self:GetLocationName())
         
         if spawnPoint ~= nil and sameLocation then
+            
+        local validForEgg = GetIsPlacementForTechId(spawnPoint, false, kTechId.Egg)
+        local validForSkulk = GetIsPlacementForTechId(spawnPoint, false, kTechId.Skulk)
+        if validForEgg and validForSkulk then
         
-            local tooCloseToNeighbor = false
-            for _, point in ipairs(self.eggSpawnPoints) do
+            local egg = CreateEntity(Egg.kMapName, spawnPoint, self:GetTeamNumber())
+            egg:SetHive(self)
             
-                if (point - spawnPoint):GetLengthSquared() < (minNeighbourDistance * minNeighbourDistance) then
+
+            if egg ~= nil then
+            
+                // Randomize starting angles
+                local angles = self:GetAngles()
+                angles.yaw = math.random() * math.pi * 2
+                egg:SetAngles(angles)
                 
-                    tooCloseToNeighbor = true
-                    break
-                    
-                end
+                // To make sure physics model is updated without waiting a tick
+                egg:UpdatePhysicsModel()
+             end --
+         end --
                 
-            end
             
-            if not tooCloseToNeighbor then
-            
-                table.insert(self.eggSpawnPoints, spawnPoint)
-                if #self.eggSpawnPoints >= maxEggSpawns then
-                    break
-                end
-                
-            end
-            
-        end
+        end --
         
-    end
+    end --
     
-    if #self.eggSpawnPoints < kAlienEggsPerHive then
-        Print("Hive in location \"%s\" only generated %d egg spawns (needs %d). Make room more open.", hiveLocationName, table.count(self.eggSpawnPoints), kAlienEggsPerHive)
-    end
     
 end
  function Hive:FindFreeSpace()    
@@ -720,16 +548,24 @@ end
 function Hive:SpawnTunnel()
 
 local count = 0 
-
+local randomowner = nil
              for index, pherome in ientitylist(Shared.GetEntitiesWithClassname("TunnelEntrance")) do
                    count = count + 1
               end
+                
+              if count <= 1 then
               
-              if count <= 2 then
-                                  local entranceorigin = self:FindFreeSpace()
-                                  local entrance = CreateEntity(TunnelEntrance.kMapName, entranceorigin, 2) 
-                                  local exitorigin = self:FindFreeSpace()
-                                  local exit = CreateEntity(TunnelEntrance.kMapName, exitorigin, 2) 
+                   for index, alien in ientitylist(Shared.GetEntitiesWithClassname("Alien")) do
+                   randomowner = alien 
+                   break
+                   end
+                   
+                   local entrance = CreateEntity(TunnelEntrance.kMapName, self:FindFreeSpace(), 2) 
+                   local exit = CreateEntity(TunnelEntrance.kMapName, self:FindFreeSpace(), 2) 
+                   entrance:SetOwner(randomowner)
+                   exit:SetOwner(randomowner)
+                   exit.isexit = true
+                   
               end
               
               return true
@@ -749,7 +585,7 @@ function Hive:OnConstructionComplete()
         if team then
          team:UpdateBioMassLevel()
          end
-       --  self:AddTimedCallback(Hive.SpawnTunnel, 8)  
+        self:AddTimedCallback(Hive.SpawnTunnel, 8)  
     if not GetGamerules():GetFrontDoorsOpen() then
 
   //  self:AddTimedCallback(Hive.AutoUpgrade, 4)
@@ -769,11 +605,7 @@ function Hive:OnConstructionComplete()
         team:OnHiveConstructed(self)
     end
     self:UpdateAliensWeaponsManually()
-    
-    --cheap maphack to raise height in ns2_epicsiege ;)
-   --self:SetOrigin(self:GetOrigin() + Vector(0,kHiveMoveUpVector,0) )
-    self:AddTimedCallback(Hive.UpdateSpawnEgg, 8)
-   
+
     
 end
 

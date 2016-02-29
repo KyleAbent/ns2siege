@@ -120,7 +120,11 @@ local function UpdateView(self, input)
     local isTargetValid = self:GetIsValidTarget(targetEntity)
     
     if isTargetValid then
+     --    if targetEntity:isa("DropshipBeacon") then
+       --       self:AddTimedCallback(function() self:SetOrigin(targetEntity:GetModelOrigin()) return targetEntity end, 0.1)
+       --  else
         self:SetOrigin(targetEntity:GetOrigin())
+       -- end
     end
     
     self:SetViewAngles(viewAngles)

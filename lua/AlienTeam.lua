@@ -1,14 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\AlienTeam.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// This class is used for teams that are actually playing the game, e.g. Marines or Aliens.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/TechData.lua")
 Script.Load("lua/Skulk.lua")
 Script.Load("lua/PlayingTeam.lua")

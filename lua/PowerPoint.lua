@@ -933,7 +933,8 @@ function PowerPoint:GetLocationName()
         return locationName
 end
            function PowerPoint:GetIsInSiegeRoom()
-           if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
+           if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") and not 
+            string.find(self:GetLocationName(), "Hall") and not string.find(self:GetLocationName(), "hall") then return true end
              return false
            end
 

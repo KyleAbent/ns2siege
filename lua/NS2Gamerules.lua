@@ -161,6 +161,7 @@ if Server then
             self:AddTimedCallback(NS2Gamerules.ExpandKingCyst, kExpandCystInterval)
             self:AddTimedCallback(NS2Gamerules.OpenFrontMaybe, 1)
             self:AddTimedCallback(NS2Gamerules.OpenSiegeMaybe, 1)
+            self:AddTimedCallback(NS2Gamerules.UpdateHiveEggs, 8)
             
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
@@ -182,7 +183,7 @@ if Server then
                 
                 self.gameInfo:SetStartTime(self.gameStartTime)
                 self.gameInfo:SetFrontTime(kFrontDoorTime)
-                self.gameInfo:SetSiegeTime(kSiegeDoorTime)
+                self.gameInfo:SetSiegeTime(kSiegeDoorTimey)
                 
                 SendTeamMessage(self.team1, kTeamMessageTypes.GameStarted)
                 SendTeamMessage(self.team2, kTeamMessageTypes.GameStarted)
@@ -1574,6 +1575,7 @@ function NS2Gamerules:OnUpdate(timePassed)
                 canHear = true
             else 
                 canHear = listenerPlayer:GetDistance(speakerPlayer) < kMaxWorldSoundDistance
+                if not canHear then canHear = speakerPlayer:GetAllTalkToggled() end
             end
         end
             
@@ -1581,13 +1583,7 @@ function NS2Gamerules:OnUpdate(timePassed)
         if(Shared.GetCheatsEnabled() or Shared.GetDevMode()) then
             canHear = true
         end
-        
-        --ns2siege - client option for microphone alltalk
-        
-        if speakerPlayer.alltalktoggled == true then
-           canHear = true
-        end
-        
+
         
         // NOTE: SCRIPT ERROR CAUSED IN THIS FUNCTION WHEN FP SPEC WAS ADDED.
         // This functionality never really worked anyway.
@@ -1799,7 +1795,7 @@ end
                --Time
                local gameRules = GetGamerules()
                local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
-               local currenttimeleft = math.abs(kSiegeDoorTime - gameLength )
+               local currenttimeleft = math.abs(kSiegeDoorTimey - gameLength )
                local currentroundratio = GetRoundLengthToSiege()
                --Positive or Negative?
                 local positive = false
@@ -1950,7 +1946,8 @@ end
         
            local location = spawnPoint and GetLocationForPoint(spawnPoint)
            local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == GetLocationForPoint(where) and ( GetLocationForPoint(where):RoomCurrentlyHasPower() or not GetIsPointOnInfestation(where) )
+           local sameLocation = spawnPoint ~= nil and locationName == GetLocationForPoint(where) 
+           --sameLocation = sameLocation  and not GetIsPointOnInfestation(where)
         
            if spawnPoint ~= nil and sameLocation then 
            return spawnPoint
@@ -2092,7 +2089,7 @@ end
 function NS2Gamerules:EnableIPsBeacon()
 local ent = nil
      for _, IP in ientitylist(Shared.GetEntitiesWithClassname("InfantryPortal")) do
-              IP:ActivateBeacons()
+              if not IP:GetIsBeaconActive() then IP:ActivateBeacons() end
      end
      return true
 end
@@ -2128,7 +2125,7 @@ function NS2Gamerules:OpenFrontDoors()
                 
               self:AddTimedCallback(NS2Gamerules.PickMainRoom, 10)
               self:EnableIPsBeacon()
-              self:AddTimedCallback(NS2Gamerules.EnableIPsBeacon, 28)
+              self:AddTimedCallback(NS2Gamerules.EnableIPsBeacon, 90)
                 
               for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
               StartSoundEffectForPlayer(NS2Gamerules.kFrontDoorSound, player)           
@@ -2260,13 +2257,19 @@ function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
 
 
 end
+function NS2Gamerules:UpdateHiveEggs()
+            for index, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
+                  if hive:GetIsAlive() then hive:SpawnEggs() break end 
+                end 
+                return true
+end
 function NS2Gamerules:OpenSiegeDoors()
  self.siegedoorsopened = true
   
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
                
-               self:AddTimedCallback(NS2Gamerules.DropshipArcs, 12)
+               self:AddTimedCallback(NS2Gamerules.DropshipArcs, 15)
                self:AddTimedCallback(NS2Gamerules.MaintainHiveDefense, 8)
 
                 

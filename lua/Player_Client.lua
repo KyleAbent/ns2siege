@@ -874,7 +874,7 @@ function PlayerUI_GetCrosshairY()
             -- All alien crosshairs are the same for now
             elseif mapname == LerkBite.kMapName or mapname == AcidRocket.kMapName or mapname == Primal.kMapName or mapname == Spores.kMapName or mapname == LerkUmbra.kMapName or mapname == Parasite.kMapName or mapname == BileBomb.kMapName then
                 index = 6
-            elseif mapname == SpitSpray.kMapName or mapname == BabblerAbility.kMapName then
+            elseif mapname == SpitSpray.kMapName then --or mapname == BabblerAbility.kMapName then
                 index = 7
             -- Blanks (with default damage indicator)
             else

@@ -135,6 +135,8 @@ local function HealEntity(self, player, targetEntity)
         health = health * 0.5
     end
     
+    health = ConditionalValue(targetEntity:isa("Cyst") and targetEntity.isking, health * 4, health)
+    
     if GetHasFocusUpgrade(self:GetParent()) then
      health = health + ( (health/2) * (self:GetParent():GetFocousLevel()) )
    end

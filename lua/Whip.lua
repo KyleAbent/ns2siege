@@ -144,27 +144,33 @@ function Whip:GetInfestationRadius()
     return kWhipInfestationRadius
 end
 function Whip:GetIsOccupying()
-    return  self.cystid ~= Entity.invalidI
+    local mate = Shared.GetEntity(self.cystid)
+    return not mate
 end
 function Whip:SetIsOccupying(who, LosAngelesCityHall)
 
    local cyst = Shared.GetEntity(self.cystid)
    
       if cyst then
+      
          if LosAngelesCityHall == false then
             cyst:SetOccupied(self, false)
             self.cystid =  Entity.invalidI
-            end
-      else
-        if LosAngelesCityHall == true then
-      self.cystid = who:GetId()
-     self.opccupying = LosAngelesCityHall
-    -- self:AddTimedCallback(function()  self:SetIsOccupying(not LosAngelesCityHall) end, 8)
-         end
-     end
+          elseif LosAngelesCityHall == true then
+             cyst:SetOccupied(self, false)
+             self.cystid = who:GetId()
+          end
+          
+    elseif not cyst then
+      
+         if LosAngelesCityHall == true then
+          self.cystid = who:GetId()
+           end
+   end
+   
 end
 function Whip:GetCanOccupy(cyst)
-    return not self:GetIsOccupying() or self:GetLocationName() ~= GetLocationForPoint(cyst:GetOrigin())
+    return true --not self:GetIsOccupying() or GetLocationForPoint(self:GetOrigin()) ~= GetLocationForPoint(cyst:GetOrigin())
 end
 function Whip:GetInfestationMaxRadius()
     return kWhipInfestationRadius

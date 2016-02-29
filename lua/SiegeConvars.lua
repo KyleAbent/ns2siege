@@ -115,8 +115,8 @@ kFuncDoorWeldRate = 1
 kAddAmountofFuncDoorBroken = .1
 kSideDoorTime = 300 
 kMarineRespawnProtection = 5.06
-kFrontDoorTime = 300 //6 min
-kSiegeDoorTime = 900 // 20 min
+kFrontDoorTime = (300-61)+21
+kSiegeDoorTimey = 1500 
 kTimeAfterSiegeOpeningToEnableSuddenDeath = 300
 
 kAlienTeamInitialTres = 60

@@ -461,6 +461,10 @@ function Player:GetIsSteamFriend()
 
     return self.isSteamFriend
 end
+function Player:GetAllTalkToggled()
+return self.alltalktoggled
+end
+
 
 --[[
     Called when the player entity is destroyed.

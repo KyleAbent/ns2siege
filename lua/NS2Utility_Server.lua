@@ -530,7 +530,7 @@ local level = 0.1
  local gameRules = GetGamerules()
  if not gameRules:GetGameStarted() then return 0 end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
-      level = Clamp(kSiegeDoorTime/roundlength, 0.1, 1)
+      level = Clamp(kSiegeDoorTimey/roundlength, 0.1, 1)
      -- Print("GetReversedRoundLengthToSiege = %s", level)
        return level 
 end
@@ -543,7 +543,7 @@ local level = 1
    return 1
   end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
-      level = Clamp(roundlength/kSiegeDoorTime, 0.1, 1)
+      level = Clamp(roundlength/kSiegeDoorTimey, 0.1, 1)
     --  Print("GetRoundLengthToSiege = %s", level)
        return level 
 end
@@ -556,7 +556,7 @@ local level = 1
    return 1
   end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
-      level = Clamp(roundlength/ (kSiegeDoorTime+kTimeAfterSiegeOpeningToEnableSuddenDeath), 0.1, 1)
+      level = Clamp(roundlength/ (kSiegeDoorTimey+kTimeAfterSiegeOpeningToEnableSuddenDeath), 0.1, 1)
      -- Print("GetRoundLengthToSuddenDeath = %s", level)
        return level 
 end
@@ -565,7 +565,7 @@ local level = 1
  local gameRules = GetGamerules()
  if not gameRules:GetGameStarted() then return 0.478 end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
-      level = Clamp(roundlength/kSiegeDoorTime, 0.1, 0.478)
+      level = Clamp(roundlength/kSiegeDoorTimey, 0.1, 0.478)
         level = level * (kActivePlayers/28)
        return level 
 end
@@ -609,7 +609,7 @@ local default = kMarineRespawnTime
  if not gameRules:GetGameStarted() or not gameRules:GetCanUpdateRespawnTime() then return kMarineRespawnTime end 
       local roundlength =  Shared.GetTime() - gameRules:GetGameStartTime()
              Print("roundlength is %s", roundlength)
-      roundlength = Clamp(roundlength/kSiegeDoorTime, 0.1, 2) //So dependent on roundlength
+      roundlength = Clamp(roundlength/kSiegeDoorTimey, 0.1, 2) //So dependent on roundlength
              Print("roundlength is %s", roundlength)
         roundlength = roundlength * (kActivePlayers/28) + roundlength   //And playercount
               Print("roundlength is %s", roundlength)
