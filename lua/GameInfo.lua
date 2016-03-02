@@ -37,8 +37,8 @@ function GameInfo:OnCreate()
         self.startTime = 0
         self.averagePlayerSkill = 0
         self.numPlayersTotal = 0
-        self.frontTime = kSiegeDoorTime
-        self.siegeTime = kFrontDoorTime
+        self.frontTime = kFrontDoorTime
+        self.siegeTime = kSiegeDoorTimey 
         
     end
     

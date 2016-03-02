@@ -314,6 +314,7 @@ function Cyst:Derp()
                self:MarkPhysicsDirty()    
 end
 function Cyst:OnKill(attacker, doer, point, direction)
+       self:TriggerEffects("egg_death")
 self:SetIsVisible(false)
 if self.isking then  CreateEntity(Rupture.kMapName, self:GetOrigin(), self:GetTeamNumber()) self.isking = false self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
 end

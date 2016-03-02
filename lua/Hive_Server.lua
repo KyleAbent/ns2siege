@@ -169,7 +169,7 @@ local function GetNumEggs(self)
     
     for index, egg in ipairs(eggs) do
     
-        if egg:GetLocationName() == self:GetLocationName() and egg:GetIsAlive() and egg:GetIsFree() and not egg.manuallySpawned then
+        if egg:GetIsAlive() and egg:GetIsFree() then
             numEggs = numEggs + 1
         end
         
@@ -343,10 +343,10 @@ end
 function Hive:GenerateEggSpawns(haskingcyst, kingcystlocation,saidcyst)
     PROFILE("Hive:GenerateEggSpawns")
     local eggCount = GetNumEggs(self)
+    if eggCount >= math.random(8,12) then return end
     local success = false
     local egg = nil
-    local tospawn = Clamp(8 - eggCount, 0, 8)
-    
+    local tospawn = Clamp(math.random(8,12) - eggCount, 0, math.random(8,12))
          for i = 1, tospawn do
         local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
         local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  

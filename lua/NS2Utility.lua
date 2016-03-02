@@ -1858,8 +1858,8 @@ function GetIsPointOnInfestation(point)
 
 end
 function GetIsPointWithinHiveRadius(point)
-      local hives = GetEntitiesWithinRange("Hive", point, ARC.kFireRange)
-   if #hives >=1 then return true end
+      local techpoints = GetEntitiesWithinRange("TechPoint", point, ARC.kFireRange)
+   if #techpoints == 3  then return true end
    return false
 end
 function GetIsPointInGorgeTunnel(point)

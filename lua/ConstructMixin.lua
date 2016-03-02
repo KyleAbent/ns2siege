@@ -196,7 +196,7 @@ if Server then
                  if self:isa("ArmsLab") then
                    local nearestCC = GetNearest(origin, "CommandStation", 1)  
                    if nearestCC then 
-                     origin = nearestCC:GetOrigin()
+                     origin = nearestCC:FindFreeSpace()
                      end
                   end
   
@@ -563,7 +563,17 @@ function ConstructMixin:OnConstructionComplete(builder)
     self:TriggerEffects("construction_complete")
     
 end    
-
+function ConstructMixin:GetIsSetup()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
+                   return true
+               end
+            end
+        end
+            return false
+end
 function ConstructMixin:GetBuiltFraction()
     return self.buildFraction
 end

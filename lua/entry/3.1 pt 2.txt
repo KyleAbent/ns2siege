@@ -1,0 +1,7 @@
+modEntry = [[
+	Client: lua/SiegeMod/Client.lua,
+	Server: lua/SiegeMod/Server.lua,
+	Predict: lua/SiegeMod/Predict.lua,
+	Shared: lua/SiegeMod/Shared.lua,
+	Priority: 3
+]]

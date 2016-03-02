@@ -17,7 +17,7 @@ end
 function Plugin:OnFirstThink() 
  local neutralorigin = Vector(0, 0, 0)
  local count = 0 
- local time = kSiegeDoorTime
+ local time = kSiegeDoorTimey
      for _, tech in ientitylist(Shared.GetEntitiesWithClassname("TechPoint")) do
               neutralorigin = neutralorigin + tech:GetOrigin()
               count = count + 1
@@ -53,7 +53,8 @@ function Plugin:OnFirstThink()
           end
              kFrontDoorTime = (300-60)+21
               time = Clamp(time,600, 1500)
-             kSiegeDoorTime = time
+             --kSiegeDoorTimey = time
+             kSiegeDoorTimey = 1500
              self.siegetimer = time
                Print("time is %s", time)
 
@@ -63,7 +64,7 @@ function Plugin:AdjustTimer(Number)
 
 local newtimer = 0
 local calculation = kSiegeDoorTimey + (Number)
-kSiegeDoorTime = Clamp(calculation, 0, 1500)
+kSiegeDoorTimey = Clamp(calculation, 0, 1500)
 self:UpdateGameInfo(kSiegeDoorTimey)                     
 end
 function Plugin:UpdateGameInfo(time)
