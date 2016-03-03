@@ -256,7 +256,7 @@ if Server then
 function PrototypeLab:GetJPExoEntitiesCount()   
       local jps = 0
       local exos = 0
-                    local entities = GetEntitiesForTeamWithinRange("ScriptActor", 1, self:GetOrigin(), 8)
+                    local entities = GetEntitiesForTeamWithinRange("ScriptActor", 1, self:GetOrigin(), 12)
                      for i = 1, #entities do
                      local ent = entities[i]
                            if ent:isa("Exosuit") then 
@@ -283,7 +283,7 @@ end
         for index = 1, 24 do
            local extents = Vector(1,1,1)
            local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 6, EntityFilterAll())
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 10, EntityFilterAll())
         
            if spawnPoint ~= nil then
              spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)

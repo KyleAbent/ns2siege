@@ -210,6 +210,7 @@ end
        if parent then
          self:SetOrigin(self:GetOrigin() + Vector(0,1,0) )       
         end
+         self:AddTimedCallback(Armory.SpawnWeapons, 8)
     end
 function Armory:GetCanBeUsed(player, useSuccessTable)
 

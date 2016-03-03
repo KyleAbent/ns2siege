@@ -456,53 +456,6 @@ end
 function Marine:GetSlowOnLand()
     return true
 end
-local kFindWeaponRange = 2
-local kPickupWeaponTimeLimit = 1
-// //All Credit to NS2+ for this - I want this feature without installing that mod. Sorry and thanks. All credit to you. I do not mean to steal
-function Marine:FindNearbyAutoPickupWeapon()
-		local toPosition = self:GetOrigin()
-		local nearbyWeapons = GetEntitiesWithMixinWithinRange("Pickupable", toPosition, kFindWeaponRange)
-		local closestWeapon = nil
-		local closestDistance = Math.infinity
-		
-		local pickupPriority = { [kTechId.HeavyMachineGun] = 1, [kTechId.Shotgun] = 2, [kTechId.Flamethrower] = 3, [kTechId.GrenadeLauncher] = 4,  }
-		
-		
-		local currentWeapon = self:GetWeaponInHUDSlot(1)
-		local currentWeaponPriority = currentWeapon and pickupPriority[currentWeapon:GetTechId()] or 0
-		local bestPriority = currentWeapon and currentWeaponPriority or -1
-		
-		for i, nearbyWeapon in ipairs(nearbyWeapons) do
-		
-			local pickupSlot = nearbyWeapon:isa("Weapon") and nearbyWeapon:GetHUDSlot()
-			local isEmptySlot = (self:GetWeaponInHUDSlot(pickupSlot) == nil) or (self:GetWeaponInHUDSlot(pickupSlot):isa("Axe"))
-		
-			if nearbyWeapon:isa("Weapon") and nearbyWeapon:GetIsValidRecipient(self) and isEmptySlot then
-			
-				local nearbyWeaponDistance = (nearbyWeapon:GetOrigin() - toPosition):GetLengthSquared()
-				if nearbyWeaponDistance < closestDistance then
-				
-					closestWeapon = nearbyWeapon
-					closestDistance = nearbyWeaponDistance
-				
-				end
-				
-			elseif nearbyWeapon:isa("Weapon") and nearbyWeapon:GetIsValidRecipient(self) and pickupSlot == 1 and currentWeaponPriority < 1 then
-
-				local techId = nearbyWeapon:GetTechId()
-				local curPriority = pickupPriority[techId] or 0
-
-				if curPriority > bestPriority then
-					bestPriority = curPriority
-					closestWeapon = nearbyWeapon
-				end
-			end
-			
-		end
-		
-		return closestWeapon
-end
-
 function Marine:GetHasHMG()
         local weapon = self:GetWeaponInHUDSlot(1)
         local hmg = false
@@ -600,13 +553,12 @@ function Marine:HandleButtons(input)
         end
         self.flashlightLastFrame = flashlightPressed
 
-		local autoPickup = self:FindNearbyAutoPickupWeapon() and bit.band(input.commands, Move.Drop) == 0
-        if (bit.band(input.commands, Move.Drop) ~= 0 or autoPickup) then
+        if (bit.band(input.commands, Move.Drop) ~= 0) then
         
             if Server then
             
                 // First check for a nearby weapon to pickup.
-                local nearbyDroppedWeapon = ConditionalValue(autoPickup, self:FindNearbyAutoPickupWeapon(), self:GetNearbyPickupableWeapon())
+                local nearbyDroppedWeapon = self:GetNearbyPickupableWeapon()
 
 				// Make sure the weapon hasn't been destroyed when we do the autopickup
                 if nearbyDroppedWeapon and nearbyDroppedWeapon:isa("Weapon") and not nearbyDroppedWeapon:GetIsDestroyed() then
@@ -1064,26 +1016,21 @@ function Marine:OnProcessMove(input)
     if Server then
     
          if self.hasreupply then
-      if Shared.GetTime() >  self.lastsupply + 8 then
-        local hassupplied = false
+         
+      if self.lastsupply + 8  < Shared.GetTime() then
+       local weapon = self:GetActiveWeapon()
             if self:GetHealth() <= 90 then 
-             hassupplied = self:TriggerDropPack(self:GetOrigin(), kTechId.MedPack)
-             end
-             
-             if not hassupplied then
-             local weapon = self:GetActiveWeapon()
-                if weapon and weapon.GetAmmoFraction then          
-                   if weapon:GetAmmoFraction() <= .9 then                      
-                  hassupplied = self:TriggerDropPack(self:GetOrigin(), kTechId.AmmoPack) 
-                   end
-               end
-             end
-             
-             if not hassupplied and self:GetIsInCombat() then
+             self:TriggerDropPack(self:GetOrigin(), kTechId.MedPack)
+             self.lastsupply = Shared.GetTime()
+             elseif weapon and weapon.GetAmmoFraction and weapon:GetAmmoFraction() <= .9 then                     
+                   self:TriggerDropPack(self:GetOrigin(), kTechId.AmmoPack) 
+                   self.lastsupply = Shared.GetTime()
+             elseif self:GetIsInCombat() then
              self:TriggerDropPack(self:GetOrigin(), kTechId.CatPack) 
+               self.lastsupply = Shared.GetTime()
              end
              
-       self.lastsupply = Shared.GetTime()
+
      end
      end
      

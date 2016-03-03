@@ -22,10 +22,58 @@ function GetCommanderForTeam(teamNumber)
     end    
 
 end
-
+function Armory:GetWeaponsCount()   
+      local shotguns = 0
+     -- local hmgs = 0
+      local flamethrowers = 0
+      local GLS = 0
+                    local entities = GetEntitiesForTeamWithinRange("ClipWeapon", 1, self:GetOrigin(), 18)
+                     for i = 1, #entities do
+                     local ent = entities[i]
+                           if ent:isa("Shotgun") then
+                                 shotguns = shotguns + 1
+                           elseif ent:isa("HeavyRifle") then
+                                 hmgs = hmgs + 1
+                           elseif ent:isa("Flamethrower") then
+                                 flamethrowers = flamethrowers + 1
+                           elseif ent:isa("GrenadeLauncher") then
+                                 GLS = GLS + 1
+                           end
+                     end
+                  --   return shotguns, hmgs, flamethrowers, GLS
+                  return shotguns, flamethrowers, GLS
+end  
+    function Armory:FindFreeSpace()
+    
+        for index = 1, 24 do
+           local extents = Vector(1,1,1)
+           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 8, EntityFilterAll())
+        
+           if spawnPoint ~= nil then
+             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+           end
+        
+           local location = spawnPoint and GetLocationForPoint(spawnPoint)
+           local locationName = location and location:GetName() or ""
+           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+           if spawnPoint ~= nil and sameLocation then
+           return spawnPoint
+           end
+       end
+           Print("No valid spot found for armory spawn weapons")
+           return nil
+    end
+function Armory:SpawnWeapons()
+                      local gameRules = GetGamerules()
+            if gameRules then
+                           gameRules:SpawnArmoryEnts(self)  
+            end
+    return true
+end
 function Armory:OnConstructionComplete()
     self:AddTimedCallback(OnDeploy, kDeployTime)
-    
 end
 
 // west/east = x/-x

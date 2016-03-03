@@ -38,7 +38,7 @@ function GUIFlamethrowerDisplay:Initialize()
 
     self.weaponClip = 0
     self.weaponAmmo = 0
-    self.maxClip = 50
+    self.maxClip = 4
     self.globalTime = 0
     self.lowAmmoWarning = true
     
@@ -169,7 +169,7 @@ function Initialize()
 
     bulletDisplay = GUIFlamethrowerDisplay()
     bulletDisplay:Initialize()
-    bulletDisplay:SetClipSize(50)
+    bulletDisplay:SetClipSize(4)
     bulletDisplay:SetGlobalTime(globalTime)
     bulletDisplay:SetLowAmmoWarning(lowAmmoWarning)
 

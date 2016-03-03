@@ -1,3 +1,4 @@
+kSearchFor = 18
 kExpandCystInterval =  8
 kStructureDropCost = 8
 kCystSpawnCost = 1

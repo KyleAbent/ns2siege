@@ -1968,8 +1968,7 @@ local function GetDroppackSoundName(techId)
    
 end
     function NS2Gamerules:DropMarineSupport(who, position, techId)
-     -- Print("DropMarineSupport test")
-      if self.team1:GetTeamResources() == 0 or not self.doorsopened then return end
+      if self.team1:GetTeamResources() == 0 then return end
     local donotadd = false
     
     if self.marinepacksdropped == 4 then
@@ -2474,6 +2473,74 @@ local spawnpoint = proto:FindFreeSpace()
               dropship:SetMapName(Exosuit.kMapName)
          self.lastmarinecreatedentity = Shared.GetTime()
          self.team1:SetTeamResources(self.team1:GetTeamResources()  - 8)
+         end
+    end
+    
+ end
+ end
+ 
+ end
+ 
+end
+function NS2Gamerules:SpawnArmoryEnts(armory)
+--kyle abent
+     if self:GetCanSpawnMarineEntity(2,nil, armory:GetIsInCombat()) then 
+local location = GetLocationForPoint(armory:GetOrigin())
+
+if location then
+
+--local shotguns, hmgs, flamethrowers, GLS = armory:GetWeaponsCount()
+local shotguns, flamethrowers, GLS = armory:GetWeaponsCount()
+local spawnpoint = armory:FindFreeSpace()
+  if spawnpoint ~= nil then
+   local spawned = false
+    if shotguns <= 1 then
+              local dropship = CreateEntity(Dropship.kMapName, spawnpoint, 1)  
+              dropship:SetTechId(kTechId.Shotgun)
+              dropship:SetMapName(Shotgun.kMapName)
+              local lulz = 4
+              lulz = ConditionalValue(armory:GetIsInCombat(), 8, lulz)
+                dropship.flyspeed = lulz
+               self.lastmarinecreatedentity = Shared.GetTime()
+               self.team1:SetTeamResources(self.team1:GetTeamResources()  - 2)
+               spawned = true
+               /*
+    elseif hmgs <= 1 then
+       if not spawned then
+            local dropship = CreateEntity(Dropship.kMapName, spawnpoint, 1)  
+              local lulz = 2
+              lulz = ConditionalValue(armory:GetIsInCombat(), 8, lulz)
+              dropship.flyspeed = lulz
+              dropship:SetTechId(kTechId.HeavyRifle)
+              dropship:SetMapName(HeavyRifle.kMapName)
+         self.lastmarinecreatedentity = Shared.GetTime()
+         self.team1:SetTeamResources(self.team1:GetTeamResources()  - 2)
+               spawned = true
+         end
+         */
+    elseif flamethrowers <= 1 then
+       if not spawned then
+            local dropship = CreateEntity(Dropship.kMapName, spawnpoint, 1)  
+              local lulz = 2
+              lulz = ConditionalValue(armory:GetIsInCombat(), 8, lulz)
+              dropship.flyspeed = lulz
+              dropship:SetTechId(kTechId.Flamethrower)
+              dropship:SetMapName(Flamethrower.kMapName)
+         self.lastmarinecreatedentity = Shared.GetTime()
+         self.team1:SetTeamResources(self.team1:GetTeamResources()  - 2)
+               spawned = true
+         end
+    elseif GLS <= 1 then
+       if not spawned then
+            local dropship = CreateEntity(Dropship.kMapName, spawnpoint, 1)  
+              local lulz = 2
+              lulz = ConditionalValue(armory:GetIsInCombat(), 8, lulz)
+              dropship.flyspeed = lulz
+              dropship:SetTechId(kTechId.GrenadeLauncher)
+              dropship:SetMapName(GrenadeLauncher.kMapName)
+         self.lastmarinecreatedentity = Shared.GetTime()
+         self.team1:SetTeamResources(self.team1:GetTeamResources()  - 2)
+               spawned = true
          end
     end
     
