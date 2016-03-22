@@ -2183,12 +2183,13 @@ local count = 0
 return count
 
 end
-function NS2Gamerules:MakeSureArcsCanShootHive(powerpoint)
-             for index, arc in ipairs(GetEntitiesForTeam("ARC", 1)) do
-               if arc:GetIsInSiege() and not arc:IsInRangeOfHive() then 
-                arc:GiveOrder(kTechId.Move, powerpoint:GetId(), powerpoint:FindArcHiveSpawn(), nil, false, false)
+function NS2Gamerules:GetHiveLocationForScan()
+             for index, hive in ipairs(GetEntitiesForTeam("Hive", 2)) do
+               if hive then 
+                   return hive:GetOrigin()
                 end
           end 
+          return nil
 end
 function NS2Gamerules:DropshipArcs()
    local arcspawnpoint = self:GetSiegePowerPoint():FindArcHiveSpawn()
@@ -2200,11 +2201,11 @@ function NS2Gamerules:DropshipArcs()
             dropship.flyspeed = .4
         end
      end
-     
-     self:MakeSureArcsCanShootHive(self:GetSiegePowerPoint())
+    
      
      if  self.team1:GetTeamResources() >= 3 then
-          CreateEntity( Scan.kMapName, arcspawnpoint, 1)
+          local origin = self:GetHiveLocationForScan()
+          CreateEntity( Scan.kMapName, origin or arcspawnpoint, 1)
           self.team1:SetTeamResources(self.team1:GetTeamResources()  - 3)
      end
      
@@ -2442,6 +2443,19 @@ function NS2Gamerules:GetCanSpawnAlienEntity(trescount, timeywimey, isincombat)
               return canafford
          end
 end
+function NS2Gamerules:AntiExploitCystFrontDoor(cyst)
+   if not self.doorsopened then
+     local nearestdoor = GetNearest(cyst:GetOrigin(), "FrontDoor", nil)  
+         if nearestdoor then
+          local distance = (cyst:GetOrigin() - nearestdoor:GetOrigin()):GetLengthXZ()
+            if distance <= 4 then
+              DestroyEntity(cyst)
+            end
+         end
+   end
+
+end
+
 function NS2Gamerules:SpawnPrototypeEnts(proto)
 --kyle abent
      if self:GetCanSpawnMarineEntity(8,nil, proto:GetIsInCombat()) then 

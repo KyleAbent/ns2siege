@@ -197,6 +197,14 @@ end
 function Cyst:OnConstructionComplete()
     self:AddTimedCallback(Cyst.EnergizeInRange, 4)
     self:AttractWhipsCrags()
+    
+       if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+                  gameRules:AntiExploitCystFrontDoor(self)
+            end
+        end
+
    -- self:AddTimedCallback(Cyst.AttractWhipsCrags, 8)
 end
 function Cyst:AttractWhipsCrags()
@@ -402,7 +410,8 @@ function Cyst:Magnetize()
                  cyst:AddTimedCallback(Cyst.AttractWhipsCrags, math.random(1,4) )
                end
       end
-          
+               --So once Cyst is fully grown, then teleport said tunnel.
+                      self:MagnetizeStructures()
           
           self:AddTimedCallback(Cyst.Cook, 4)
           self:Synchronize()
@@ -430,10 +439,12 @@ function Cyst:MagnetizeStructures()
 end
 function Cyst:KingRules()
           for index, Tunnel in ipairs(GetEntitiesForTeam("TunnelEntrance", 2)) do
-               if Tunnel:GetIsBuilt() and self:GetDistance(Tunnel) >= 24 then 
-               Tunnel:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
+               if Tunnel:GetIsBuilt() and GetLocationForPoint(Tunnel:GetOrigin()) ~= GetLocationForPoint(self:GetOrigin()) 
+               and Tunnel:GetEligableForBeacon(self) and Tunnel:GetIsExit() then
+                   Tunnel:TriggerBeacon(self:FindAlternateSpace()) 
                 end
           end
+          /*
           for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
                if crag:GetIsBuilt() and self:GetDistance(crag) >= 24 then 
                crag:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
@@ -444,6 +455,7 @@ function Cyst:KingRules()
                whip:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
                 end
           end
+          */
 end  
 function Cyst:SetOccupied(who, istrue)
 --It's True, It's True!
@@ -662,9 +674,9 @@ if Server then
             
             local time = Shared.GetTime()
             if self.timeoflastkingdate == nil or (time > self.timeoflastkingdate + 1) then
-               if self.isking then
+               if self.isking  then
                 self:AddXP(Cyst.GainXP)
-                self:Derp()
+                self:Derp() 
                 elseif self.wasking then
                 self:LoseXP(Cyst.GainXP)
                 self:Derp()

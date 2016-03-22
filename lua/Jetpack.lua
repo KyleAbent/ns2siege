@@ -12,6 +12,7 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/PickupableMixin.lua")
 Script.Load("lua/JetpackOnBack.lua")
 Script.Load("lua/SelectableMixin.lua")
+Script.Load("lua/LiveMixin.lua")
 
 class 'Jetpack' (ScriptActor)
 
@@ -35,6 +36,7 @@ AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(LiveMixin, networkVars)
 
 function Jetpack:OnCreate()
 
@@ -44,6 +46,7 @@ function Jetpack:OnCreate()
     InitMixin(self, ModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, SelectableMixin)
+    InitMixin(self, LiveMixin)
     
     InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
     
@@ -78,7 +81,11 @@ end
 
 function Jetpack:OnTouch(recipient)    
 end
-
+function Jetpack:ModifyDamageTaken(damageTable, attacker, doer, damageType)
+    if damageType ~= kDamageType.Corrode then
+        damageTable.damage = 0
+    end
+end
 // only give jetpacks to standard marines
 function Jetpack:GetIsValidRecipient(recipient)
     return not recipient:isa("JetpackMarine") and not recipient:isa("Exo")
@@ -96,6 +103,14 @@ function Jetpack:_GetNearbyRecipient()
 end
 
 if Server then
+    
+   function Jetpack:OnKill()
+        DestroyEntity(self)
+    end
+    
+    function Jetpack:GetSendDeathMessageOverride()
+        return false
+    end   
     
     function Jetpack:OnUseDeferred()
         

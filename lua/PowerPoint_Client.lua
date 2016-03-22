@@ -191,7 +191,7 @@ function PowerPoint:OnUpdateRender()
             local player = Client.GetLocalPlayer()
             
             if not self:GetIsBuilt() then
-                if self.buildFraction == 1 and not self:CanBeCompletedByScriptActor( player ) 
+                if self.buildFraction == 1 
                 then
                     material = "nobuild";
                 else
