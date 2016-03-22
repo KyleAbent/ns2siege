@@ -34,7 +34,7 @@ local kPlayerNameLayer = 7
 local kPlayerNameFontSize = 8
 local kPlayerNameFontName = Fonts.kAgencyFB_Tiny
 local kPlayerNameOffset = Vector(11.5, -5, 0)
-local kPlayerNameColorAlien = Color(1, 189/255, 111/255, 1)
+local kPlayerNameColorAlien = Color(127/255, 255/255, 0/255, 1)
 local kPlayerNameColorMarine = Color(164/255, 241/255, 1, 1)
 
 local kBlipSize = GUIScale(30)
@@ -48,7 +48,7 @@ local kTeamColors = { }
 kTeamColors[kMinimapBlipTeam.Friendly] = Color(1, 1, 1, 1)
 kTeamColors[kMinimapBlipTeam.Enemy] = Color(1, 0, 0, 1)
 kTeamColors[kMinimapBlipTeam.Neutral] = Color(1, 1, 1, 1)
-kTeamColors[kMinimapBlipTeam.Alien] = Color(1, 138/255, 0, 1)
+kTeamColors[kMinimapBlipTeam.Alien] = Color(127/255, 255/255, 0/255, 1)
 kTeamColors[kMinimapBlipTeam.Marine] = Color(0, 216/255, 1, 1)
 // steam friend colors
 kTeamColors[kMinimapBlipTeam.FriendAlien] = Color(1, 189/255, 111/255, 1)

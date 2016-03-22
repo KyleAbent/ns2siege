@@ -416,12 +416,7 @@ function Cyst:Magnetize()
           self:AddTimedCallback(Cyst.Cook, 4)
           self:Synchronize()
           self.MinKingShifts = Clamp(self.MinKingShifts + 1, 0, Cyst.MinimumKingShifts)
-          
-               if not self.UpdatedEggs then 
-                 self.UpdatedEggs = true self:UpdateEggSpawn()  
-                 SendTeamMessage(self:GetTeam(), kTeamMessageTypes.KingCystLocation, self:GetLocationId())
-              end
-              
+          if not self.UpdatedEggs then self.UpdatedEggs = true self:UpdateEggSpawn()  end
           return self.isking
 end
 
@@ -468,18 +463,10 @@ function Cyst:SetOccupied(who, istrue)
 if istrue then
    self.occupiedid = who:GetId()
 else
-self.occupiedid = Entity.invalidI
+self.occupiedid =  Entity.invalidI
 end
 
 
-
-end
-function Cyst:PreOnKill(attacker, doer, point, direction)
-                  
-                  local entity = Shared.GetEntity(self.occupiedid)
-                  if entity then
-                  entity:SetIsOccupying(self, false)
-                  end
 
 end
 function Cyst:NonKingRules()
@@ -563,12 +550,12 @@ end
    */
   function Cyst:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-        if self.isking  then
+        if self.isking == true then
             unitName = string.format(Locale.ResolveString("King Cyst"))
         else
         unitName = string.format(Locale.ResolveString("Cyst"))
-       end
-     return unitName
+   end
+return unitName
 end 
 function Cyst:GetLevelPercentage()
 return self.level / Cyst.MaxLevel * Cyst.ScaleSize

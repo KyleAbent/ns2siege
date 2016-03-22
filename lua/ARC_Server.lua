@@ -129,19 +129,23 @@ local hivelocation = nil
 local hitentities = {}
             for index, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
                    if hive then
-                     hivelocation = hive:GetLocationName()
+                     hivelocation = hive:GetOrigin()
                      break
                    end
                 end 
+    -- Print("hivelocation is %s", hivelocation)
     if hivelocation ~= nil then
-             for _, entity in ipairs(GetEntitiesWithMixin("Live")) do
-                if  entity.GetLocationName and entity:GetLocationName() and entity:GetLocationName() == hivelocation then
-                table.insert(hitentities, entity)
+    local entities = GetEntitiesWithMixinForTeamWithinRange("Live", 2, hivelocation, ARC.kSplashRadius)
+           if #entities == 0 then return end
+           for i = 1, #entities do
+             local possibletarget = entities[i]
+                 if self:GetCanFireAtTarget(possibletarget) then
+                   table.insert(hitentities,possibletarget)
                  end
-            end
+           end
     end
     
-    return hitentities or nil
+    return hitentities 
     
 end
 function ARC:GetLocationName()
@@ -341,7 +345,21 @@ function ARC:AcquireTarget()
     end
     
 end
-
+local function PerformSiegeAttack(self)
+        self:TriggerEffects("arc_firing")    
+        local hitEntities = self:GetEntitiesInHiveRoom()
+        for i = 1, #hitEntities do
+             local entity = hitEntities[i]
+             local damage = math.random(50,250) --ARC.kAttackDamage
+             local hivescalar = Clamp(entity:GetHealthScalar(), 0.10, 1)
+              damage = ConditionalValue(entity:isa("Hive"), damage * (self:GetArcsInRange() * hivescalar), damage)
+              self:DoDamage(damage, entity, entity:GetOrigin(), self:GetOrigin(), "none")
+              GetEffectManager():TriggerEffects("arc_hit_primary", {effecthostcoords = Coords.GetTranslation(entity:GetOrigin())})
+              if HasMixin(entity, "Effects") then
+                 entity:TriggerEffects("arc_hit_secondary")
+             end 
+        end
+end
 local function PerformAttack(self)
 
     if self.targetPosition then
@@ -352,10 +370,7 @@ local function PerformAttack(self)
         // don't pass triggering entity so the sound / cinematic will always be relevant for everyone
         GetEffectManager():TriggerEffects("arc_hit_primary", {effecthostcoords = Coords.GetTranslation(self.targetPosition)})
         
-        local hitEntities = nil
-        local nonsiegerules = GetEntitiesWithMixinWithinRange("Live", self.targetPosition, ARC.kSplashRadius)
-        local siegerules = self:GetEntitiesInHiveRoom()
-         hitEntities = ConditionalValue(self:GetIsSiegeEnabled() and self:GetIsInSiege() and nonsiegerules ~= nil, nonsiegerules, nonsiegerules)
+        local hitEntities = GetEntitiesWithMixinWithinRange("Live", self.targetPosition, ARC.kSplashRadius)
          
        // local damage = ARC.kAttackDamage * (self.level/100) + ARC.kAttackDamage
         // Do damage to every target in range
@@ -412,7 +427,12 @@ function ARC:OnTag(tagName)
     PROFILE("ARC:OnTag")
     
     if tagName == "fire_start" then
+       if self:GetIsSiegeEnabled() and self:GetIsInSiege() then
+        Print("Performing siege attack")
+        PerformSiegeAttack(self)
+       else
         PerformAttack(self)
+       end
     elseif tagName == "target_start" then
         self:TriggerEffects("arc_charge")
     elseif tagName == "attack_end" then

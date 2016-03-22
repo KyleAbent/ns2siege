@@ -1,19 +1,11 @@
-// ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ============
-//    
-// lua\TeamMessenger.lua    
-//    
-//    Created by:   Brian Cronin (brianc@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
-kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject', 'CannotSpawn',
+kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored',  'CannotSpawn',
                            'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost',
-                           'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
-                           'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack',
-                           'PowerPointUnderAttack', 'Beacon', 'AutoBeacon', 'NoCommander', 'TeamsUnbalanced',
-                           'TeamsBalanced', 'GameStartCommanders', 'SideDoor', 'FrontDoor', 'SiegeDoor', 
+                           'HiveConstructed', 'HiveUnderAttack', 'HiveLowHealth', 'HiveKilled',
+                           'CommandStationUnderAttack', 'IPUnderAttack',
+                            'SideDoor', 'FrontDoor', 'SiegeDoor', 
                            'SuddenDeath', 'ZedTimeBegin', 'ZedTimeEnd', 'Weapons1Researching', 'Weapons2Researching', 
-                           'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', 'MainRoom', 'SiegeTime' })
+                           'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', 'MainRoom', 
+                           'SiegeTime', 'KingCystLocation', 'PhaseCannonLocation' })
 
 local kTeamMessages = { }
 
@@ -25,6 +17,10 @@ local locationStringGen = function(locationId, messageString) return string.form
 // Thos function will generate the string to display based on a research Id.
 local researchStringGen = function(researchId, messageString) return string.format(Locale.ResolveString(messageString), GetDisplayNameForTechId(researchId)) end
 
+kTeamMessages[kTeamMessageTypes.KingCystLocation] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "King Cyst Grown in %s") end } }
+
+kTeamMessages[kTeamMessageTypes.PhaseCannonLocation] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "Phase Cannons activated in %s") end } }
+                                                       
 kTeamMessages[kTeamMessageTypes.MainRoom] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "%s is Main Room") end,
                                                        [kAlienTeamType] = function(data) return locationStringGen(data, "%s is Main Room") end } }
                                                        
@@ -34,8 +30,6 @@ kTeamMessages[kTeamMessageTypes.SiegeTime] = { text = { [kMarineTeamType] = func
 kTeamMessages[kTeamMessageTypes.PowerLost] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "POWER_LOST") end } }
 
 kTeamMessages[kTeamMessageTypes.PowerRestored] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "POWER_RESTORED") end } }
-
-kTeamMessages[kTeamMessageTypes.Eject] = { text = { [kMarineTeamType] = "COMM_EJECT", [kAlienTeamType] = "COMM_EJECT" } }
 
 kTeamMessages[kTeamMessageTypes.CannotSpawn] = { text = { [kMarineTeamType] = "NO_IPS" } }
 
@@ -61,25 +55,11 @@ kTeamMessages[kTeamMessageTypes.IPUnderAttack] = { text = { [kMarineTeamType] = 
 
 kTeamMessages[kTeamMessageTypes.HiveUnderAttack] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_UNDER_ATTACK") end } }
 
-kTeamMessages[kTeamMessageTypes.PowerPointUnderAttack] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "POWER_POINT_UNDER_ATTACK") end } }
-
-kTeamMessages[kTeamMessageTypes.Beacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "BEACON_TO") end} }
-
-kTeamMessages[kTeamMessageTypes.AutoBeacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "AutoBeacon: %s") end, [kAlienTeamType] = function(data) return locationStringGen(data, "Auto Beacon: %s") end } }
-
-kTeamMessages[kTeamMessageTypes.NoCommander] = { text = { [kMarineTeamType] = "NO_COMM", [kAlienTeamType] = "NO_COMM" } }
-
-kTeamMessages[kTeamMessageTypes.TeamsUnbalanced] = { text = { [kMarineTeamType] = "TEAMS_UNBALANCED", [kAlienTeamType] = "TEAMS_UNBALANCED" } }
-
-kTeamMessages[kTeamMessageTypes.TeamsBalanced] = { text = { [kMarineTeamType] = "TEAMS_BALANCED", [kAlienTeamType] = "TEAMS_BALANCED" } }
-
 kTeamMessages[kTeamMessageTypes.FrontDoor] = { text = { [kMarineTeamType] = "FrontDoor Now Open ", [kAlienTeamType] = "FrontDoor Now Open" } }
 
 kTeamMessages[kTeamMessageTypes.SiegeDoor] = { text = { [kMarineTeamType] = "SiegeDoor Now Open ", [kAlienTeamType] = "SiegeDoor Now Open" } }
 
 kTeamMessages[kTeamMessageTypes.SuddenDeath] = { text = { [kMarineTeamType] = "SuddenDeath Now Enabled ", [kAlienTeamType] = "SuddenDeath Now Enabled" } }
-
-kTeamMessages[kTeamMessageTypes.GameStartCommanders] = { text = { [kMarineTeamType] = "GAME_START_COMMANDERS", [kAlienTeamType] = "GAME_START_COMMANDERS" } }
 
 kTeamMessages[kTeamMessageTypes.ZedTimeBegin] = { text = { [kMarineTeamType] = "Slow Motion Activated", [kAlienTeamType] = "Slow Motion Activated" } }
 

@@ -4,6 +4,7 @@
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
 Script.Load("lua/ServerSponitor.lua")
+Script.Load("lua/SiegeMod/SetupTimePortionBalance.lua")
 
 
 if Client then
@@ -138,6 +139,7 @@ if Server then
             
             if self.gameState == kGameState.Started then    
         //   self:AddTimedCallback(NS2Gamerules.DisplayFrontDoorLocation, 30)
+             Script.Load("lua/SiegeMod/SetupTimePortionBalance.lua")
             MarineTeam.gSandboxMode = false
             self.playedfrontsound = false
             self.playedsiegesound = false
@@ -644,6 +646,7 @@ if Server then
         
         self.team1:OnResetComplete()
         self.team2:OnResetComplete()
+        self:SetGameStarted()
         
     end
     
@@ -2048,7 +2051,7 @@ local unbuilt = 0
                   self.siegepowernodecount = math.abs(built/unbuilt) 
                 end
                 
-                Print("unbuilt = %s, built = %s, setuppowernodecount = %s, siegepowernodecount = %s,", unbuilt, built, self.setuppowernodecount, self.siegepowernodecount)
+                --Print("unbuilt = %s, built = %s, setuppowernodecount = %s, siegepowernodecount = %s,", unbuilt, built, self.setuppowernodecount, self.siegepowernodecount)
                // return built
                
                if not self.siegedoorsopened then return false end
@@ -2239,6 +2242,7 @@ function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
                       self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
                       local crag = CreateEntity(Crag.kMapName, hive:FindFreeSpace(), 2) 
                       crag:SetConstructionComplete()
+                      crag.siegewall = true
                       end
                       end
                     end
@@ -2265,6 +2269,7 @@ function NS2Gamerules:UpdateHiveEggs()
 end
 function NS2Gamerules:OpenSiegeDoors()
  self.siegedoorsopened = true
+ Script.Load("lua/SiegeMod/SiegePortionBalance.lua")
   
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
@@ -2458,7 +2463,7 @@ end
 
 function NS2Gamerules:SpawnPrototypeEnts(proto)
 --kyle abent
-     if self:GetCanSpawnMarineEntity(8,nil, proto:GetIsInCombat()) then 
+     if self:GetCanSpawnMarineEntity(kExoJpCost,nil, proto:GetIsInCombat()) then 
 local location = GetLocationForPoint(proto:GetOrigin())
 
 if location then
@@ -2475,7 +2480,7 @@ local spawnpoint = proto:FindFreeSpace()
               lulz = ConditionalValue(proto:GetIsInCombat(), 8, lulz)
               dropship.flyspeed = lulz
          self.lastmarinecreatedentity = Shared.GetTime()
-               self.team1:SetTeamResources(self.team1:GetTeamResources()  - 8)
+               self.team1:SetTeamResources(self.team1:GetTeamResources()  - kExoJpCost)
                spawned= true
     elseif exos <= math.random(1,2) then
        if not spawned then
@@ -2486,7 +2491,7 @@ local spawnpoint = proto:FindFreeSpace()
               dropship:SetTechId(kTechId.Exosuit)
               dropship:SetMapName(Exosuit.kMapName)
          self.lastmarinecreatedentity = Shared.GetTime()
-         self.team1:SetTeamResources(self.team1:GetTeamResources()  - 8)
+         self.team1:SetTeamResources(self.team1:GetTeamResources()  - kExoJpCost)
          end
     end
     
@@ -2498,7 +2503,7 @@ local spawnpoint = proto:FindFreeSpace()
 end
 function NS2Gamerules:SpawnArmoryEnts(armory)
 --kyle abent
-     if self:GetCanSpawnMarineEntity(2,nil, armory:GetIsInCombat()) then 
+     if self:GetCanSpawnMarineEntity(kWeaponDropCost,nil, armory:GetIsInCombat()) then 
 local location = GetLocationForPoint(armory:GetOrigin())
 
 if location then
@@ -2516,7 +2521,7 @@ local spawnpoint = armory:FindFreeSpace()
               lulz = ConditionalValue(armory:GetIsInCombat(), 8, lulz)
                 dropship.flyspeed = lulz
                self.lastmarinecreatedentity = Shared.GetTime()
-               self.team1:SetTeamResources(self.team1:GetTeamResources()  - 2)
+               self.team1:SetTeamResources(self.team1:GetTeamResources()  - kWeaponDropCost)
                spawned = true
                /*
     elseif hmgs <= 1 then
@@ -2541,7 +2546,7 @@ local spawnpoint = armory:FindFreeSpace()
               dropship:SetTechId(kTechId.Flamethrower)
               dropship:SetMapName(Flamethrower.kMapName)
          self.lastmarinecreatedentity = Shared.GetTime()
-         self.team1:SetTeamResources(self.team1:GetTeamResources()  - 2)
+         self.team1:SetTeamResources(self.team1:GetTeamResources()  - kWeaponDropCost)
                spawned = true
          end
     elseif GLS <= 1 then
@@ -2553,7 +2558,7 @@ local spawnpoint = armory:FindFreeSpace()
               dropship:SetTechId(kTechId.GrenadeLauncher)
               dropship:SetMapName(GrenadeLauncher.kMapName)
          self.lastmarinecreatedentity = Shared.GetTime()
-         self.team1:SetTeamResources(self.team1:GetTeamResources()  - 2)
+         self.team1:SetTeamResources(self.team1:GetTeamResources()  - kWeaponDropCost)
                spawned = true
          end
     end

@@ -1,15 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\ARC.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// AI controllable "tank" that the Commander can move around, deploy and use for long-distance
-// siege attacks.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/DoorMixin.lua")
@@ -199,14 +187,12 @@ function ARC:OnInitialized()
         // Prioritize targetting non-Eggs first.
         self.targetSelector = TargetSelector():Init(
                 self,
-                ARC.kFireRange,
+                self:GetIsSiegeEnabled() and self:GetIsInSiege() and 999 or ARC.kFireRange,
                 false, 
                 { kMarineStaticTargets, kMarineMobileTargets },
-                { self.FilterTarget(self) })
-              //  { function(target) return target:isa("Crag")or target:isa("Hive") end })
-                
-               // { self.FilterTarget(self) },
-               // { function(target) return target:isa("Crag")or target:isa("Hive") end })
+                { self.FilterTarget(self) },
+                { function(target) return target.GetIsBuilt and target:GetIsBuilt() and target.GetIsAlive and target:GetIsAlive() end })
+
 
         
         self:SetPhysicsType(PhysicsType.Kinematic)
@@ -506,12 +492,14 @@ function ARC:GetCanFireAtTargetActual(target, targetPoint)
     if not target:GetIsSighted() and not GetIsTargetDetected(target) then
         return false
     end
-    
+  if  not (self:GetIsSiegeEnabled() and self:GetIsInSiege() ) then
+  
     local distToTarget = (target:GetOrigin() - self:GetOrigin()):GetLengthXZ()
     if (distToTarget > ARC.kFireRange) or (distToTarget < ARC.kMinFireRange) then
         return false
     end
     
+   end 
     return true
     
 end
@@ -682,9 +670,12 @@ function ARC:OnOrderGiven(order)
             if not target.GetReceivesStructuralDamage or not target:GetReceivesStructuralDamage() then        
                 valid = false
             end
-            if dist and valid and dist >= ARC.kMinFireRange and dist <= ARC.kFireRange then
+            if dist and valid then
+                if dist >= ARC.kMinFireRange and dist <= ARC.kFireRange or
+                self:GetIsSiegeEnabled() and self:GetIsInSiege() then
                 self.targetedEntity = order:GetParam()
-                self.orderedEntity = order:GetParam()
+                self.orderedEntity = order:GetParam() 
+                end
             end
         end
     end

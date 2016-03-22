@@ -455,10 +455,7 @@ function Hive:OnTakeDamage(damage, attacker, doer, point)
             if enemyTeam ~= nil then
                 enemyTeam:PlayPrivateTeamSound(Hive.kWoundSound, self:GetModelOrigin())
             end
-            
-            // Trigger alert for Commander
-            team:TriggerAlert(kTechId.AlienAlertHiveUnderAttack, self)
-            
+
             self.lastHiveFlinchEffectTime = time
             
         end

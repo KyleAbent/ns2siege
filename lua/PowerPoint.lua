@@ -662,7 +662,7 @@ end
            local locationName = location and location:GetName() or ""
            local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
         
-           if spawnPoint ~= nil and sameLocation and GetIsPointWithinHiveRadius(spawnPoint) then
+           if spawnPoint ~= nil and sameLocation then --and GetIsPointWithinHiveRadius(spawnPoint) then
            return spawnPoint
            end
        end
@@ -722,36 +722,8 @@ end
         end
         
     end
-    
-    // send a message every kUnderAttackTeamMessageLimit seconds when a base power node is under attack
-    local function CheckSendDamageTeamMessage(self)
 
-        if not self.timePowerNodeAttackAlertSent or self.timePowerNodeAttackAlertSent + kUnderAttackTeamMessageLimit < Shared.GetTime() then
 
-            // Check if there is a built Command Station in the same location as this PowerPoint.
-            local foundStation = false
-            local stations = GetEntitiesForTeam("CommandStation", self:GetTeamNumber())
-            for s = 1, #stations do
-            
-                local station = stations[s]
-                if station:GetIsBuilt() and station:GetLocationName() == self:GetLocationName() then
-                    foundStation = true
-                end
-                
-            end
-            
-            // Only send the message if there was a CommandStation found at this same location.
-            if foundStation then
-                SendTeamMessage(self:GetTeam(), kTeamMessageTypes.PowerPointUnderAttack, self:GetLocationId())
-                self:GetTeam():TriggerAlert(kTechId.MarineAlertStructureUnderAttack, self, true)
-            end
-            
-            self.timePowerNodeAttackAlertSent = Shared.GetTime()
-            
-        end
-        
-    end
-    
     function PowerPoint:OnTakeDamage(damage, attacker, doer, direction, damageType, preventAlert)
 
         if self.powerState == PowerPoint.kPowerState.socketed and damage > 0 then
@@ -775,9 +747,6 @@ end
                  if not self:GetLightMode() == kLightMode.MainRoom  then self:SetLightMode(kLightMode.Damaged) end
             end
             
-            if not preventAlert then
-                CheckSendDamageTeamMessage(self)
-            end
             
         end
         

@@ -70,6 +70,7 @@ local networkVars =
     moving = "boolean",
     lasthealwavetrigger = "time",
      cystid = "entityid",
+     siegewall = "boolean", 
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -142,6 +143,7 @@ function Crag:OnCreate()
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     self.lasthealwavetrigger = 0
     self.cystid =  Entity.invalidI
+    self.siegewall = false
 end
 
 function Crag:OnInitialized()
@@ -216,7 +218,7 @@ function Crag:SetIsOccupying(who, LosAngelesCityHall)
           end
           
     elseif not cyst then
-      
+      assert(who:isa("Cyst")
          if LosAngelesCityHall == true then
           self.cystid = who:GetId()
            end
@@ -295,7 +297,7 @@ function Crag:PreOnKill(attacker, doer, point, direction)
                   local cyst = Shared.GetEntity(self.cystid)
                   if cyst then
                   cyst:SetOccupied(self, false)
-                 self:SetIsOccupying(cyst, false)
+                  self:SetIsOccupying(cyst, false)
                   end
                  
     

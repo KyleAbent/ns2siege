@@ -69,7 +69,7 @@ function TeleportMixin:GetTeleportSinkIn()
 end   
 function TeleportMixin:GetEligableForBeacon(who)
 local boolean = self:GetIsBuilt() and self:GetDistance(who) >= 2  and not self:GetHasOrder() 
-return Shared.GetTime() > self.lastbeacontime  + kSBCooldown and boolean
+return Shared.GetTime() > self.lastbeacontime  + kSBCooldown and boolean and not (self:isa("Crag") and self.siegewall )
 end
 function TeleportMixin:GetIsTeleporting()
     return self.isTeleporting
@@ -276,10 +276,28 @@ function TeleportMixin:OnUpdate(deltaTime)
 end
 function TeleportMixin:TriggerBeacon(location)
  local locationto = location
-
- self:AddTimedCallback(function()  self:TriggerEffects("blink_in") self:SetOrigin(locationto) self:TriggerEffects("blink_out")  end, math.random(0.1,4))
+ self:AddTimedCallback(function()  self:TriggerEffects("blink_in") self:SetOrigin(locationto) self:TriggerEffects("blink_out")  self:ResetArcsTargetInSiege() end, math.random(0.1,4))
  self.lastbeacontime = Shared.GetTime()
 
+end
+function TeleportMixin:ResetArcsTargetInSiege()
+            if HasMixin(self, "Obstacle") then
+                self:RemoveFromMesh()
+            end
+
+            if HasMixin(self, "Obstacle") then
+                // this needs to be delayed, otherwise the obstacle is created too early and stacked up structures would not be able to push each other away
+                self:AddTimedCallback(AddObstacle, 3)
+            end
+            
+            local location = GetLocationForPoint(self:GetOrigin())
+            local locationName = location and location:GetName() or ""
+            
+            self:SetLocationName(locationName, true)
+            
+            if HasMixin(self, "StaticTarget") then
+                self:StaticTargetMoved()
+            end
 end
 function TeleportMixin:TriggerEggBeacon(location)
  local locationto = location

@@ -10,8 +10,7 @@
 
 kGUILayerInsight = 10
 kBlueColor = Color(0, 0.6117, 1, 1)
-kRedColor = Color(1, 0.4941, 0, 1)
-kPenToolColor = Color(1, 1, 1, 1)
+kRedColor = Color(127/255, 255/255, 0/255, 1)
 
 local techPointData = { }
 local team1Name

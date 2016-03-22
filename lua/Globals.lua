@@ -37,8 +37,8 @@ kPercentNeededForVoteConcede = 0.75
 kMarineFontName = Fonts.kAgencyFB_Large
 kMarineFontColor = Color(0.756, 0.952, 0.988, 1)
 
-kAlienFontName = Fonts.kAgencyFB_Large
-kAlienFontColor = Color(0.901, 0.623, 0.215, 1)
+kAlienFontName =  Fonts.kAgencyFB_Large
+kAlienFontColor = Color(127/255, 255/255, 0/255, 1)
 
 kNeutralFontName = Fonts.kAgencyFB_Large
 kNeutralFontColor = Color(0.7, 0.7, 0.7, 1)
@@ -56,8 +56,8 @@ kCommanderColor = 0xFFFF00
 kCommanderColorFloat = Color(1,1,0,1)
 kMarineTeamColor = 0x4DB1FF
 kMarineTeamColorFloat = Color(0.302, 0.859, 1)
-kAlienTeamColor = 0xFFCA3A
-kAlienTeamColorFloat = Color(1, 0.792, 0.227)
+kAlienTeamColor = 0x7fff00
+kAlienTeamColorFloat = Color(127/255, 255/255, 0/255, 1)
 kNeutralTeamColor = 0xEEEEEE
 kChatPrefixTextColor = 0xFFFFFF
 kChatTextColor = { [kNeutralTeamType] = kNeutralFontColor,

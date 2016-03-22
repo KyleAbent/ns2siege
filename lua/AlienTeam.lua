@@ -92,17 +92,17 @@ function AlienTeam:DeployPhaseCannons(powerorigin)
 --So basically help the aliens out if marines defend too well and the game gets boring
 --By enabling this automatic script to base automatic entities spawning based on chance.
 --The chance is based on how well or not the marines and aliens played, in theory.
-          Print("Phase Cannons Deploying!")
+          --Print("Phase Cannons Deploying!")
             local gameRules = GetGamerules()
             if gameRules then
                   local issiege, setupcount, siegecount = gameRules:CountNodes()
-                   Print("issiege = %s, setupcount = %s, siegecount = %s", issiege, setupcount, siegecount)
+                  -- Print("issiege = %s, setupcount = %s, siegecount = %s", issiege, setupcount, siegecount)
 
            
          if issiege then //and siegecount >= setupcount then
            local chance = (siegecount/setupcount) * 100
              local number = math.random(chance, 100)
-                Print("chance is %s!, number is %s", chance, number)
+               -- Print("chance is %s!, number is %s", chance, number)
               if chance >= number then
                   self:FirePhaseCannons(powerorigin, chance)
               end
@@ -119,7 +119,7 @@ function AlienTeam:FirePhaseCannons(powerpoint)
                  if gameRules then
                   local issiege, setupcount, siegecount = gameRules:CountNodes()
 
-
+            SendTeamMessage(self, kTeamMessageTypes.PhaseCannonLocation, powerpoint:GetLocationId())
              local chance = (siegecount/setupcount) * 100                 
                 
              local contaminationroll = math.random(chance, 100)

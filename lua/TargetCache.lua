@@ -679,7 +679,7 @@ function TargetSelector:ValidateTarget(target)
     if target then
         result = self:_PossibleTarget(target)
         if result and self.visibilityRequired then
-            result = GetCanAttackEntity(self.attacker, target)
+            result = self.attacker:isa("ARC") and self:GetIsSiegeEnabled() and self:GetIsInSiege() or GetCanAttackEntity(self.attacker, target)
         end
 //        self:Log("validate %s -> %s", target, result)
     end
