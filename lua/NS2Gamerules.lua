@@ -646,7 +646,7 @@ if Server then
         
         self.team1:OnResetComplete()
         self.team2:OnResetComplete()
-        self:SetGameStarted()
+     --   self:SetGameStarted() 3.22 not yet actually sigh
         
     end
     
@@ -2196,7 +2196,7 @@ function NS2Gamerules:GetHiveLocationForScan()
 end
 function NS2Gamerules:DropshipArcs()
    local arcspawnpoint = self:GetSiegePowerPoint():FindArcHiveSpawn()
-     if self:GetArcCountInSiege() <= 12 and self.team1:GetTeamResources() >= 8 then
+     if self:GetArcCountInSiege() <= 15 and self.team1:GetTeamResources() >= 8 then
 
          if arcspawnpoint ~= nil then
          local dropship = CreateEntity(Dropship.kMapName, arcspawnpoint, 1) 
@@ -2274,7 +2274,7 @@ function NS2Gamerules:OpenSiegeDoors()
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
                
-               self:AddTimedCallback(NS2Gamerules.DropshipArcs, 15)
+               self:AddTimedCallback(NS2Gamerules.DropshipArcs, 16)
                self:AddTimedCallback(NS2Gamerules.MaintainHiveDefense, 8)
 
                 
@@ -2365,7 +2365,7 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, cyst, origin)
 end
 function NS2Gamerules:SpawnNewHive(origin)
    
-self:AddTimedCallback(function() CreateEntity(Hive.kMapName, origin, 2)  end, math.random(4,16))
+self:AddTimedCallback(function() CreateEntity(Hive.kMapName, origin, 2)  end, math.random(8,24))
     
 
 end

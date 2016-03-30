@@ -219,10 +219,28 @@ function Armory:GetCanBeUsed(player, useSuccessTable)
     end
     
 end
-
+if Server then
 function Armory:GetCanBeUsedConstructed(byPlayer)
-    return not byPlayer:isa("Exo")
+    return not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure()
 end    
+function Armory:OnUse(player, elapsedTime, useSuccessTable)
+
+    // Play flavor sounds when using MAC.
+    if Server then
+
+        local time = Shared.GetTime()
+        
+
+        
+           local laystructure = player:GiveItem(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.Armory)
+           laystructure:SetMapName(Armory.kMapName)
+           laystructure.originalposition = self:GetOrigin()
+           DestroyEntity(self)
+    end
+    
+end
+end
 function Armory:GetMaxLevel()
 return Armory.kMaxLevel
 end

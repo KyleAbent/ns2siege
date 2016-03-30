@@ -495,6 +495,7 @@ function Observatory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
            local laystructure = player:GiveItem(LayStructures.kMapName)
            laystructure:SetTechId(kTechId.Observatory)
            laystructure:SetMapName(Observatory.kMapName)
+           laystructure.originalposition = self:GetOrigin()
            DestroyEntity(self)
            // self.timeOfLastUse = time
             

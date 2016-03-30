@@ -180,6 +180,18 @@ end
 
 end  // Client
 
+function ConstructMixin:OnAdjustModelCoords(coords)
+
+    if not self:GetIsBuilt() then
+    	local scale = Clamp(self.buildFraction, .15, 1)
+        coords.xAxis = coords.xAxis * scale
+        coords.yAxis = coords.yAxis * scale
+        coords.zAxis = coords.zAxis * scale
+     end
+   
+    return coords
+    
+end
 
 if Server then
     function ConstructMixin:TypesOfSelfInRoomNonCredit()

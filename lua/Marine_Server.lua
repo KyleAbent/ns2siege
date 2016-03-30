@@ -240,8 +240,8 @@ function GetHostStructureFor(entity, techId)
 
     local hostStructures = {}
        table.copy(GetEntitiesForTeamWithinRange("ArmsLab", entity:GetTeamNumber(), entity:GetOrigin(), 2.5), hostStructures, true)
-    table.copy(GetEntitiesForTeamWithinRange("Armory", entity:GetTeamNumber(), entity:GetOrigin(), Armory.kResupplyUseRange), hostStructures, true)
-    table.copy(GetEntitiesForTeamWithinRange("PrototypeLab", entity:GetTeamNumber(), entity:GetOrigin(), PrototypeLab.kResupplyUseRange), hostStructures, true)
+    --table.copy(GetEntitiesForTeamWithinRange("Armory", entity:GetTeamNumber(), entity:GetOrigin(), Armory.kResupplyUseRange), hostStructures, true)
+    --table.copy(GetEntitiesForTeamWithinRange("PrototypeLab", entity:GetTeamNumber(), entity:GetOrigin(), PrototypeLab.kResupplyUseRange), hostStructures, true)
     
     if table.count(hostStructures) > 0 then
     
@@ -520,6 +520,14 @@ function Marine:DropAllWeapons()
 end
 function Marine:PreOnKill(attacker, doer, point, direction)
 if self.modelsize ~= 1 then self.modelsize = 1 end
+
+    if  self:GetHasLayStructure() then
+           local weapon = self:GetWeaponInHUDSlot(5)
+           if weapon and weapon.originalposition ~= Vector(0,0,0) then
+           local structure = CreateEntity(weapon:GetDropMapName(), weapon.originalposition, 1)
+           structure:SetConstructionComplete()
+           end
+    end
 end
 function Marine:OnKill(attacker, doer, point, direction)
     

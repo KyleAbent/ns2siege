@@ -23,7 +23,7 @@ kMatureVeilHealth = 2000
 kFireFlameCloudDamagePerSecond = 24
 kExosuitCost = 10
 kDualRailgunExosuitCost = 10
-kARCArmor = 25
+kARCArmor = 125
 CCSiegeBeaconDelay = 10
 kParasitesToDisable = 4
 kFadeGravityMod = 1
@@ -33,7 +33,7 @@ kInfestationBuildModifier = .5
 
 kBeaconDelay = 16
 kCreditsPerRoundCap = 200
-kCreditMultiplier = 2
+kCreditMultiplier = 1
 kSBCooldown = 8
 kDynamicBuildSpeed = 1
 kActivePlayers = 0

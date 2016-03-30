@@ -292,7 +292,6 @@ function InfantryPortal:ActivateBeacons()
        self.activebeacon = true
        self.allowspawn = false
        Print("BeaconActive")
-       self:AddTimedCallback(InfantryPortal.DeactivateBeacons, 30)
 end
 function InfantryPortal:DeactivateBeacons()
                Print("BeaconPassive")

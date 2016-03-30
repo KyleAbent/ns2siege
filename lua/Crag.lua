@@ -218,7 +218,7 @@ function Crag:SetIsOccupying(who, LosAngelesCityHall)
           end
           
     elseif not cyst then
-      assert(who:isa("Cyst")
+      if not who:isa("Cyst") then return end
          if LosAngelesCityHall == true then
           self.cystid = who:GetId()
            end
@@ -295,7 +295,7 @@ end
 function Crag:PreOnKill(attacker, doer, point, direction)
            self:SetIsVisible(false)
                   local cyst = Shared.GetEntity(self.cystid)
-                  if cyst then
+                  if cyst and cyst.SetOccupied then
                   cyst:SetOccupied(self, false)
                   self:SetIsOccupying(cyst, false)
                   end

@@ -477,7 +477,7 @@ end
 function Cyst:PreOnKill(attacker, doer, point, direction)
                   
                   local entity = Shared.GetEntity(self.occupiedid)
-                  if entity then
+                  if entity and entity.SetIsOccupying then
                   entity:SetIsOccupying(self, false)
                   end
 

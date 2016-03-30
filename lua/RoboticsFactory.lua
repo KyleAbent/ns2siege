@@ -62,7 +62,6 @@ local networkVars =
 {
     open = "boolean",
     automaticspawningmac = "boolean",
-    automaticspawningarc = "boolean",
     stunned = "boolean",
 }
 
@@ -126,7 +125,6 @@ function RoboticsFactory:OnCreate()
         
     self.open = false
    self.automaticspawningmac = true
-   self.automaticspawningarc = false
    self.stunned = false
 end
 
@@ -241,53 +239,6 @@ function RoboticsFactory:GetTechAllowed(techId, techNode, player)
 end
 function RoboticsFactory:GetIsStunAllowed()
     return  self:GetLastStunTime() + 8 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
-end
-function RoboticsFactory:GetTechButtons(techId)
-
-    local techButtons = {  kTechId.None, kTechId.MAC, kTechId.None, kTechId.None, 
-               kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-               
-    if self:GetTechId() ~= kTechId.ARCRoboticsFactory then
-        techButtons[5] = kTechId.UpgradeRoboticsFactory
-    else
-    
-       if self:GetArcsAmount() <=12 then
-       techButtons[1] = kTechId.ARC
-       end
-       
-    end           
-
-   if not self.automaticspawningmac and not self.automaticspawningarc then 
-      techButtons[6] = kTechId.MacSpawnOn
-   elseif self.automaticspawningmac then
-      techButtons[6] = kTechId.MacSpawnOff
-    end
-   
-    
-       if not self.automaticspawningmac and not self.automaticspawningarc then 
-      techButtons[7] = kTechId.ArcSpawnOn
-   elseif self.automaticspawningarc then
-      techButtons[7] = kTechId.ArcSpawnOff
-    end
-    
-    return techButtons
-    
-end
- function RoboticsFactory:PerformActivation(techId, position, normal, commander)
- 
-     local success = false
-    if techId == kTechId.MacSpawnOn then
-    self.automaticspawningmac = true
-    elseif techId == kTechId.MacSpawnOff then
-    self.automaticspawningmac = false
-    end
-    
-    if techId == kTechId.ArcSpawnOn then
-    self.automaticspawningarc = true
-    elseif techId == kTechId.ArcSpawnOff then
-    self.automaticspawningarc = false
-    end
-        return success, true
 end
 local kRoboticsMinRange = 8
 function GetRoboticsRangeLimit(techId, origin, normal, commander)
@@ -461,14 +412,6 @@ if Server then
             self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources() - kMACCost )
         end
     end
-    if self.automaticspawningarc then
-        if self:GetTeam():GetTeamResources() >= kARCCost and ( kMaxSupply - GetSupplyUsedByTeam(1) >= LookupTechData(kTechId.ARC, kTechDataSupply, 0)) and self.deployed and GetIsUnitActive(self) and self:GetResearchProgress() == 0 and not self.open and self:GetArcsAmount() <= 12 - 1 then
-        
-            self:OverrideCreateManufactureEntity(kTechId.ARC)
-            //self.spawnedFreeMAC = true
-            self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources() - kARCCost )
-        end
-    end
     self.timeOfLastHealCheck = Shared.GetTime()  
     end
   end
@@ -497,11 +440,6 @@ if Server then
         if self.arcFactory then
             self:UpgradeToTechId(kTechId.ARCRoboticsFactory)
         end
-        
-           if self:GetIsInSiege() then
-          self.automaticspawningmac = false
-          self.automaticspawningarc = true
-         end
         
     end
     

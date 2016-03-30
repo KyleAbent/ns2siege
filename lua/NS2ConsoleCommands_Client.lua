@@ -21,6 +21,19 @@ end
 
 Event.Hook("Console_resetcommandertutorial", OnCommandResetCommanderTutorial)
 
+local function OnCommandRemoveChat()
+      Print("Removechat")
+    local script = ClientUI.GetScript("GUIChat")
+    if script then
+        script:Uninitialize()
+        GetGUIManager():DestroyGUIScript(script)
+    end
+
+    
+end
+
+Event.Hook("Console_removechat", OnCommandRemoveChat)
+
 local function OnCommandSelectAndGoto(selectAndGotoMessage)
 
     local player = Client.GetLocalPlayer()

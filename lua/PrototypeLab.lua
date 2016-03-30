@@ -189,10 +189,28 @@ function PrototypeLab:GetCanBeUsed(player, useSuccessTable)
     end
     
 end
-
-function PrototypeLab:GetCanBeUsedConstructed()
-    return true
+if Server then
+function PrototypeLab:GetCanBeUsedConstructed(byPlayer)
+    return not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure()
 end 
+function PrototypeLab:OnUse(player, elapsedTime, useSuccessTable)
+
+    // Play flavor sounds when using MAC.
+    if Server then
+
+        local time = Shared.GetTime()
+        
+
+        
+           local laystructure = player:GiveItem(LayStructures.kMapName)
+           laystructure:SetTechId(kTechId.PrototypeLab)
+           laystructure:SetMapName(PrototypeLab.kMapName)
+           laystructure.originalposition = self:GetOrigin()
+           DestroyEntity(self)
+    end
+    
+end
+end
 
 local function UpdatePrototypeLabAnim(self, extension, loggedIn, scanTime, timePassed)
 

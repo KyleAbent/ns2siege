@@ -6,8 +6,13 @@ function Plugin:Initialise()
 self.Enabled = true
 return true
 end
+/*
 Shine.VoteMenu:EditPage( "Main", function( self ) 
 self:AddSideButton( "Toggle Microphone Alltalk", function() Shared.ConsoleCommand ("sh_togglemic")end) 
+end)
+*/
+Shine.VoteMenu:EditPage( "Main", function( self ) 
+self:AddSideButton( "Remove Chatbox", function() Shared.ConsoleCommand ("removechat")end) 
 end)
 /*
 Shine.VoteMenu:AddPage ("SpendStructures", function( self )

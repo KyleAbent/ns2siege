@@ -425,7 +425,7 @@ function RadiusDamage(entities, centerOrigin, radius, fullDamage, doer, ignoreLO
             damageDirection:Normalize()
             
             // we can't hit world geometry, so don't pass any surface params and let DamageMixin decide
-            Print("doer %s damage %s target %s", doer:GetClassName(), damage, target:GetClassName())
+          --  Print("doer %s damage %s target %s", doer:GetClassName(), damage, target:GetClassName())
             doer:DoDamage(damage, target, target:GetOrigin(), damageDirection, "none")
 
         end

@@ -224,9 +224,7 @@ function Dropship:Derp()
               
                local entity = CreateEntity(self:GetDropMapName(), self:GetOrigin(), 1) 
                
-                      if entity:isa("ARC") then
-                       entity:GiveOrder(kTechId.ARCDeploy, self:GetId(), orderOrigin, nil, false, false)    
-                      elseif HasMixin(entity, "Construct") then
+                      if HasMixin(entity, "Construct") then
                        entity.isGhostStructure = false
                      end 
                      

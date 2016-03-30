@@ -544,7 +544,7 @@ function Whip:PreOnKill(attacker, doer, point, direction)
 if self.level ~= 1 then self.level = 1 end
                   
                   local cyst = Shared.GetEntity(self.cystid)
-                  if cyst then
+                  if cyst and cyst.SetOccupied then
                   cyst:SetOccupied(self, false)
                   self:SetIsOccupying(cyst, false)
                   end
