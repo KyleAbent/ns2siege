@@ -8,12 +8,9 @@ local Plugin = Plugin
 Plugin.Version = "1.0"
 Shine.Hook.SetupClassHook( "PowerPoint", "UpdateMiniMap", "UpdateItMan", "Replace" )
 Shine.Hook.SetupClassHook( "MAC", "Notifyuse", "ReplaceUse", "Replace" )
-Shine.Hook.SetupClassHook( "CommandStation", "ExperimentalBeacon", "PrintInfo", "Replace" )
 Shine.Hook.SetupClassHook( "Alien", "OnRedeem", "OnRedemedHook", "PassivePre" )
 Shine.Hook.SetupClassHook( "Alien", "TriggerRebirthCountDown", "TriggerRebirthCountDown", "PassivePre" )
 Shine.Hook.SetupClassHook( "Player", "CopyPlayerDataFrom", "HookModelSize", "PassivePost" )
-Shine.Hook.SetupClassHook( "Alien", "TunnelFailed", "FailMessage", "Replace" )
-Shine.Hook.SetupClassHook( "Alien", "TunnelGood", "GoodMessage", "Replace" )
 
 
 function Plugin:Initialise()
@@ -40,22 +37,7 @@ local Client = controlling:GetClient()
 self:NotifySiege( Client, "Wait until front doors open to use macs.", true)
 return
 end
-function Plugin:PrintInfo(anotheramt)
-self:NotifySiege( nil, "MarineTeamBeacons Left: %s", true, anotheramt)
-end
-function Plugin:TunnelFailed(player)
- local client = player:GetClient()
-local controlling = client:GetControllingPlayer()
-local Client = controlling:GetClient()
-self:NotifySiege( Client, "Tunnel entrance failed to spawn. Try creating another. An entrance will spawn in the hive room location on infestation if theres room.", true)
-end
 
-function Plugin:GoodMessage(player)
- local client = player:GetClient()
-local controlling = client:GetControllingPlayer()
-local Client = controlling:GetClient()
-self:NotifySiege( Client, "Tunnel Entrnace placed at Hive.", true)
-end
 function Plugin:HookModelSize(player, origin, angles, mapName)
 //if not self.playersize{Player:GetClient()} then return end
  local client = player:GetClient()

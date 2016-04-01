@@ -182,13 +182,6 @@ function PrototypeLab:GetCanBeUsed(player, useSuccessTable)
 end
 */
 
-function PrototypeLab:GetCanBeUsed(player, useSuccessTable)
-
-    if not self:GetIsBuilt()  then
-        useSuccessTable.useSuccess = false
-    end
-    
-end
 if Server then
 function PrototypeLab:GetCanBeUsedConstructed(byPlayer)
     return not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure()

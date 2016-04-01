@@ -748,7 +748,7 @@ if Server then
             return false
 end
 function Sentry:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() and not  byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
+  return (not self:GetIsFront() or self:GetOwner() == byPlayer) and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
 end
 function Sentry:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 

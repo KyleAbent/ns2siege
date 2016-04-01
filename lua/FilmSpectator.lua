@@ -168,7 +168,7 @@ function FilmSpectator:OnProcessMove(input)
     
     self:UpdateMove(input)
     
-    self:OnUpdatePlayer(input.time)
+
     
     Player.UpdateMisc(self,input)
     

@@ -2088,13 +2088,6 @@ function NS2Gamerules:SetLocationVar()
               location:SetIsPoweredAtFrontOpen()
      end
 end
-function NS2Gamerules:EnableIPsBeacon()
-local ent = nil
-     for _, IP in ientitylist(Shared.GetEntitiesWithClassname("InfantryPortal")) do
-              if not IP:GetIsBeaconActive() then IP:ActivateBeacons() end
-     end
-     return true
-end
     function NS2Gamerules:OpenFrontMaybe()
        local fronttime = self.gameInfo:GetFrontTime()
           if Shared.GetTime() - self:GetGameStartTime() > fronttime and not self.doorsopened then
@@ -2126,8 +2119,6 @@ function NS2Gamerules:OpenFrontDoors()
                 end
                 
               self:AddTimedCallback(NS2Gamerules.PickMainRoom, 10)
-              self:EnableIPsBeacon()
-              self:AddTimedCallback(NS2Gamerules.EnableIPsBeacon, 90)
                 
               for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
               StartSoundEffectForPlayer(NS2Gamerules.kFrontDoorSound, player)           
@@ -2137,7 +2128,29 @@ function NS2Gamerules:DisplayFrontDoorLocation()
          FrontDoor():SendLocationMessage()
          return not self.doorsopened
 end
+function NS2Gamerules:AutoBeacon(whom)
+   local obs = self:GetDistressOrigin() 
+    if obs ~= nil then
+                         local dropship = CreateEntity(DropshipBeacon.kMapName, self:FindFreeDropShipSpace(obs), 1) 
+                         dropship.isbeacon = true
+                         dropship:SetSpectator(whom)
+                         return true
+      end           
+            return false
+end
+function NS2Gamerules:GetDistressOrigin()
 
+    // Respawn at nearest built command station
+    local origin = nil
+    local averageorigin = self:SetupRulesTest()
+    local nearest = GetNearest(averageorigin, "Observatory", 1, function(ent) return ent:GetIsBuilt() and ent:GetIsAlive() end)
+    if nearest then
+        origin = nearest:GetOrigin()
+    end
+    
+    return origin
+    
+end
 function NS2Gamerules:OpenSideDoors()
  self.sideopened = true
                  for index, sidedoor in ientitylist(Shared.GetEntitiesWithClassname("SideDoor")) do

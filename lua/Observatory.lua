@@ -481,7 +481,7 @@ if Server then
             return false
 end
 function Observatory:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
+  return (not self:GetIsFront() or self:GetOwner() == byPlayer) and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
 end
 function Observatory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 

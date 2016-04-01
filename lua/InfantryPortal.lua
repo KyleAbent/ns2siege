@@ -63,9 +63,6 @@ local networkVars =
 {
     queuedPlayerId = "entityid",
     creditstructre = "boolean",
-    activebeacon = "boolean",
-   spawnedship = "entityid",
-   allowspawn = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -185,9 +182,6 @@ function InfantryPortal:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     self.creditstructre = false
-    self.activebeacon = false
-    self.spawnedship = Entity.invalidI
-    self.allowspawn = true
 end
 
 local function StopSpinning(self)
@@ -241,7 +235,7 @@ local function InfantryPortalUpdate(self)
             end
 
         end
-        if remainingSpawnTime == 0 and self.allowspawn then
+        if remainingSpawnTime == 0 then
             self:FinishSpawn()
         end
         
@@ -284,22 +278,6 @@ function InfantryPortal:OnInitialized()
     
     InitMixin(self, IdleMixin)
     
-end
-function InfantryPortal:GetIsBeaconActive()
- return  self.activebeacon
-end
-function InfantryPortal:ActivateBeacons()
-       self.activebeacon = true
-       self.allowspawn = false
-       Print("BeaconActive")
-end
-function InfantryPortal:DeactivateBeacons()
-               Print("BeaconPassive")
-               self.activebeacon = false
-               self.allowspawn = true
-               self.spawnedship = Entity.invalidId 
-               return false
-            
 end
 function InfantryPortal:OnDestroy()
 
@@ -357,16 +335,7 @@ local function QueueWaitingPlayer(self)
                 if playerToSpawn.SetSpectatorMode then
                     playerToSpawn:SetSpectatorMode(kSpectatorMode.Following)
                 end
-                local whom = self
-                local dropship = Shared.GetEntity(self.spawnedship)
-                    if self.activebeacon and not dropship then
-                         local dropship = CreateEntity(DropshipBeacon.kMapName, self:GetDropShipBeaconLocation(), 1) 
-                         dropship.isbeacon = true
-                         whom = dropship
-                         self.spawnedship = dropship:GetId()
-                         dropship.ipid = self:GetId()
-                   end
-                playerToSpawn:SetFollowTarget(whom)
+                playerToSpawn:SetFollowTarget(self)
 
             end
             
@@ -426,10 +395,6 @@ local function SpawnPlayer(self)
         // Spawn player on top of IP
         local spawnOrigin = self:GetAttachPointOrigin("spawn_point")
         spawnOrigin = ConditionalValue(self:CheckSpaceAboveForSpawn(), self:FindFreeSpace(), spawnOrigin)
-        local dropship = Shared.GetEntity(self.spawnedship)
-        if self.activebeacon and dropship then
-        spawnOrigin = self:GetDropShipBeaconLocation()
-        end
         local success, player = team:ReplaceRespawnPlayer(queuedPlayer, spawnOrigin, queuedPlayer:GetAngles())
         if success then
 
@@ -464,30 +429,7 @@ local function SpawnPlayer(self)
     return false
 
 end
-function InfantryPortal:GetDistressOrigin(averageorigin)
-
-    // Respawn at nearest built command station
-    local origin = nil
-    
-    local nearest = GetNearest(averageorigin, "Observatory", self:GetTeamNumber(), function(ent) return ent:GetIsBuilt() and ent:GetIsAlive() end)
-    if nearest then
-        origin = nearest:GetOrigin()
-    end
-    
-    return origin
-    
-end
 if Server then
-function InfantryPortal:GetDropShipBeaconLocation()
-            local gameRules = GetGamerules()
-      if gameRules then
-          local averageorigin = gameRules:SetupRulesTest()
-          if averageorigin then 
-          return gameRules:FindFreeDropShipSpace(self:GetDistressOrigin(averageorigin))
-          end
-          
-     end
-end
    function InfantryPortal:GetIsFront()
         if Server then
             local gameRules = GetGamerules()

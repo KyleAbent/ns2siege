@@ -212,13 +212,6 @@ end
         end
          self:AddTimedCallback(Armory.SpawnWeapons, 8)
     end
-function Armory:GetCanBeUsed(player, useSuccessTable)
-
-    if player:isa("Exo") then
-        useSuccessTable.useSuccess = false
-    end
-    
-end
 if Server then
 function Armory:GetCanBeUsedConstructed(byPlayer)
     return not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure()

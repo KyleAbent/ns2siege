@@ -15,8 +15,8 @@ function ARC:GetLocationName()
         return locationName
 end
 if Server then
-function ARC:GetCanBeUsed(byPlayer)
-    return not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure() and not self:GetIsInSiege()
+function ARC:GetCanBeUsed(byPlayer, useSuccessTable)
+    useSuccessTable.useSuccess  = not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure() and not self:GetIsInSiege()
 end 
 function ARC:OnUse(player, elapsedTime, useSuccessTable)
 

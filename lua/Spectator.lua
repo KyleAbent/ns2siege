@@ -26,7 +26,7 @@ class 'Spectator' (Player)
 Spectator.kMapName = "spectator"
 
 -- disable killcam for now
-Spectator.kKillCamEnabled = false
+Spectator.kKillCamEnabled = true
 
 local kSpectatorMapMode = enum( { 'Invisible', 'Small', 'Big' } )
 
@@ -330,7 +330,7 @@ function Spectator:OnProcessMove(input)
         
     end
     
-    self:OnUpdatePlayer(input.time)
+
     
     Player.UpdateMisc(self, input)
     

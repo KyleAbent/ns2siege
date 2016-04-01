@@ -184,21 +184,19 @@ function Marine:InitWeapons()
     self:GiveItem(Rifle.kMapName)
     self:GiveItem(Pistol.kMapName)
     self:GiveItem(Axe.kMapName)
+    self:GiveItem(Welder.kMapName) --Silly work
     self:GiveItem(Builder.kMapName)
     self:SetActiveWeapon(Rifle.kMapName)   
     self:SetQuickSwitchTarget(Pistol.kMapName)
     if GetRoundLengthToSiege() >= .9 then 
-      self:GiveItem(Welder.kMapName)
       self:GiveItem(HeavyMachineGun.kMapName)
       self:SetActiveWeapon(HeavyMachineGun.kMapName)
       self:SetQuickSwitchTarget(Welder.kMapName)
     elseif GetRoundLengthToSiege() >= .7 then
-          self:GiveItem(Welder.kMapName)
           self:GiveItem(GrenadeLauncher.kMapName)
           self:SetActiveWeapon(GrenadeLauncher.kMapName)
           self:SetQuickSwitchTarget(Welder.kMapName)
     elseif GetRoundLengthToSiege() >= .15 then
-           self:GiveItem(Welder.kMapName)
            self:GiveItem(Shotgun.kMapName)
            self:SetActiveWeapon(Shotgun.kMapName)
            self:SetQuickSwitchTarget(Welder.kMapName)

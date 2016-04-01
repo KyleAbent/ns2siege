@@ -711,7 +711,7 @@ function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName, isbea
         
           end
 
-    
+    newPlayer:SetCameraDistance(0)
     return (newPlayer ~= nil), newPlayer
     
 end

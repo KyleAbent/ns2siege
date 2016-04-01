@@ -50,7 +50,7 @@ ARC.kCombatMoveSpeed        = 0.8
 ARC.kFov                    = 360
 ARC.kCapsuleHeight = .05
 ARC.kCapsuleRadius = .5
-ARC.MaxLevel = 99
+ARC.MaxLevel = 90
 ARC.GainXP = 0.792
 ARC.ScaleSize = 1.3
 

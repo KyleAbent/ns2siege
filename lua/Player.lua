@@ -61,9 +61,6 @@ end
 
 if Predict then
 
-function Player:OnUpdatePlayer(deltaTime)    
-    -- do nothing
-end
 
 function Player:UpdateMisc(input)
     -- do nothing
@@ -1457,10 +1454,7 @@ function Player:OnProcessMove(input)
         
     end
     
-    if true then
-        PROFILE("Player:OnProcessMove:OnUpdatePlayer")
-        self:OnUpdatePlayer(input.time)
-    end
+
     
     ScriptActor.OnProcessMove(self, input)
     
@@ -1529,20 +1523,9 @@ function Player:OnProcessSpectate(deltaTime)
         viewModel:ProcessMoveOnModel(deltaTime)
     end
     
-    self:OnUpdatePlayer(deltaTime)
 
 end
 
-function Player:OnUpdate(deltaTime)
-
-    ScriptActor.OnUpdate(self, deltaTime)
-
-    if true then
-        PROFILE("Player:OnUpdate:OnUpdatePlayer")
-        self:OnUpdatePlayer(deltaTime)
-    end
-
-end
 
 function Player:GetSlowOnLand()
     return false

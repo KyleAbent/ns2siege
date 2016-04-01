@@ -21,7 +21,7 @@ Welder.kModelName = PrecacheAsset("models/marine/welder/welder.model")
 local kViewModels = GenerateMarineViewModelPaths("welder")
 local kAnimationGraph = PrecacheAsset("models/marine/welder/welder_view.animation_graph")
 
-kWelderHUDSlot = 3
+kWelderHUDSlot = 4
 
 local kWelderTraceExtents = Vector(0.4, 0.4, 0.4)
 

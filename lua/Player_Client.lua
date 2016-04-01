@@ -508,7 +508,6 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
                     end
 
                     unitState.SpawnerName = playerName
-                    //unitState.SpawnFraction = Clamp((Shared.GetTime() - unit.timeSpinStarted) / kMarineRespawnTime, 0, 1)
                    unitState.SpawnFraction = Clamp((Shared.GetTime() - unit.timeSpinStarted) / unit:GetSpawnTime(), 0, 1)
                 end
             elseif unit:isa("Embryo") then

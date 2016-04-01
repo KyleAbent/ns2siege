@@ -43,7 +43,6 @@ local networkVars = {
     techId = "string (128)",
     mapname = "string (128)",
     isbeacon = "boolean",
-     ipid = "entityid",
      flyspeed = "float (0 to 10 by .1)",
                      }
 
@@ -105,7 +104,6 @@ function Dropship:OnCreate()
     self.techId = kTechId.ARC
     self.mapname = ARC.kMapName
     self.isbeacon = false
-    self.ipid = Entity.invalidI
 
 end
 
@@ -192,22 +190,24 @@ if Server then
                  gameRules:DropshipDeath(self:GetOrigin(), self.flying, self.isbeacon)
                end  
           */
-     self:ClearIPID()
+
                       
 end
+end
+function Dropship:SetSpectator(whom)
+                       if Server then
+                         if whom.SetSpectatorMode then
+                         whom:SetSpectatorMode(kSpectatorMode.Following)
+                         whom:SetFollowTarget(self)
+                         end
+                       end
+self:AddTimedCallback(function() self:SetPhysicsGroup(PhysicsGroup.DropshipBeacon) whom:GetTeam():ReplaceRespawnPlayer(whom, self:GetOrigin(), whom:GetAngles())  end, 13)
 end
 function Dropship:Derp()
 
 
     self.flying = false 
     self:SetModel(Dropship.kCrashgedModelName, kAnimationGraph)
-    if self.isbeacon then 
-       self:SetPhysicsGroup(PhysicsGroup.DropshipBeacon)  
-                local ip = Shared.GetEntity(self.ipid)
-             if ip then
-                ip:FinishSpawn()
-             end
-       end
     
                 self:UpdateModelCoords()
                 self:UpdatePhysicsModel()
@@ -242,23 +242,9 @@ end
  
 function Dropship:Delete()
 
-        if self.isbeacon then
-        self:ClearIPID()
-        self:AddTimedCallback(Dropship.DeleteBeacon, 4)  
-        else
         DestroyEntity(self)
-        end
 end
-function Dropship:DeleteBeacon()
-        DestroyEntity(self)
-end   
-function Dropship:ClearIPID()
-             local ip = Shared.GetEntity(self.ipid)
-             if ip then
-                ip.spawnedship = Entity.invalidI
-                ip:DeactivateBeacons()
-             end
-end             
+            
 end
 
 function Dropship:GetTechButtons(techId)
@@ -267,15 +253,6 @@ local derp = {}
                                    kTechId.None, kTechId.None, kTechId.None, kTechId.None }    
     return derp
     
-end
-function Dropship:OnTag(tagName)
-    if tagName == "stopflying" then
-       self.flying = false
-              local ip = Shared.GetEntity(self.ipid)
-             if ip then
-                ip:FinishSpawn()
-             end
-    end
 end
 
 
