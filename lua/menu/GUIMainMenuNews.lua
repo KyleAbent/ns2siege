@@ -14,7 +14,7 @@ local lastUpdatedtime = 0
 local playAnimation = ""
 
 -- Non local so modders can easily change the URL.
-kMainMenuNewsURL = "http://ns2siege.com/"
+kMainMenuNewsURL = "http://ns2siege.com/viewforum.php?f=13"
 
 class 'GUIMainMenuNews' (GUIScript)
 

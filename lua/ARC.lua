@@ -11,6 +11,8 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
+Script.Load("lua/ConstructMixin.lua")
+Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -76,6 +78,8 @@ AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(ConstructMixin, networkVars)
+AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -112,6 +116,8 @@ function ARC:OnCreate()
     InitMixin(self, ParasiteMixin)
     InitMixin(self, ResearchMixin)
     InitMixin(self, RecycleMixin)
+    InitMixin(self, ConstructMixin)
+    InitMixin(self, GhostStructureMixin)
     
     if Server then
     
@@ -125,6 +131,7 @@ function ARC:OnCreate()
     
     self:SetLagCompensated(true)
     self.level = 0
+
 end
 
 function ARC:OnInitialized()
@@ -155,12 +162,7 @@ function ARC:OnInitialized()
             InitMixin(self, MapBlipMixin)
         end
  
-    if self:GetIsSiegeEnabled() and self:GetIsInSiege() then
-        self:AddTimedCallback(ARC.AcquireSiegeTarget, math.random(4,8))
-    else
-        self:AddTimedCallback(ARC.AcquireTarget, 4)
-    
-    end
+
     
     elseif Client then
     
@@ -316,6 +318,10 @@ function ARC:GetCanFireAtTarget(target)
     if target == nil then        
         return false
     end
+    
+    if not self:GetIsBuilt() then 
+     return false
+     end
     
     if not HasMixin(target, "Live") or not target:GetIsAlive() then
         return false

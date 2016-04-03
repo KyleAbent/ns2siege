@@ -2095,7 +2095,7 @@ function Player:UpdateShadowStepFX()
 end
 
 function Player:GetDrawWorld(isLocal)
-    return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() or ((self.countingDown and not Shared.GetCheatsEnabled()) and self:GetTeamNumber() ~= kNeutralTeamType)
+    return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() 
 end
 
 -- Only called when not running prediction
@@ -2393,17 +2393,11 @@ function Player:DrawGameStatusMessage()
     local fraction = 1 - (time - math.floor(time))
     Client.DrawSetColor(255, 0, 0, fraction*200)
 
-    if(self.countingDown) then
-    
-        Client.DrawSetTextPos(.42*Client.GetScreenWidth(), .95*Client.GetScreenHeight())
-        Client.DrawString("Game is starting")
-        
-    else
     
         Client.DrawSetTextPos(.25*Client.GetScreenWidth(), .95*Client.GetScreenHeight())
         Client.DrawString("Game will start when both sides have players")
         
-    end
+
 
 end
 
@@ -2585,25 +2579,7 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
     
     end
 
-    if self.countingDown and not Shared.GetCheatsEnabled() then
-    
-        if HasMixin(self, "Team") and (self:GetTeamNumber() == kMarineTeamType or self:GetTeamNumber() == kAlienTeamType) then
-            cameraCoords = self:GetCameraViewCoordsCountdown(cameraCoords)
-            Client.SetYaw(self.viewYaw)
-            Client.SetPitch(self.viewPitch)
-            continue = false
-        end
-        
-        if not self.clientCountingDown then
 
-            self.clientCountingDown = true    
-            if self.OnCountDown then
-                self:OnCountDown()
-            end  
-  
-        end
-        
-    end
         
     if continue then
     
@@ -3422,9 +3398,9 @@ function PlayerUI_GetTeamNumber()
 end
 
 function PlayerUI_GetHasGameStarted()
-
+--4.2 come back to Kyle Abent
      local player = Client.GetLocalPlayer()
-     return player and player:GetGameStarted()
+     return player -- and player:GetGameStarted()
      
 end
 

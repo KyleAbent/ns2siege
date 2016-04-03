@@ -188,11 +188,6 @@ function PrototypeLab:GetCanBeUsedConstructed(byPlayer)
 end 
 function PrototypeLab:OnUse(player, elapsedTime, useSuccessTable)
 
-    // Play flavor sounds when using MAC.
-    if Server then
-
-        local time = Shared.GetTime()
-        
 
         
            local laystructure = player:GiveItem(LayStructures.kMapName)
@@ -200,7 +195,7 @@ function PrototypeLab:OnUse(player, elapsedTime, useSuccessTable)
            laystructure:SetMapName(PrototypeLab.kMapName)
            laystructure.originalposition = self:GetOrigin()
            DestroyEntity(self)
-    end
+
     
 end
 end

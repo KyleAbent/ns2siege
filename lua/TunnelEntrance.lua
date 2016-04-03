@@ -238,7 +238,7 @@ function TunnelEntrance:GetCanAutoBuild()
 end
 
 function TunnelEntrance:GetReceivesStructuralDamage()
-    return true
+    return false
 end
 
 function TunnelEntrance:GetIsWallWalkingAllowed()

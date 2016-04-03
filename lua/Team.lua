@@ -250,15 +250,6 @@ function Team:TriggerEffects(eventName)
     self:ForEachPlayer(TriggerEffects)
 end
 
-function Team:SetFrozenState(state)
-
-    local function SetFrozen(player)
-        player.frozen = state
-    end
-    
-    self:ForEachPlayer(SetFrozen)
-    
-end
 /*
 function Team:SetAutoTeamBalanceEnabled(enabled, unbalanceAmount)
 

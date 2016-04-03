@@ -372,7 +372,7 @@ function MAC:GetIsFront()
             return false
 end
 function MAC:GetCanBeUsed(player, useSuccessTable)
-  useSuccessTable.useSuccess = true //not self:GetIsFront() 
+  useSuccessTable.useSuccess = not self:GetIsFront() 
 end
 function MAC:OnUse(player, elapsedTime, useSuccessTable)
 

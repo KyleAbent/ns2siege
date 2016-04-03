@@ -519,66 +519,6 @@ local function UpdateDecals(deltaTime)
 
 end
 
-local kDangerCheckEndDistance = 25
-local kDangerCheckStartDistance = 15
-assert(kDangerCheckEndDistance > kDangerCheckStartDistance)
-local kDangerHealthEndAmount = 0.6
-local kDangerHealthStartAmount = 0.5
-assert(kDangerHealthEndAmount > kDangerHealthStartAmount)
-local lastDangerCheckTime = 0
-local dangerEnabled = false
-local dangerOrigin = nil
-local function UpdateDangerEffects(localPlayer)
-
-    local now = Shared.GetTime()
-    if now - lastDangerCheckTime > 1 then
-    
-        local playerOrigin = localPlayer:GetOrigin()
-        // Check to see if there are any nearby Command Structures that are close to death.
-        local commandStructures = GetEntitiesWithinRange("CommandStructure", playerOrigin, kDangerCheckEndDistance)
-        Shared.SortEntitiesByDistance(playerOrigin, commandStructures)
-        
-        // Check if danger needs to be enabled or disabled
-        if not dangerEnabled then
-        
-            if localPlayer:GetGameStarted() and #commandStructures > 0 then
-            
-                local commandStructure = commandStructures[1]
-                if commandStructure:GetIsBuilt() and commandStructure:GetIsAlive() and
-                   commandStructure:GetIsInCombat() and
-                   commandStructure:GetHealthScalar() <= kDangerHealthStartAmount and
-                   commandStructure:GetDistance(playerOrigin) <= kDangerCheckStartDistance then
-                    
-                    dangerEnabled = true
-                    dangerOrigin = commandStructure:GetOrigin()
-                    Client.PlayMusic("sound/NS2.fev/danger")
-                    
-                end
-                
-            end
-            
-        else
-        
-            local commandStructure = commandStructures[1]
-            if not commandStructure or not commandStructure:GetIsAlive() or
-               commandStructure:GetHealthScalar() >= kDangerHealthEndAmount or
-               not commandStructure:GetIsInCombat() or
-               dangerOrigin:GetDistanceTo(playerOrigin) > kDangerCheckEndDistance then
-                
-                Client.PlayMusic("sound/NS2.fev/no_danger")
-                dangerEnabled = false
-                dangerOrigin = nil
-                
-            end
-            
-        end
-        
-        lastDangerCheckTime = now
-        
-    end
-    
-end
-
 local optionsSent = false
 
 function OnUpdateClient(deltaTime)
@@ -600,7 +540,6 @@ function OnUpdateClient(deltaTime)
         
         UpdateTracers(deltaTime)
         
-        UpdateDangerEffects(player)
         
     end
     

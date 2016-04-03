@@ -224,8 +224,10 @@ function Dropship:Derp()
               
                local entity = CreateEntity(self:GetDropMapName(), self:GetOrigin(), 1) 
                
-                      if HasMixin(entity, "Construct") then
+                      if not entity:isa("ARC") then
                        entity.isGhostStructure = false
+                       else
+                        entity:SetConstructionComplete()
                      end 
                      
                end

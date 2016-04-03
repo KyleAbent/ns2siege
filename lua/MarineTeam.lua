@@ -358,6 +358,7 @@ function MarineTeam:InitTechTree()
     self.techTree:AddTargetedBuyNode(kTechId.LayStructureRobo,          kTechId.None,        kTechId.None)
     self.techTree:AddTargetedBuyNode(kTechId.LayStructureSentry,          kTechId.None,        kTechId.None)
     self.techTree:AddTargetedBuyNode(kTechId.LayStructureObs,          kTechId.None,        kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.LayStructureARC,          kTechId.None,        kTechId.None)
     
     self.techTree:AddTargetedActivation(kTechId.DropMines,      kTechId.None,        kTechId.None)
     

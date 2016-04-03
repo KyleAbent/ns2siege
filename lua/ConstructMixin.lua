@@ -182,7 +182,7 @@ end  // Client
 
 function ConstructMixin:OnAdjustModelCoords(coords)
 
-    if not self:GetIsBuilt() then
+    if not self:GetIsBuilt() and self:GetTeamNumber() == 2 then
     	local scale = Clamp(self.buildFraction, .15, 1)
         coords.xAxis = coords.xAxis * scale
         coords.yAxis = coords.yAxis * scale
@@ -327,7 +327,7 @@ function ConstructMixin:Construct(elapsedTime, builder)
             
             local techTree = self:GetTeam():GetTechTree()
             local techNode = techTree:GetTechNode(self:GetTechId())
-            local modifier = (not self:isa("PowerPoint") and self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
+            local modifier = (not self:isa("PowerPoint") and not self:isa("ARC") and self:GetTeamType() == kMarineTeamType and GetIsPointOnInfestation(self:GetOrigin())) and .3 or 1
             modifier = modifier * kDynamicBuildSpeed 
             modifier = modifier * ConditionalValue(self:SetupAdvantage(), 2, 1)
             modifier = modifier * ConditionalValue(self:GetTeamType() ~= kMarineTeamType and self:SiegeDisAdvantage(), 0.10, 1)
@@ -590,6 +590,7 @@ function ConstructMixin:GetBuiltFraction()
     return self.buildFraction
 end
 function ConstructMixin:GetTotalConstructionTime()      
+      if self:isa("ARC") then return 24 end  --Cheap trick
              //Remember the dynamic mult of buildspeed is applying during after front and even greater bonus during setup
    local marineadvantage = 12
 
@@ -619,7 +620,8 @@ function ConstructMixin:GetTotalConstructionTime()
    
    marineadvantage = self:isa("CommandStructure") and marineadvantage * 8 or marineadvantage
    marineadvantage = self:isa("Harvester") and  marineadvantage * 1.7 or marineadvantage
- 
+   
+
     return marineadvantage
     
 end

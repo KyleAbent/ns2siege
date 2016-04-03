@@ -315,6 +315,11 @@ end
 function RoboticsFactory:GetCanBeUsedConstructed(byPlayer)
   return (not self:GetIsFront() or self:GetOwner() == byPlayer) and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
 end
+  function RoboticsFactory:GetUnitNameOverride(viewer)
+    local unitName = GetDisplayName(self)   
+        unitName = string.format(Locale.ResolveString("AntiBody-Factory"))
+return unitName
+end 
 function RoboticsFactory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
     // Play flavor sounds when using MAC.

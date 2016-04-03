@@ -17,7 +17,19 @@ local function SortByValue(item1, item2)
     return cost1 > cost2
 
 end
+local function FindNearbyUse(self, toPosition)
+    local nearbyUses = GetEntitiesWithMixinForTeamWithinRange("Construct", 1, toPosition, kFindWeaponRange)
+    local closestUse = nil
+    for i, nearbyUse in ipairs(nearbyUses) do
+    
+             if not nearbyUse:isa("ArmsLab") and not nearbyUse:isa("Extractor") and nearbyUse:GetIsBuilt() then
+               closestUse = nearbyUse 
+               break
+             end
+    end
+    return closestUse
 
+end
 local function FindNearbyWeapon(self, toPosition)
 
     local nearbyWeapons = GetEntitiesWithMixinWithinRange("Pickupable", toPosition, kFindWeaponRange)
@@ -25,7 +37,7 @@ local function FindNearbyWeapon(self, toPosition)
     
     local closestWeapon = nil
     local closestDistance = Math.infinity
-    local cost = 0
+    local cost = 1
     
     for i, nearbyWeapon in ipairs(nearbyWeapons) do
     
@@ -94,7 +106,6 @@ if Client then
     
         PROFILE("MarineActionFinderMixin:OnProcessMove")
         
-        local gameStarted = self:GetGameStarted()
         local prediction = Shared.GetIsRunningPrediction()
         local now = Shared.GetTime()
         local enoughTimePassed = (now - self.lastMarineActionFindTime) >= kIconUpdateRate
@@ -107,21 +118,30 @@ if Client then
             if self:GetIsAlive() and not GetIsVortexed(self) then
             
                 local foundNearbyWeapon = FindNearbyWeapon(self, self:GetOrigin())
-                if gameStarted and foundNearbyWeapon then
-                
+                local foundNearbyUse = FindNearbyUse(self, self:GetOrigin())
+                if foundNearbyWeapon then
                     self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Drop"), foundNearbyWeapon:GetClassName(), nil)
                     success = true
-                    
+                elseif foundNearbyUse then   
+                     if foundNearbyUse:isa("Armory") or foundNearbyUse:isa("PrototypeLab") then
+                     hintText = "Move Structure"
+                     elseif foundNearbyUse:isa("ARC") then
+                     hintText = "Equipt welder to move"
+                     else
+                     hintText = "(Setup)Equipt welder to move"
+                     end
+                    self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"),  nil, hintText, nil)
+                    success = true
                 else
                 
                     local ent = self:PerformUseTrace()
-                    if ent and (gameStarted or (ent.GetUseAllowedBeforeGameStart and ent:GetUseAllowedBeforeGameStart())) then
+                    if ent then
                     
                         if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
                         
                             local hintText = nil
-                            if ent:isa("CommandStation") and ent:GetIsBuilt() then
-                                hintText = gameStarted and "START_COMMANDING" or "START_GAME"
+                            if ent:isa("MAC") then 
+                                hintText = "Have MAC follow and weld YOU"
                             end
                             
                             self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText, nil)

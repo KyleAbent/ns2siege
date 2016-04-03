@@ -235,6 +235,9 @@ end
 function PhaseGate:GetCanBeUsedConstructed(byPlayer)
   return (not self:GetIsFront() or self:GetOwner() == byPlayer) and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
 end
+function PhaseGate:GetCanBeUsed(player, useSuccessTable)
+  useSuccessTable.useSuccess = true --self:GetCanBeUsedConstructed(player)
+end
 function PhaseGate:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
     // Play flavor sounds when using MAC.

@@ -9,30 +9,32 @@ function ARC:GetIsSiegeEnabled()
             end
             return false
 end
+function ARC:OnConstructionComplete()
+    if self:GetIsSiegeEnabled() and self:GetIsInSiege() then
+        self:AddTimedCallback(ARC.AcquireSiegeTarget, math.random(4,8))
+    else
+        self:AddTimedCallback(ARC.AcquireTarget, 4)
+    
+    end
+end
 function ARC:GetLocationName()
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         return locationName
 end
 if Server then
-function ARC:GetCanBeUsed(byPlayer, useSuccessTable)
-    useSuccessTable.useSuccess  = not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure() and not self:GetIsInSiege()
+function ARC:GetCanBeUsedConstructed(byPlayer)
+    return  not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure() and not self:GetIsInSiege() and byPlayer:GetHasWelderPrimary()
 end 
 function ARC:OnUse(player, elapsedTime, useSuccessTable)
 
-    // Play flavor sounds when using MAC.
-    if Server then
-
-        local time = Shared.GetTime()
-        
-
-        
+    if self:GetIsBuilt() and self:GetCanBeUsedConstructed(player) then
            local laystructure = player:GiveItem(LayStructures.kMapName)
            laystructure:SetTechId(kTechId.ARC)
            laystructure:SetMapName(ARC.kMapName)
            laystructure.originalposition = self:GetOrigin()
            DestroyEntity(self)
-    end
+     end
     
 end
 end
@@ -41,17 +43,19 @@ if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationN
 return false
 end
 function ARC:GetEntitiesInHiveRoom()
-local hivelocation = nil
+local hiventity = nil
 local hitentities = {}
             for index, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
                    if hive then
-                     hivelocation = hive:GetOrigin()
+                     hiventity = hive
                      break
                    end
                 end 
     -- Print("hivelocation is %s", hivelocation)
-    if hivelocation ~= nil then
-    local entities = GetEntitiesWithMixinForTeamWithinRange("Live", 2, hivelocation, ARC.kFireRange)
+    if hiventity ~= nil then
+    local entities = GetEntitiesWithMixinForTeamWithinRange("Live", 2, hiventity:GetOrigin(), ARC.kFireRange)
+          table.insert(hitentities,hiventity)
+      
            if #entities == 0 then return end
            for i = 1, #entities do
              local possibletarget = entities[i]
@@ -130,7 +134,9 @@ function ARC:PerformSiegeAttack(self, finalTarget)
              local entity = finalTarget
              local arcsinsiege = self:GetArcsInSiege()
              local damage = math.random(arcsinsiege*16,arcsinsiege*32)
-             local healthscalar = Clamp(entity:GetHealthScalar(), 0.10, 1)
+             local builtscalar = Clamp(entity:GetHealthScalar(), 0.10, 1)
+             local unbuiltscalar = Clamp(entity:GetHealthScalar(), 0.35, 1)
+             local healthscalar = ConditionalValue(entity:GetIsBuilt(), builtscalar, unbuiltscalar)
               damage = (damage * healthscalar) 
               
             local hitEntities = GetEntitiesWithMixinWithinRange("Live", entity:GetOrigin(), ARC.kSplashRadius)

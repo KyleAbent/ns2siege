@@ -41,18 +41,15 @@ end
 if Client then
 
     function AlienActionFinderMixin:OnProcessMove(input)
-    
+    --4.2 come back to Kyle Abent
         PROFILE("AlienActionFinderMixin:OnProcessMove")
         
         local ent = self:PerformUseTrace()
-        if ent and (self:GetGameStarted() or (ent.GetUseAllowedBeforeGameStart and ent:GetUseAllowedBeforeGameStart())) then
+        if ent then
         
             if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
             
-                if ent:isa("Hive") then
-                    local text = self:GetGameStarted() and "START_COMMANDING" or "START_GAME"
-                    self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, text, nil)
-                elseif ent:isa("Egg") then
+               if ent:isa("Egg") then
                     self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, "EVOLVE", nil)
                 elseif HasMixin(ent, "Digest") and ent:GetIsAlive() then
                 

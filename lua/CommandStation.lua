@@ -184,12 +184,6 @@ function CommandStation:GetNanoShieldOffset()
     return Vector(0, -0.3, 0)
 end
 
-function CommandStation:GetUsablePoints()
-
-    local loginPoint = self:GetAttachPointOrigin(kLoginAttachPoint)
-    return { loginPoint }
-    
-end
 
 function CommandStation:GetTechButtons()
     return { kTechId.None, kTechId.Recycle } //kTechId.BluePrintTech }

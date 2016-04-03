@@ -396,6 +396,10 @@ function Marine:AttemptToBuy(techIds)
                 self:DelayStructureTo(kTechId.LayStructureObs, kTechId.Observatory, Observatory.kMapName)
                 deductres = false
                 return true
+              elseif techId == kTechId.LayStructureARC then
+                self:DelayStructureTo(kTechId.LayStructureARC, kTechId.ARC, ARC.kMapName)
+                deductres = false
+                return true
                end
                 
 

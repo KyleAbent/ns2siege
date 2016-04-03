@@ -133,9 +133,6 @@ if Server then
             self.timeGameStateChanged = Shared.GetTime()
             self.timeSinceGameStateChanged = 0
             
-            local frozenState = (state == kGameState.Countdown) and (not Shared.GetDevMode())
-            self.team1:SetFrozenState(frozenState)
-            self.team2:SetFrozenState(frozenState)
             
             if self.gameState == kGameState.Started then    
         //   self:AddTimedCallback(NS2Gamerules.DisplayFrontDoorLocation, 30)
@@ -1226,11 +1223,6 @@ function NS2Gamerules:OnUpdate(timePassed)
             // Update frozen state of player based on the game state and player team.
             if team == self.team1 or team == self.team2 then
             
-                local devMode = Shared.GetDevMode()
-                local inCountdown = self:GetGameState() == kGameState.Countdown
-                if not devMode and inCountdown then
-                    newPlayer.frozen = true
-                end
                 
                 local pres = self.clientpres[clientUserId] and self.clientpres[clientUserId][newTeamNumber]
                 newPlayer:SetResources( pres or ConditionalValue(team == self.team1, kMarineInitialIndivRes, kAlienInitialIndivRes) )
@@ -1319,7 +1311,7 @@ function NS2Gamerules:OnUpdate(timePassed)
             local team1hasplayer = self.team1:GetHasPlayer()
             local team2hasplayer = self.team2:GetHasPlayer()
             
-            if ((team1hasplayer and team2hasplayer) or Shared.GetCheatsEnabled())  then
+            if ((team1hasplayer or team2hasplayer) or Shared.GetCheatsEnabled())  then
             
                 if self:GetGameState() == kGameState.NotStarted then
                     self:SetGameState(kGameState.PreGame)
@@ -1470,30 +1462,8 @@ function NS2Gamerules:OnUpdate(timePassed)
             
         elseif self:GetGameState() == kGameState.Countdown then
         
-            self.countdownTime = self.countdownTime - timePassed
-            
-            // Play count down sounds for last few seconds of count-down
-            local countDownSeconds = math.ceil(self.countdownTime)
-            if self.lastCountdownPlayed ~= countDownSeconds and (countDownSeconds < 4) then
-            
-                self.worldTeam:PlayPrivateTeamSound(NS2Gamerules.kCountdownSound)
-                self.team1:PlayPrivateTeamSound(NS2Gamerules.kCountdownSound)
-                self.team2:PlayPrivateTeamSound(NS2Gamerules.kCountdownSound)
-                self.spectatorTeam:PlayPrivateTeamSound(NS2Gamerules.kCountdownSound)
-                
-                self.lastCountdownPlayed = countDownSeconds
-                
-            end
-            
-            if self.countdownTime <= 0 then
-            
-                self.team1:PlayPrivateTeamSound(ConditionalValue(self.team1:GetTeamType() == kAlienTeamType, NS2Gamerules.kAlienStartSound, NS2Gamerules.kMarineStartSound))
-                self.team2:PlayPrivateTeamSound(ConditionalValue(self.team2:GetTeamType() == kAlienTeamType, NS2Gamerules.kAlienStartSound, NS2Gamerules.kMarineStartSound))
-                
                 self:SetGameState(kGameState.Started)
                 self.sponitor:OnStartMatch()
-                
-            end
             
         end
         
@@ -2230,7 +2200,7 @@ function NS2Gamerules:DropshipArcs()
 end
 function NS2Gamerules:MaintainHiveDefense()
              for index, hive in ipairs(GetEntitiesForTeam("Hive", 2)) do
-               if hive:GetIsAlive() then 
+               if hive:GetIsAlive() and hive:GetIsBuilt() then 
                  self:HiveDefenseMain(hive, hive:GetDefenseEntsInRange())
                  break
                 end
@@ -2378,7 +2348,7 @@ function NS2Gamerules:SynrhonizeCystEntities(whips, crags, cyst, origin)
 end
 function NS2Gamerules:SpawnNewHive(origin)
    
-self:AddTimedCallback(function() CreateEntity(Hive.kMapName, origin, 2)  end, math.random(8,24))
+self:AddTimedCallback(function() CreateEntity(Hive.kMapName, origin, 2)  CreateEntity( Scan.kMapName, origin, 1) end, math.random(8,48))
     
 
 end
@@ -2427,7 +2397,7 @@ function NS2Gamerules:ExpandKingCyst()
   --Kyle Abent
  -- Print("updating kings")
    local averageorigin = self:SetupRulesTest() 
-         local nearescysttoavg = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt()  end)
+         local nearescysttoavg = GetNearest(averageorigin , "Cyst", nil, function(ent) return ent:GetIsBuilt() and ent:GetLocationName() ~= "" end)
               if nearescysttoavg then
                     for index, cyst in ientitylist(Shared.GetEntitiesWithClassname("Cyst")) do
                      if cyst.isking and cyst ~= nearescysttoavg and cyst:GetCanDethrone() then

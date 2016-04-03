@@ -76,6 +76,7 @@ local function GetBigIconPixelCoords(techId, researched)
         gBigIconIndex[kTechId.LayStructureRobo] = 3
         gBigIconIndex[kTechId.LayStructureSentry] = 2
         gBigIconIndex[kTechId.LayStructureObs] = 4
+        gBigIconIndex[kTechId.LayStructureARC] = 4
 
     end
     
@@ -119,6 +120,7 @@ local function GetSmallIconPixelCoordinates(itemTechId)
         gSmallIconIndex[kTechId.LayStructureRobo] = 2
         gSmallIconIndex[kTechId.LayStructureSentry] = 5
         gSmallIconIndex[kTechId.LayStructureObs] = 35
+        gSmallIconIndex[kTechId.LayStructureARC] = 14
     end
     
     local index = gSmallIconIndex[itemTechId]
@@ -353,6 +355,7 @@ function GUIMarineCreditMenu:_InitializeItemButtons()
             kTechId.LayStructureRobo,
             kTechId.LayStructureSentry,
             kTechId.LayStructureObs,
+            kTechId.LayStructureARC,
                      }
     local selectorPosX = -GUIMarineCreditMenu.kSelectorSize.x + GUIMarineCreditMenu.kPadding
     local fontScaleVector = GUIScale(Vector(0.8, 0.8, 0))

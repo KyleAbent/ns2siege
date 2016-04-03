@@ -134,9 +134,5 @@ function CommandStructure:GetCanBeUsedConstructed(byPlayer)
     return not ( byPlayer:isa("Exo") or GetTeamHasCommander(self:GetTeamNumber()))
 end
 
-// allow players to enter the hives before game start to signal that they want to command
-function CommandStructure:GetUseAllowedBeforeGameStart()
-    return true
-end
 
 Shared.LinkClassToMap("CommandStructure", CommandStructure.kMapName, networkVars, true)

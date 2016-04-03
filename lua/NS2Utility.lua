@@ -384,7 +384,7 @@ function GetPlayerCanUseEntity(player, target)
 
     local useSuccessTable = { useSuccess = false }
 
-    if target.GetCanBeUsed then
+    if target.GetCanBeUsed or target.GetCanBeUsedConstructed then
         useSuccessTable.useSuccess = true
         target:GetCanBeUsed(player, useSuccessTable)
     end

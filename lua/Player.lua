@@ -214,9 +214,6 @@ local networkVars =
     resources = "private float (0 to " .. kMaxPersonalResources .." by 0.01)",
     credits = "private float (0 to 999999 by 0.01)",
     teamResources = "private float (0 to " .. kMaxTeamResources .." by 0.01)",
-    gameStarted = "private boolean",
-    countingDown = "private boolean",
-    frozen = "private boolean",
     
     timeOfLastUse = "private time",
     
@@ -899,9 +896,6 @@ local function AttemptToUse(self, timePassed)
     
         -- if the game isn't started yet, check if the entity is usuable in non-started game
         -- (allows players to select commanders before the game has started)
-        if not self:GetGameStarted() and not (entity.GetUseAllowedBeforeGameStart and entity:GetUseAllowedBeforeGameStart()) then
-            return false
-        end
         
         -- Use it.
         if self:UseTarget(entity, kUseInterval) then
@@ -968,7 +962,7 @@ end
     Returns true if the player is currently on a team and the game has started.
 ]]
 function Player:GetIsPlaying()
-    return self.gameStarted and self:GetIsOnPlayingTeam()
+    return self:GetIsOnPlayingTeam()
 end
 
 function Player:GetIsOnPlayingTeam()
@@ -1147,18 +1141,13 @@ end
 function Player:AdjustMove(input)
 
     PROFILE("Player:AdjustMove")
-    
-    -- Don't allow movement when frozen in place
-    if self.frozen then
-        input.move:Scale(0)
-    else        
+        
     
         -- Allow child classes to affect how much input is allowed at any time
         if self.mode == kPlayerMode.Taunt then
             input.move:Scale(Player.kTauntMovementScalar)
         end
         
-    end
     
     return input
     
@@ -1377,7 +1366,7 @@ end
 
 function Player:OnProcessIntermediate(input)
    
-    if self:GetIsAlive() and not self.countingDown then
+    if self:GetIsAlive() then
         -- Update to the current view angles so that the mouse feels smooth and responsive.
         self:UpdateViewAngles(input)
     end
@@ -1435,22 +1424,12 @@ function Player:OnProcessMove(input)
     local commands = input.commands
     if self:GetIsAlive() then
     
-        if self.countingDown then
-        
-            input.move:Scale(0)
-            input.commands = 0
-            
-        else
-        
-            -- Allow children to alter player's move before processing. To alter the move
-            -- before it's sent to the server, use OverrideInput
             input = self:AdjustMove(input)
             
             -- Update player angles and view angles smoothly from desired angles if set. 
             -- But visual effects should only be calculated when not predicting.
             self:UpdateViewAngles(input)  
             
-        end
         
     end
     
@@ -1479,8 +1458,7 @@ function Player:OnProcessMove(input)
         
         self:UpdateMaxMoveSpeed(input.time) 
 
-        -- Restore the buttons so that things like the scoreboard, etc. work.
-        input.commands = commands
+
         
         -- Everything else
         self:UpdateMisc(input)
@@ -2205,9 +2183,6 @@ function Player:OnSighted(sighted)
     
 end
 
-function Player:GetGameStarted()
-    return self.gameStarted
-end
 
 function Player:Drop(weapon, ignoreDropTimeLimit)
     return false
@@ -2306,7 +2281,7 @@ function Player:RetrieveMove()
 end
 
 function Player:GetCanControl()
-    return not self.isMoveBlocked and self:GetIsAlive() and not self.countingDown
+    return not self.isMoveBlocked and self:GetIsAlive()
 end
 
 function Player:GetCanAttack()

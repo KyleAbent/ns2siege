@@ -150,6 +150,7 @@ kTechIdToMaterialOffset[kTechId.UpgradeOnos] = 31
 kTechIdToMaterialOffset[kTechId.OnosMenu] = 31  
 kTechIdToMaterialOffset[kTechId.OnosEgg] = 31
 kTechIdToMaterialOffset[kTechId.ARC] = 32
+kTechIdToMaterialOffset[kTechId.LayStructureARC] = 32
 kTechIdToMaterialOffset[kTechId.CragArcBonus] = 32
 kTechIdToMaterialOffset[kTechId.ARCUndeploy] = 32
 kTechIdToMaterialOffset[kTechId.ARCDeploy] = 33

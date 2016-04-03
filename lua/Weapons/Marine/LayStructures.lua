@@ -198,7 +198,10 @@ local function DropStructure(self, player)
             if structure then
             
                 structure:SetOwner(player)
-                if HasMixin(structure, "Construct") then structure:SetConstructionComplete()  end
+                if not structure:isa("ARC") then structure:SetConstructionComplete()
+                else
+                structure.isGhostStructure = false
+                end
                 structure:SetOwner(player)
                 if self:GetIsCreditStructure() == true then 
                    if structure.ignorelimit then structure.ignorelimit = true end
@@ -366,8 +369,12 @@ function LayStructures:GetPositionForStructure(player)
            
            if  self.techId == kTechId.Sentry then
                  local nearsentrys = GetEntitiesForTeamWithinRange("Sentry", 1, player:GetOrigin(), 24)
-                 
                  if #nearsentrys >= 8 then
+                 isPositionValid = false
+                 end
+           elseif self.techId == kTechId.ARC then
+                 local neararcs = GetEntitiesForTeamWithinRange("ARC", 1, player:GetOrigin(), 48)
+                 if #neararcs >= 4 then
                  isPositionValid = false
                  end
           end
