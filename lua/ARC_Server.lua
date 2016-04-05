@@ -136,7 +136,7 @@ function ARC:PerformSiegeAttack(self, finalTarget)
              local damage = math.random(arcsinsiege*16,arcsinsiege*32)
              local builtscalar = Clamp(entity:GetHealthScalar(), 0.10, 1)
              local unbuiltscalar = Clamp(entity:GetHealthScalar(), 0.35, 1)
-             local healthscalar = ConditionalValue(entity:GetIsBuilt(), builtscalar, unbuiltscalar)
+             local healthscalar = ConditionalValue(entity.GetIsBuilt and entity:GetIsBuilt(), builtscalar, unbuiltscalar)
               damage = (damage * healthscalar) 
               
             local hitEntities = GetEntitiesWithMixinWithinRange("Live", entity:GetOrigin(), ARC.kSplashRadius)

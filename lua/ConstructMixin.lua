@@ -196,7 +196,7 @@ end
 if Server then
     function ConstructMixin:TypesOfSelfInRoomNonCredit()
        local count = 0
-       if ( self:GetIsBuilt() or self:isa("ArmsLab") ) and self:GetTeamNumber() == 1 and not self:isa("Dropship") then count = count + 1 end 
+       if ( self:GetIsBuilt() or self:isa("ArmsLab") ) and self:GetTeamNumber() == 1 and not self:isa("Dropship") and not self:isa("ARC") then count = count + 1 end 
         return count
     end
     function ConstructMixin:PreOnKill(attacker, doer, point, direction)

@@ -454,7 +454,7 @@ function Gorge:GetIsSiege()
         end
             return false
 end
-
+/*
 function Gorge:GetCanBeUsed(player, useSuccessTable)
 if  not player:isa("Lerk") then useSuccessTable.useSuccess = false return end
  if ( self.isriding and self.gorgeusingLerkID == player:GetId() ) or not self.isriding then useSuccessTable.useSuccess = true end
@@ -476,7 +476,7 @@ function Gorge:OnUse(player, elapsedTime, useSuccessTable)
        
        
 end
-
+*/
 function Gorge:ModifyJump(input, velocity, jumpVelocity)
 
     if self:GetCanWallJump() then
