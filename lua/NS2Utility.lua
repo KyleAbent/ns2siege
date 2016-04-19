@@ -3072,75 +3072,57 @@ function GetCommanderLogoutAllowed()
 
 end
 
+function ValidateShoulderPad( variants )
+    local idx = Client.GetOptionInteger("shoulderPad", 1)
+    if not kShoulderPad2ItemId[idx] then
+        Client.SetOptionInteger("shoulderPad", 1)
+        idx = 1
+    elseif not GetHasShoulderPad(idx) then
+        idx = 1
+    end
+    variants.shoulderPadIndex = idx
+end
+
+function ValidateVariant( variants, variantType, enum, enumData )
+    local idx = Client.GetOptionInteger(variantType, 1)
+    
+    if not rawget( enum, idx ) then -- if it's an invalid id
+        Client.SetOptionInteger(variantType, 1) -- fix it
+        idx = 1 
+        HPrint( "Invalid ID on "..variantType )
+    elseif not GetHasVariant( enumData, idx ) then -- if they don't have access to this
+        idx = 1 -- don't let them use it
+        HPrint( "No access to "..variantType.." "..idx )
+    end
+    
+    variants[variantType] = idx
+end
 
 function GetAndSetVariantOptions()
 
     local variants = {}
     
-    variants.marineVariant = Client.GetOptionInteger("marineVariant", -1)
-    variants.skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
-    variants.gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
-    variants.lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
-    variants.fadeVariant = Client.GetOptionInteger("fadeVariant", -1)
-    variants.onosVariant = Client.GetOptionInteger("onosVariant", -1)
-    variants.sexType = Client.GetOptionString("sexType", "Male")
-    variants.shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1)
-    variants.exoVariant = Client.GetOptionInteger("exoVariant", -1)
-    variants.rifleVariant = Client.GetOptionInteger("rifleVariant", -1)
+    variants.sexType = Client.GetOptionString("sexType", "Male") 
     
-    if not GetHasShoulderPad(variants.shoulderPadIndex) then
-        variants.shoulderPadIndex = 1
-    end
+    ValidateShoulderPad(variants)
     
-    local function SetHighestTier( variantType, enum, enumData )
-        if variants[variantType] == -1 then
-            for variant = GetEnumCount( enum ),1,-1 do 
-                if GetHasVariant( enumData, variant ) then
-                    variants[variantType] = variant
-                    break
-                end
-            end
-        end
-    end
-    
-    SetHighestTier("marineVariant", kMarineVariant, kMarineVariantData)
-    SetHighestTier("skulkVariant", kSkulkVariant, kSkulkVariantData)
-    SetHighestTier("gorgeVariant", kGorgeVariant, kGorgeVariantData)
-    SetHighestTier("lerkVariant", kLerkVariant, kLerkVariantData)
-    SetHighestTier("fadeVariant", kFadeVariant, kFadeVariantData)
-    SetHighestTier("onosVariant", kOnosVariant, kOnosVariantData)
-    SetHighestTier("exoVariant", kExoVariant, kExoVariantData)
-    SetHighestTier("rifleVariant", kRifleVariant, kRifleVariantData)
-    
-    assert(variants.marineVariant ~= -1 and variants.marineVariant ~= -1 ~= nil)
-    assert(variants.skulkVariant ~= -1 and variants.skulkVariant ~= -1 ~= nil)
-    assert(variants.gorgeVariant ~= -1 and variants.gorgeVariant ~= -1 ~= nil)
-    assert(variants.lerkVariant ~= -1 and variants.lerkVariant ~= -1 ~= nil)
-    assert(variants.fadeVariant ~= -1 and variants.fadeVariant ~= -1 ~= nil)
-    assert(variants.onosVariant ~= -1 and variants.onosVariant ~= -1 ~= nil)
-    assert(variants.exoVariant ~= -1 and variants.exoVariant ~= -1 ~= nil)
-    assert(variants.rifleVariant ~= -1 and variants.rifleVariant ~= -1 ~= nil)
-    
-    Client.SetOptionInteger("marineVariant", variants.marineVariant)
-    Client.SetOptionInteger("shoulderPad", variants.shoulderPadIndex)
-    Client.SetOptionInteger("skulkVariant", variants.skulkVariant)
-    Client.SetOptionInteger("gorgeVariant", variants.gorgeVariant)
-    Client.SetOptionInteger("lerkVariant", variants.lerkVariant)
-    Client.SetOptionInteger("fadeVariant", variants.fadeVariant)
-    Client.SetOptionInteger("onosVariant", variants.onosVariant)
-    Client.SetOptionInteger("exoVariant", variants.exoVariant)
-    Client.SetOptionInteger("rifleVariant", variants.rifleVariant)
-    Client.SetOptionString("sexType", variants.sexType)
-    
+    ValidateVariant(variants, "marineVariant",    kMarineVariant,     kMarineVariantData)
+    ValidateVariant(variants, "skulkVariant",     kSkulkVariant,      kSkulkVariantData)
+    ValidateVariant(variants, "gorgeVariant",     kGorgeVariant,      kGorgeVariantData)
+    ValidateVariant(variants, "lerkVariant",      kLerkVariant,       kLerkVariantData)
+    ValidateVariant(variants, "fadeVariant",      kFadeVariant,       kFadeVariantData)
+    ValidateVariant(variants, "onosVariant",      kOnosVariant,       kOnosVariantData)
+    ValidateVariant(variants, "exoVariant",       kExoVariant,        kExoVariantData)
+    ValidateVariant(variants, "rifleVariant",     kRifleVariant,      kRifleVariantData)
+    ValidateVariant(variants, "shotgunVariant",   kShotgunVariant,    kShotgunVariantData)    
     
     return variants
     
 end
 
 function SendPlayerVariantUpdate()
-
     local options = GetAndSetVariantOptions()
-    if MainMenu_IsInGame() then
+    if MainMenu_IsInGame and MainMenu_IsInGame() then
         Client.SendNetworkMessage("SetPlayerVariant",
             {
                 marineVariant = options.marineVariant,
@@ -3153,11 +3135,53 @@ function SendPlayerVariantUpdate()
                 shoulderPadIndex = options.shoulderPadIndex,
                 exoVariant = options.exoVariant,
                 rifleVariant = options.rifleVariant,
+                shotgunVariant = options.shotgunVariant,
             },
             true)
     end
-    
 end
+
+function InventoryNewItemNotifyPush( item )
+    local new = json.decode( Client.GetOptionString("inventory_new","[]") ) or {}
+    new[#new+1] = item
+    Client.SetOptionString("inventory_new", json.encode( new ) )
+    
+    -- Main Menu Handling
+    local mm = GetGUIMainMenu and GetGUIMainMenu()
+    if mm then
+        mm:MaybeOpenPopup()
+    end
+end 
+
+function InventoryNewItemNotifyPop()
+    local new = json.decode( Client.GetOptionString("inventory_new","[]") ) or {}
+    local pop = new[1]
+    for i=2,#new do new[i-1] = new[i] end
+    new[#new] = nil
+    Client.SetOptionString("inventory_new", json.encode( new ) )
+    return pop
+end
+
+function InventoryNewItemHandler( item, isDupe )
+    if Client.IsInventoryLoaded() and not isDupe then
+        InventoryNewItemNotifyPush( item )
+    end
+    
+    -- In-Game Handling
+end
+    
+Event.Hook("InventoryNewItem", InventoryNewItemHandler )
+
+local function OnInventoryUpdated()
+    SendPlayerVariantUpdate()
+
+    --Load up the customize menu
+    local MainMenu = Client and GetGUIMainMenu and GetGUIMainMenu()
+    if MainMenu then
+        MainMenu:OnInventoryUpdated()
+    end
+end
+Event.Hook("InventoryUpdated", OnInventoryUpdated)
 
 //----------------------------------------
 //  This will return nil if the asset DNE
@@ -3186,4 +3210,56 @@ function PrecacheAssetSafe( path, fallback )
         return PrecacheAsset(fallback)
     end
 
+end
+
+if Client then
+    
+    function GetNickName()
+        
+        local name = Client.GetOptionString( kNicknameOptionsKey, "" )
+        if name == "" then
+            name = string.UTF8SanitizeForNS2( TrimName( Client.GetUserName() or "" ) )
+        end
+        if name == "" then
+            name = kDefaultPlayerName
+            RawPrint( debug.traceback() )
+        end
+        return name
+    
+    end
+    
+    function SetNameWithSteamPersona()
+        local overrideEnabled = Client.GetOptionBoolean(kNicknameOverrideKey, false)
+        if overrideEnabled then return end
+    
+        local name = string.UTF8SanitizeForNS2( TrimName( Client.GetUserName() or "" ) )
+        if name == "" or not string.IsValidNickname(name) then
+            RawPrint( name, string.IsValidNickname(name), debug.traceback() )
+            name = kDefaultPlayerName
+        end        
+        
+        Client.SetOptionString(kNicknameOptionsKey, name)
+        return name
+    end
+    
+    function OnSteamPersonaChanged()
+
+        local name = SetNameWithSteamPersona()
+        if name then
+            local player = Client.GetLocalPlayer()
+            if player and name ~= player:GetName() then
+                Client.SendNetworkMessage("SetName", { name = name }, true)
+            end
+            
+            if GetGUIMainMenu and GetGUIMainMenu() then
+                GetGUIMainMenu().playerName:SetText(name)
+                GetGUIMainMenu().optionElements.NickName:SetValue(name)
+            end
+            
+        end
+        
+    end
+
+    Event.Hook("SteamPersonaChanged", OnSteamPersonaChanged )
+    
 end

@@ -64,6 +64,7 @@ local networkVars =
 {
     moving = "boolean",
     level = "float (0 to " .. Shift.MaxLevel .. " by .1)",
+     siegewall = "boolean", 
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -132,6 +133,7 @@ function Shift:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
      self.level = 1
+    self.siegewall = false
     
 end
 
@@ -170,6 +172,20 @@ function Shift:EnergizeInRange()
     
         local energizeAbles = GetEntitiesWithMixinForTeamWithinRange("Energize", self:GetTeamNumber(), self:GetOrigin(), kEnergizeRange)
         
+        
+            if self.siegewall then 
+               local siegeroom = self:GetSiegeRoomLocation()
+              local entities = siegeroom:GetEntitiesInTrigger()
+            if #entities ~= 0 then  
+             for i = 1, #entities do
+               local healable = entities[i]
+                 if healable:GetIsAlive() and healable:isa("Player") and not healable:isa("Commander") then
+                 table.insertunique(energizeAbles, healable)
+                 end
+              end
+           end
+          end 
+    
         for _, entity in ipairs(energizeAbles) do
         
             if entity ~= self then
@@ -178,11 +194,25 @@ function Shift:EnergizeInRange()
             end
             
         end
+        
+        
+        
     
     end
     
     return self:GetIsAlive()
     
+end
+function Shift:GetSiegeRoomLocation()
+
+            for index, location in ientitylist(Shared.GetEntitiesWithClassname("Location")) do
+              if  string.find(location.name, "siege") or string.find(location.name, "Siege") and not
+                string.find(location.name, "Hall") and not string.find(location.name, "hall") then 
+                  return location
+                end 
+              end
+                
+                
 end
 function Shift:Enzymey(entity)
                 

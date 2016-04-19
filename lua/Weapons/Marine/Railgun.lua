@@ -120,7 +120,7 @@ function Railgun:OnPrimaryAttack(player)
 end
 
 function Railgun:GetIsThrusterAllowed()
-    return not self.railgunAttacking
+    return true
 end
 
 function Railgun:GetWeight()

@@ -56,6 +56,7 @@ local networkVars = {
     moving = "boolean",
     lastinktrigger = "time",
     level = "float (0 to " .. Shade.MaxLevel .. " by .1)",
+     siegewall = "boolean", 
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -124,6 +125,7 @@ function Shade:OnCreate()
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     self.lastinktrigger = 0
     self.level = 1
+    self.siegewall = false
 
 end
 
@@ -243,18 +245,29 @@ function Shade:OnResearchComplete(researchId)
     
 end
 
-function Shade:TriggerInk()
+function Shade:TriggerInk(insiege)
 
   if Server then
     // Create ShadeInk entity in world at this position with a small offset
   --  CreateEntity(ShadeInk.kMapName, self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
-      CreateEntity(HallucinationCloud.kMapName, self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
+      local origin = insiege and self:GetRandomPlayerInSiege() or self:GetOrigin() + Vector(0, 0.2, 0)
+      CreateEntity(HallucinationCloud.kMapName, origin, self:GetTeamNumber())
   end
   
     self:TriggerEffects("shade_ink")
     self.lastinktrigger = Shared.GetTime()
     return true
 
+end
+function Shade:GetRandomPlayerInSiege()
+      local siegeroomlocation = self:GetSiegeRoomLocation()
+      local entities = siegeroomlocation:GetEntitiesInTrigger()
+      for i = 1, #entities do
+       local entity = entities[i]
+        if entity and entity:isa("Alien") and entity:isa("Player") then
+           return entity:GetOrigin()
+      end
+      end
 end
 function Shade:PerformActivation(techId, position, normal, commander)
 
@@ -311,15 +324,44 @@ if Server then
     function Shade:UpdateCloaking()
     
         if not self:GetIsOnFire() then
+        
             for _, cloakable in ipairs( GetEntitiesWithMixinForTeamWithinRange("Cloakable", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius) ) do
                 cloakable:TriggerCloak()
             end
+            
+                        if self.siegewall then 
+    
+       local siegeroom = self:GetSiegeRoomLocation()
+       local entities = siegeroom:GetEntitiesInTrigger()
+       if #entities ~= 0 then  
+       for i = 1, #entities do
+        local healable = entities[i]
+        if healable:GetIsAlive() and healable:isa("Player") and not healable:isa("Commander") then
+             healable:TriggerCloak()
+        end
+       end
+    end 
+    end
+    
+            
+            
         end
         
         return self:GetIsAlive()
     
     end
 
+end
+function Shade:GetSiegeRoomLocation()
+
+            for index, location in ientitylist(Shared.GetEntitiesWithClassname("Location")) do
+              if  string.find(location.name, "siege") or string.find(location.name, "Siege") and not
+                string.find(location.name, "Hall") and not string.find(location.name, "hall") then 
+                  return location
+                end
+            end 
+                
+                
 end
 /*
 function Shade:TellOtherShadesToAbide()
@@ -357,6 +399,7 @@ function Shade:OnUpdate(deltaTime)
     
 end
 function Shade:HasFriendsInRange()
+    if self.siegewall == true then return true end
         local energizeAbles = GetEntitiesWithMixinForTeamWithinRange("Energize", self:GetTeamNumber(), self:GetOrigin(), kEnergizeRange)
         if #energizeAbles == 0 then  return false end -- Print("shade ink no friends in range") return false end
     --    Print("shade ink friends in range")
@@ -368,10 +411,11 @@ function Shade:HallucinationsMan()
             --     Print("number shold generate now") 
                  local number = math.random(self:GetLevel(), 100)
              --    Print("shade ink number is", number) 
-                 if number >= 99 then self:TriggerInk() end --Print("shade ink number is >= 99 triggering ink")  self:TriggerInk() end
+                 if number >= 99 then self:TriggerInk(self.siegewall) end --Print("shade ink number is >= 99 triggering ink")  self:TriggerInk() end
      end     
 end
 function Shade:GetCanTrigger()
+    if self.siegewall == true then return true end 
   for _, Shade in ipairs(GetEntitiesForTeamWithinRange("Shade", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius)) do
                if not Shade:GetCanInk() then 
             --   Print("shade ink trigger returned false 111111")

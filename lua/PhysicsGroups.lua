@@ -64,12 +64,12 @@ PhysicsGroup = enum
     'TriggerGroup',
     'PathingGroup',
     'WebsGroup',
-    'FuncMoveable',
-    'LogicBreakable',
     'AlienWalkThrough',
     'AlienWalkThroughHit',
     'OpenDoor',
     'DropshipBeacon',
+    'SetupPhaseGroup',
+    'FuncMoveable',
 }
 
 // Pre-defined physics group masks.
@@ -84,16 +84,16 @@ PhysicsMask = enum
     All = 0xFFFFFFFF,
     
     // Filters anything that should not be collided with for player movement.
-    Movement = CreateMaskExcludingGroups(PhysicsGroup.DropshipBeacon, PhysicsGroup.OpenDoor, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.DroppedWeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
+    Movement = CreateMaskExcludingGroups(PhysicsGroup.SetupPhaseGroup, PhysicsGroup.DropshipBeacon, PhysicsGroup.OpenDoor, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.DroppedWeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
     
     // Filters anything that should not collide with onos movement.
-    OnosMovement = CreateMaskExcludingGroups(PhysicsGroup.OpenDoor, PhysicsGroup.AlienWalkThrough, PhysicsGroup.AlienWalkThroughHit, PhysicsGroup.WhipGroup, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.MediumStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.PlayerControllersGroup, 
+    OnosMovement = CreateMaskExcludingGroups(PhysicsGroup.SetupPhaseGroup, PhysicsGroup.OpenDoor, PhysicsGroup.AlienWalkThrough, PhysicsGroup.AlienWalkThroughHit, PhysicsGroup.WhipGroup, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.MediumStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.PlayerControllersGroup, 
                                              PhysicsGroup.BabblerGroup, PhysicsGroup.ProjectileGroup, PhysicsGroup.WeaponGroup, PhysicsGroup.DroppedWeaponGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
              // 11.11 ns2siege - bonewall to not prevent aliens from walking through it - with purple material to visually say this aspect               
     AlienNonOnos = CreateMaskExcludingGroups(PhysicsGroup.OpenDoor, PhysicsGroup.AlienWalkThrough, PhysicsGroup.AlienWalkThroughHit, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
     
     // For Drifters, MACs
-    AIMovement = CreateMaskExcludingGroups(PhysicsGroup.OpenDoor, PhysicsGroup.MediumStructuresGroup, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
+    AIMovement = CreateMaskExcludingGroups(PhysicsGroup.SetupPhaseGroup, PhysicsGroup.OpenDoor, PhysicsGroup.MediumStructuresGroup, PhysicsGroup.SmallStructuresGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.PlayerGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.CommanderBuildGroup, PhysicsGroup.PathingGroup, PhysicsGroup.WebsGroup),
 
     // Use these with trace functions to determine which entities we collide with. Use the filter to then
     // ignore specific entities. 
@@ -136,7 +136,6 @@ PhysicsMask = enum
     
     Evolve = CreateMaskExcludingGroups(PhysicsGroup.PlayerControllersGroup, PhysicsGroup.RagdollGroup, PhysicsGroup.BabblerGroup, PhysicsGroup.WebsGroup),
    FuncMoveable = CreateMaskIncludingGroups(PhysicsGroup.FuncMoveable),
-   LogicBreakable = CreateMaskIncludingGroups(PhysicsGroup.LogicBreakable),
 }
 
 PhysicsType = enum

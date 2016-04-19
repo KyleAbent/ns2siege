@@ -132,7 +132,7 @@ function Minigun:OnDestroy()
 end
 
 function Minigun:GetIsThrusterAllowed()
-    return not self.shooting
+    return true
 end
 
 function Minigun:OnWeaponSlotAssigned(slot)

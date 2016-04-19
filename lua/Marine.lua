@@ -636,15 +636,15 @@ end
 function Marine:ModifyGroundFraction(groundFraction)
     return groundFraction > 0 and 1 or 0
 end
-/*
+
 function Marine:ModifyGravityForce(gravityTable)
       if self:GetIsOnGround() then
             gravityTable.gravity = Player.kGravity
-      elseif self.gravity ~= 0 then
-        gravityTable.gravity = self.gravity
+      --elseif self.gravity ~= 0 then
+      --  gravityTable.gravity = self.gravity
        end
 end
-*/
+
 function Marine:GetMaxSpeed(possible)
   // Marine.kRunMaxSpeed = Marine.kRunMaxSpeed * ConditionalValue(self.heavyarmor, Marine.kRunMaxSpeed * 1.3, 1)
   // Marine.kWalkMaxSpeed = Marine.kWalkMaxSpeed * ConditionalValue(self.heavyarmor, Marine.kWalkMaxSpeed * 1.3, 1)

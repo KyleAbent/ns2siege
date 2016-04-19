@@ -227,7 +227,7 @@ local networkVars =
     darwinMode = "private boolean",
     
     moveButtonPressed = "compensated boolean",
-    gravity = "float (-5 to 5 by 1)",
+    --gravity = "float (-5 to 5 by 1)",
     buildspeed = "float (0 to 3 by .1)",
     
     --[[
@@ -375,7 +375,7 @@ function Player:OnCreate()
     
     self.pushImpulse = Vector(0, 0, 0)
     self.pushTime = 0
-    self.gravity = 0
+    --self.gravity = 0
     self.buildspeed = .1
     self.credits = 0
     self.alltalktoggled = false
@@ -408,7 +408,7 @@ function Player:OnInitialized()
             self:InitWeaponsForReadyRoom()
         end
         
-        self:SetName(kDefaultPlayerName)
+
         
         self:SetNextThink(Player.kThinkInterval)
         
@@ -1070,11 +1070,12 @@ end
 function Player:GetPerformsVerticalMove()
     return false
 end
-function Player:GetGravity()
-return self.gravity
-end
 function Player:JumpPackNotGravity()
 self.gravity = ConditionalValue(self:isa("Onos"), 1, 0)
+end
+/*
+function Player:GetGravity()
+return self.gravity
 end
 function Player:ModifyGravityForce(gravityTable)
 
@@ -1086,7 +1087,7 @@ function Player:ModifyGravityForce(gravityTable)
     
 
 end
-
+*/
 function Player:OnUseTarget(target)
 end
 
@@ -1458,7 +1459,8 @@ function Player:OnProcessMove(input)
         
         self:UpdateMaxMoveSpeed(input.time) 
 
-
+        -- Restore the buttons so that things like the scoreboard, etc. work.
+        input.commands = commands
         
         -- Everything else
         self:UpdateMisc(input)

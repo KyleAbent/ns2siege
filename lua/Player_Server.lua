@@ -31,6 +31,10 @@ function Player:SetPlayerInfo(playerInfo)
     
 end
 
+function Player:GetPlayerInfo()
+    return self.playerInfo
+end
+
 function Player:Reset()
 
     ScriptActor.Reset(self)
@@ -47,7 +51,11 @@ function Player:CloseMenu()
 end
 
 function Player:GetName()
-    return self.name
+    return self.name ~= "" and self.name or kDefaultPlayerName
+end
+
+function Player:GetNameHasBeenSet()
+    return self.name ~= ""
 end
 
 function Player:SetName(name)
@@ -172,7 +180,7 @@ function Player:OnKill(killer, doer, point, direction)
         end
         if realKiller and realKiller:isa("Player") then
             self.killedBy = killer:GetId()
-            killerName = killer:GetName()
+            killerName = realKiller:GetName()
             Log("%s: killed by %s", self, self.killedBy)
         end
     end

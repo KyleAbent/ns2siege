@@ -760,8 +760,8 @@ if Server then
             
             marine.onGround = false
             local initialVelocity = self:GetViewCoords().zAxis
-            initialVelocity:Scale(4)
-            initialVelocity.y = 9
+            initialVelocity:Scale(1)
+            initialVelocity.y = 24
             marine:SetVelocity(initialVelocity)
             
             if reuseWeapons then
@@ -779,9 +779,6 @@ if Server then
             
             marine:SetHUDSlotActive(1)
             
-            if marine:isa("JetpackMarine") then
-                marine:SetFuel(0)
-            end
         
         end
     

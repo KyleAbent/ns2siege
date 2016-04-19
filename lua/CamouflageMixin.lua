@@ -63,7 +63,7 @@ local function UpdateCamouflage(self, deltaTime)
     local canCamouflage = not self.GetCanCamouflage or self:GetCanCamouflage()
     canCamouflage = canCamouflage and currentTime > (self.timeLastUncamouflageTriggered + CamouflageMixin.kBreakingDelay)
     
-    if self:GetIsAlive() and GetHasCamouflageUpgrade(self) and velocity <= CamouflageMixin.kVelocityThreshold and canCamouflage then    
+    if self:GetIsAlive() and GetHasCamouflageUpgrade(self) and (velocity <= CamouflageMixin.kVelocityThreshold and canCamouflage)  then    
         self.camouflaged = true
     else
         self.camouflaged = false

@@ -138,6 +138,7 @@ function ARC:PerformSiegeAttack(self, finalTarget)
              local unbuiltscalar = Clamp(entity:GetHealthScalar(), 0.35, 1)
              local healthscalar = ConditionalValue(entity.GetIsBuilt and entity:GetIsBuilt(), builtscalar, unbuiltscalar)
               damage = (damage * healthscalar) 
+              damage = ConditionalValue(not entity:isa("Hive"), damage * 0.9, damage)
               
             local hitEntities = GetEntitiesWithMixinWithinRange("Live", entity:GetOrigin(), ARC.kSplashRadius)
             RadiusDamage(hitEntities, entity:GetOrigin(), ARC.kSplashRadius, damage, self, true)

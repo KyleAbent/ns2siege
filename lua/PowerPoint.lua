@@ -568,7 +568,9 @@ if Server then
 end
     function PowerPoint:CystBrothersActivate()
        local location = GetLocationForPoint(self:GetOrigin())
+        if location then
        location:ReallySpawnCysts(self)
+       end
        return self:GetIsDisabled() or not self:GetIsBuilt() and not self:GetIsInSiegeRoom()
     
     end

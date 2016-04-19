@@ -237,6 +237,23 @@ local function GetHealTargets(self)
         end
         
     end
+    
+    if self.siegewall then 
+    
+       local siegeroom = self:GetSiegeRoomLocation()
+       local entities = siegeroom:GetEntitiesInTrigger()
+       if #entities ~= 0 then  
+       for i = 1, #entities do
+        local healable = entities[i]
+        if healable:GetIsAlive() and healable:isa("Player") and not healable:isa("Commander") then
+            table.insertunique(targets, healable)
+        end
+       end
+    end 
+       
+
+        
+    end
 
     for _, healable in ipairs(GetEntitiesWithMixinForTeamWithinRange("Live", self:GetTeamNumber(), self:GetOrigin(), Crag.kHealRadius)) do
         
@@ -248,6 +265,17 @@ local function GetHealTargets(self)
 
     return targets
 
+end
+function Crag:GetSiegeRoomLocation()
+
+            for index, location in ientitylist(Shared.GetEntitiesWithClassname("Location")) do
+              if  string.find(location.name, "siege") or string.find(location.name, "Siege") and not
+                string.find(location.name, "Hall") and not string.find(location.name, "hall") then 
+                  return location
+                end 
+              end
+                
+                
 end
 function Crag:PerformHealing()
 

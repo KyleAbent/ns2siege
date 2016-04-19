@@ -1,3 +1,6 @@
+kMainMenuNewsURL = "http://ns2siege.com/viewforum.php?f=13"
+kAlienTeamColor = 0xFFCA3A
+kAlienTeamColorFloat = Color(127/255, 255/255, 0/255, 1)
 kSearchFor = 45
 kExpandCystInterval =  8
 kStructureDropCost = 8

@@ -221,8 +221,7 @@ function FireFlameCloud:DoSetOnFire()
           local stackdmg = GetEntitiesWithinRange("FireGrenade", self:GetOrigin(), 4)
           local number = #stackdmg
           local variantdamage = kFireFlameCloudDamagePerSecond
-            //  variantdamage = ConditionalValue(entity:isa("Structure"), kFireFlameCloudDamagePerSecond/number, kFireFlameCloudDamagePerSecond)
-            //  variantdamage = ConditionalValuue(entity:isa("Player"), kFireFlameCloudDamagePerSecond, variantdamage)
+           variantdamage = ConditionalValue(entity:isa("Player"), variantdamage * 0.9, variantdamage)
           number = Clamp(number, 1, 4)
             self:DoDamage( (number * variantdamage) * kCloudUpdateRate, entity, entity:GetOrigin(), GetNormalizedVector(self:GetOrigin() - entity:GetOrigin()), "none")
          //   entity:SetOnFire(4)

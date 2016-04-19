@@ -3,6 +3,7 @@
 
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
+Script.Load("lua/bots/BotTeamController.lua")
 Script.Load("lua/ServerSponitor.lua")
 Script.Load("lua/SiegeMod/SetupTimePortionBalance.lua")
 
@@ -161,6 +162,7 @@ if Server then
             self:AddTimedCallback(NS2Gamerules.OpenFrontMaybe, 1)
             self:AddTimedCallback(NS2Gamerules.OpenSiegeMaybe, 1)
             self:AddTimedCallback(NS2Gamerules.UpdateHiveEggs, 8)
+            self:AddTimedCallback(NS2Gamerules.UnBlockAllBlockables, 4)
             
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
@@ -223,6 +225,8 @@ if Server then
         
         self.techPointRandomizer = Randomizer()
         self.techPointRandomizer:randomseed(Shared.GetSystemTime())
+        
+        self.botTeamController = BotTeamController()
         
         // Create team objects
         self.team1 = self:BuildTeam(kTeam1Type)
@@ -320,6 +324,7 @@ if Server then
             if not self.clientpres[clientUserId] then self.clientpres[clientUserId] = {} end
             self.clientpres[clientUserId][teamNumber] = player:GetResources()
             
+            self.botTeamController:UpdateBots()
         end
         
         Gamerules.OnClientDisconnect(self, client)
@@ -1156,6 +1161,15 @@ function NS2Gamerules:OnUpdate(timePassed)
         return not self:GetGameStarted() or Shared.GetCheatsEnabled() or (Shared.GetTime() < (self.gameStartTime + kFrontDoorTime )) //kFreeSpawnTime)) Siege experiment (exploitable???)
     end
     
+    function NS2Gamerules:SetMaxBots(newMax, com)
+        self.botTeamController:SetMaxBots(newMax, com)
+        self.botTeamController:UpdateBots()
+    end
+
+    function NS2Gamerules:SetBotTraining(training)
+        self.botTraining = training
+    end
+    
     /**
      * Returns two return codes: success and the player on the new team. This player could be a new
      * player (the default respawn type for that team) or it will be the original player if the team 
@@ -1262,6 +1276,8 @@ function NS2Gamerules:OnUpdate(timePassed)
                 if newTeamNumber == kSpectatorIndex then
                     newPlayer:SetSpectatorMode(kSpectatorMode.Overhead)
                 end
+                
+                self.botTeamController:UpdateBots()
                 
             end
 
@@ -2072,6 +2088,30 @@ end
           end
           return not self.siegedoorsopened
     end
+function NS2Gamerules:UnBlockAllBlockables()
+           for _, entity in ipairs(GetEntitiesWithMixinForTeam("Construct", 1)) do
+                   if entity:GetPhysicsGroup() == PhysicsGroup.BigStructuresGroup or
+                   entity:GetPhysicsGroup() == PhysicsGroup.MediumStructuresGroup then
+                    entity:SetPhysicsGroup(PhysicsGroup.SetupPhaseGroup)
+                   end
+              end
+              return not self.doorsopened 
+    end
+function NS2Gamerules:BlockAllBlockables()
+           for _, entity in ipairs(GetEntitiesWithMixinForTeam("Construct", 1)) do
+                   if entity:GetPhysicsGroup() == PhysicsGroup.SetupPhaseGroup then
+                     if entity:isa("CommandStation") or entity:isa("Armory") or 
+                      entity:isa("PrototypeLab") or entity:isa("ArmsLab") or entity:isa("Extractor") or
+                      entity:isa("PowerPoint") or entity:isa("PhaseGate") or entity:isa("RoboticsFactory") then
+                        entity:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
+                     elseif entity:isa("Observatory") or entity:isa("InfantryPortal") 
+                     or entity:isa("Sentry") then
+                        entity:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
+                     end
+                   end
+              end
+              return false
+    end
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  self:CountNodes()
@@ -2079,6 +2119,7 @@ function NS2Gamerules:OpenFrontDoors()
  self:SetLocationVar()
                  SendTeamMessage(self.team1, kTeamMessageTypes.FrontDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.FrontDoor)
+                 self:AddTimedCallback(NS2Gamerules.BlockAllBlockables, 4)
                 
      for _, funcdoor in ientitylist(Shared.GetEntitiesWithClassname("FuncDoor")) do
                funcdoor:SetState(FuncDoor.kState.Welded)
@@ -2216,6 +2257,7 @@ function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
                       self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
                       local shift = CreateEntity(Shift.kMapName, hive:FindFreeSpace(), 2) 
                       shift:SetConstructionComplete()
+                      shift.siegewall = true
                       end
                     end
                     
@@ -2236,6 +2278,7 @@ function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
                       self.team2:SetTeamResources(self.team2:GetTeamResources()  - tres)  
                        local shade = CreateEntity(Shade.kMapName, hive:FindFreeSpace(), 2) 
                       shade:SetConstructionComplete()
+                      shade.siegewall = true
                        end
                        end
                     end

@@ -377,6 +377,9 @@ function LayStructures:GetPositionForStructure(player)
                  if #neararcs >= 4 then
                  isPositionValid = false
                  end
+                   if string.find(player:GetLocationName(), "siege") or string.find(player:GetLocationName(), "Siege") then
+                  isPositionValid = false
+                  end
           end
           
         if GetPointBlocksAttachEntities(displayOrigin) then
