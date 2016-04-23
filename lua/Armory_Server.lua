@@ -22,6 +22,17 @@ function GetCommanderForTeam(teamNumber)
     end    
 
 end
+function Armory:GetGainXPAmount()
+local amount =  Armory.kGainXp
+local multiplier = 1
+multiplier = ConditionalValue(GetIsSiegeEnabled(),amount * 2, 1)
+multiplier = multiplier * self:GetArmoriesInRange()
+  return amount
+end
+function Armory:GetArmoriesInRange()
+      local armory = GetEntitiesWithinRange("Armory", self:GetOrigin(), 14)
+           return Clamp(#armory, 0, 8)
+end
 function Armory:GetWeaponsCount()   
       local shotguns = 0
      -- local hmgs = 0

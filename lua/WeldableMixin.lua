@@ -49,6 +49,18 @@ end
 function WeldableMixin:OnWeldCanceled(doer)
     return true
 end
+function WeldableMixin:PerformAOEWeld(doer, elapsedTime, player)
+ local entities = GetEntitiesWithMixinForTeamWithinRange("Weldable", self:GetTeamNumber(), self:GetOrigin(), 4)
+   if #entities == 0 then return end
+   
+    for i = 1, #entities do
+      local ent = entities[i]
+       --if not ent == self then
+        ent:OnWeld(doer, elapsedTime, player)
+      --end
+    end
+  
+end
 
 // for status display on the welder, or description text
 function WeldableMixin:GetWeldPercentage()

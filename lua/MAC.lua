@@ -372,21 +372,12 @@ function MAC:GetIsFront()
             return false
 end
 function MAC:GetCanBeUsed(player, useSuccessTable)
-  useSuccessTable.useSuccess = not self:GetIsFront() 
+  useSuccessTable.useSuccess = self:GetIsFront() 
 end
 function MAC:OnUse(player, elapsedTime, useSuccessTable)
 
     // Play flavor sounds when using MAC.
     if Server then
-    
-        local time = Shared.GetTime()
-        
-        if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + MAC.kUseTime)) then
-        
-            Server.PlayPrivateSound(player, MAC.kUsedSoundName, self, 1.0, Vector(0, 0, 0))
-            self.timeOfLastUse = time
-            
-        end
        self:PlayerUse(player) 
     end
     
@@ -486,9 +477,19 @@ function MAC:GetLevel()
 end
   function MAC:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Level %s AntiBody"), self:GetLevel())
+    unitName = string.format(Locale.ResolveString("MAC (%s) "), self:GetLevel() )
 return unitName
 end 
+function MAC:GetDamageResistance()
+return self.level
+end
+function MAC:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
+local damage = 1
+    if doer:isa("DotMarker") or doer:isa("Gore") then
+       damage = damage - (self:GetDamageResistance()/100) * damage
+    end
+  damageTable.damage = damageTable.damage * damage 
+end
 function MAC:GetIsOrderHelpingOtherMAC(order)
 
     if order:GetType() == kTechId.Construct then
@@ -710,8 +711,10 @@ function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
                 
                 // If we're close enough to weld, weld (unless we must move to behind the player)
                 if not forceMove and closeEnoughToWeld and not GetIsVortexed(self) then
-                
-                    orderTarget:OnWeld(self, MAC.kWeldRate * (self.level/100) + MAC.kWeldRate)
+                     local rate = MAC.kWeldRate * (self.level/100) + MAC.kWeldRate
+                      rate = rate * (self:GetMacsInRange()/8) + rate
+                      orderTarget:OnWeld(self, rate )
+                     orderTarget:PerformAOEWeld(self, rate)
                     self:AddXP(MAC.GainXp)
                     self.timeOfLastWeld = time
                     self.moving = false
@@ -747,6 +750,10 @@ function MAC:ProcessWeldOrder(deltaTime, orderTarget, orderLocation, autoWeld)
     return orderStatus
     
 end
+function MAC:GetMacsInRange()
+           local mac = GetEntitiesWithinRange("MAC", self:GetOrigin(), 24)
+           return Clamp(#mac, 0, 8)
+end
 function MAC:GetIsSetup()
         if Server then
             local gameRules = GetGamerules()
@@ -759,6 +766,12 @@ function MAC:GetIsSetup()
             return false
 end
 function MAC:GetAddXPAmount()
+return self:GetIsSetup() and MAC.WeldXp * 4 or MAC.WeldXp
+end
+function MAC:GetGainXPAmount()
+return 2.64 * 0.75
+end
+function MAC:GetWeldAddXp()
 return self:GetIsSetup() and MAC.WeldXp * 4 or MAC.WeldXp
 end
 function MAC:ProcessMove(deltaTime, target, targetPosition, closeEnough)

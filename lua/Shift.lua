@@ -179,7 +179,7 @@ function Shift:EnergizeInRange()
             if #entities ~= 0 then  
              for i = 1, #entities do
                local healable = entities[i]
-                 if healable:GetIsAlive() and healable:isa("Player") and not healable:isa("Commander") then
+                 if not healable:isa("SoundEffect") and healable.GetIsAlive and healable:isa("Player") and HasMixin(healable, "Energize") and not healable:isa("Commander") then
                  table.insertunique(energizeAbles, healable)
                  end
               end

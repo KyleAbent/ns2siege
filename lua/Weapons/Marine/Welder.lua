@@ -284,11 +284,15 @@ function Welder:PerformWeld(player)
             end // end of gethealthscalar <1 
             
             if HasMixin(target, "Construct") and target:GetCanConstruct(player) then
-                target:Construct(ConditionalValue(player.buildspeed == .1,kWelderFireDelay, player.buildspeed +.1), player)
+                local values = ConditionalValue(player.buildspeed == .1,kWelderFireDelay, player.buildspeed +.1), player
+                target:Construct(values)
+                target:PerformAOEConstruct(values)
             end
+                target:PerformAOEWeld(self, kWelderFireDelay, player)
+                 
             if ( target:isa("Sentry") or target:isa("Armory") and target:GetIsBuilt() ) or target:isa("MAC") and target:GetHealthScalar() == 1 then
                  local prevlevel = target.level
-                target:AddXP(target:GetAddXPAmount())
+                target:AddXP(target:GetWeldAddXp())
                 local success = false
                 success = prevlevel ~= target.level
                    if success then

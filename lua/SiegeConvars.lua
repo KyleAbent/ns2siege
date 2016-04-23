@@ -1,3 +1,4 @@
+kSentryHealth = 550    kSentryArmor = 110    kSentryPointValue = 2
 kMainMenuNewsURL = "http://ns2siege.com/viewforum.php?f=13"
 kAlienTeamColor = 0xFFCA3A
 kAlienTeamColorFloat = Color(127/255, 255/255, 0/255, 1)
@@ -119,8 +120,8 @@ kFuncDoorWeldRate = 1
 kAddAmountofFuncDoorBroken = .1
 kSideDoorTime = 300 
 kMarineRespawnProtection = 5.06
-kFrontDoorTime = (300-61)+21
-kSiegeDoorTimey = 1500 
+kFrontDoorTime = 300
+kSiegeDoorTimey = 1500 + 300
 kTimeAfterSiegeOpeningToEnableSuddenDeath = 300
 
 kAlienTeamInitialTres = 60

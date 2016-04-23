@@ -308,6 +308,19 @@ end
  * otherwise use Gorge build sound or Marine sparking build sounds. Returns two values - whether the construct
  * action was successful and if enough time has elapsed so a construction AV effect should be played.
  */
+ function ConstructMixin:PerformAOEConstruct(elapsedTime, builder)
+ local entities = GetEntitiesWithMixinForTeamWithinRange("Construct", self:GetTeamNumber(), self:GetOrigin(), 4)
+   if #entities == 0 then return end
+   
+    for i = 1, #entities do
+      local ent = entities[i]
+       --if not ent == self then
+        ent:Construct(elapsedTime, builder)
+      --end
+    end
+  
+    
+end
 function ConstructMixin:Construct(elapsedTime, builder)
 
     local success = false

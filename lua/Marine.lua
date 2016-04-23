@@ -153,12 +153,11 @@ local networkVars =
     timeLastBeacon = "private time",
     spawnprotection = "boolean",
     modelsize = "float (0 to 10 by .1)",
-   modelsize = "float (0 to 10 by .1)",
-   minemode = "boolean",
-   RTDinfiniteammomode = "boolean",
-   hasjumppack = "boolean",
+   --minemode = "boolean",
+   --RTDinfiniteammomode = "boolean",
+   --hasjumppack = "boolean",
        lastjump  = "time",
-   hasfirebullets = "boolean",
+   --hasfirebullets = "boolean",
    hasreupply = "boolean",
       heavyarmor = "boolean",
    lastsupply = "time",
@@ -249,11 +248,11 @@ function Marine:OnCreate()
     end
     if not self:isa("JetpackMarine") then self.spawnprotection = true end
    self.modelsize = 1 
-   self.minemode = false
-   self.RTDinfiniteammomode = false
-   self.hasjumppack = false
+ --  self.minemode = false
+ --  self.RTDinfiniteammomode = false
+   --self.hasjumppack = false
    self.lastjump = 0
-   self.hasfirebullets = false
+  -- self.hasfirebullets = false
    self.hasreupply = true
    self.heavyarmor = false
    self.lastsupply = 0
@@ -639,7 +638,7 @@ end
 
 function Marine:ModifyGravityForce(gravityTable)
       if self:GetIsOnGround() then
-            gravityTable.gravity = Player.kGravity
+            gravityTable.gravity = 0
       --elseif self.gravity ~= 0 then
       --  gravityTable.gravity = self.gravity
        end
@@ -688,7 +687,7 @@ function Marine:GetControllerPhysicsGroup()
 end
 
 function Marine:GetJumpHeight()
-    return  ( (Player.kJumpHeight - Player.kJumpHeight * self.slowAmount * 0.8) / ConditionalValue(self.heavyarmor, 2, 1) ) * ConditionalValue(self.hasjumppack, 4, 1)
+    return  ( (Player.kJumpHeight - Player.kJumpHeight * self.slowAmount * 0.8) / ConditionalValue(self.heavyarmor, 2, 1) ) --* ConditionalValue(self.hasjumppack, 4, 1)
 end
 
 function Marine:GetCanBeWeldedOverride()
@@ -997,9 +996,9 @@ function Marine:OnProcessMove(input)
     end
         ///Untested hotfix after 9.5 to disallow player gravity and dont push Y height vector for OP ness also with 12 instead of 15
     /// Jump Pack from NS1 // HL1 ? - Copied from Leap ! :P // Delay of usage 
-    if self.hasjumppack then
+    if not self:isa("JetpackMarine") and not self:isa("Exo") then  --self.hasjumppack then
        if Shared.GetTime() >  self.lastjump + 1.5 and bit.band(input.commands, Move.Jump) ~= 0 and bit.band(input.commands, Move.Crouch) ~= 0 then
-       if self:GetGravity() ~= 0 then self:JumpPackNotGravity() end
+     --  if self:GetGravity() ~= 0 then self:JumpPackNotGravity() end
        local range = 12
        local force = 12
        local velocity = self:GetVelocity() * 0.5

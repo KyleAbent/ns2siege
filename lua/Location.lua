@@ -127,12 +127,34 @@ if Server then
             end
         end
             return false
-      end           
+      end
+    function Location:GetIsSiege()
+        if Server then
+            local gameRules = GetGamerules()
+            if gameRules then
+               return gameRules:GetSiegeDoorsOpen()  
+            end
+        end
+            return false
+      end                
     function Location:OnTriggerEntered(entity, triggerEnt)
         ASSERT(self == triggerEnt)
+        local powerPoint = GetPowerPointForLocation(self.name)
+         if not self:GetIsSiege() then 
+                 if powerPoint ~= nil then
+                    if powerPoint:GetIsInSiegeRoom() then
+                       if entity:isa("Player") then
+                          entity:Kill()
+                       else
+                          DestroyEntity(entity)
+                       end
+                       
+                    end
+                 end
+         end
+        
           if self:GetIsSetup() then
             if entity:GetTeamNumber() == 1 then
-               local powerPoint = GetPowerPointForLocation(self.name)
                  if powerPoint ~= nil and not powerPoint:GetIsBuilt() then
                    powerPoint:SetConstructionComplete()
                  end

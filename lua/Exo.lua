@@ -1361,6 +1361,7 @@ if Server then
         self.prevPlayerHealth = player.prevPlayerHealth
         self.prevPlayerMaxArmor = player.prevPlayerMaxArmor
         self.prevPlayerArmor = player.prevPlayerArmor
+       -- self.hasjumppack = player.hasjumppack
         
         if player.storedWeaponsIds then        
             self.storedWeaponsIds = player.storedWeaponsIds

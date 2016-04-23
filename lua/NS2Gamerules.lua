@@ -163,6 +163,7 @@ if Server then
             self:AddTimedCallback(NS2Gamerules.OpenSiegeMaybe, 1)
             self:AddTimedCallback(NS2Gamerules.UpdateHiveEggs, 8)
             self:AddTimedCallback(NS2Gamerules.UnBlockAllBlockables, 4)
+            self:AddTimedCallback(NS2Gamerules.UpdateLevels, 8)
             
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
@@ -972,6 +973,7 @@ function NS2Gamerules:OnUpdate(timePassed)
         GetEffectManager():OnUpdate(timePassed)
         
         if Server then
+        /*
          if self:GetGameStarted() and not self.siegedoorsopened and not Shared.GetCheatsEnabled() and (self.lastexploitcheck + 30) < Shared.GetTime()  then
          self.lastexploitcheck = Shared.GetTime()
           for _, entity in ipairs(GetEntitiesWithMixin("Live")) do
@@ -987,6 +989,7 @@ function NS2Gamerules:OnUpdate(timePassed)
                end 
            end 
          end  
+         */
       
             if self.justCreated then
             
@@ -1799,7 +1802,7 @@ end
                local setsiegedoortime = 0
                  setsiegedoortime = ConditionalValue(positive == true, currentroundratio * currentstatusratio + (currenttimeleft * currentroundratio), frontdooropenratio - currentstatusratio * (currenttimeleft * currentroundratio ))  
                   Print("setsiegedoortime is %s", setsiegedoortime)
-               setsiegedoortime = ConditionalValue(self.lastnode == true, setsiegedoortime * 4 , setsiegedoortime) --last node rules
+               setsiegedoortime = ConditionalValue(self.lastnode == true, setsiegedoortime * 8 , setsiegedoortime) --last node rules
                   Print("setsiegedoortime is %s", setsiegedoortime)
              --  setsiegedoortime = math.abs(currenttimeleft - (kSiegeDoorTime - gameLength) )
              --      Print("setsiegedoortime is %s", setsiegedoortime)
@@ -1807,6 +1810,25 @@ end
              --  if negative == true then setsiegedoortime = setsiegedoortime * -1 end
              --      Print("setsiegedoortime is %s", setsiegedoortime)
              local amount = math.round(setsiegedoortime,0)
+             
+             if not self.lastnode == true then
+             
+               if amount >= 181 then
+              amount = 180
+             elseif amount <= -181 then
+              amount = -180
+              end
+              
+            else
+            
+              if amount >= 360 then
+              amount = 360
+             elseif amount <= -360 then
+              amount = -360
+              end
+            
+            end
+             
              Shared.ConsoleCommand(string.format("sh_addsiegetime %s", amount ))
              SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, amount)
              SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, amount)
@@ -2047,7 +2069,7 @@ local unbuilt = 0
 end
 function NS2Gamerules:CystUnbuiltRooms()
      for _, powerpoint in ientitylist(Shared.GetEntitiesWithClassname("PowerPoint")) do
-               if not powerpoint:GetIsBuilt() then powerpoint:ActivateCystTimer() end
+               if not powerpoint:GetIsBuilt() and not powerpoint:GetIsInSiegeRoom() then powerpoint:ActivateCystTimer() end
      end
 end
 function NS2Gamerules:AutoDrop(respoint)          
@@ -2088,6 +2110,14 @@ end
           end
           return not self.siegedoorsopened
     end
+function NS2Gamerules:UpdateLevels()
+           for _, entity in ipairs(GetEntitiesWithMixinForTeam("Construct", 1)) do
+                 if entity.AddXP and entity.GetGainXPAmount then 
+                  entity:AddXP(entity:GetGainXPAmount())
+                  end
+              end
+              return self.gameState == kGameState.Started
+    end
 function NS2Gamerules:UnBlockAllBlockables()
            for _, entity in ipairs(GetEntitiesWithMixinForTeam("Construct", 1)) do
                    if entity:GetPhysicsGroup() == PhysicsGroup.BigStructuresGroup or
@@ -2117,6 +2147,7 @@ function NS2Gamerules:OpenFrontDoors()
  self:CountNodes()
  self:CystUnbuiltRooms()
  self:SetLocationVar()
+ 
                  SendTeamMessage(self.team1, kTeamMessageTypes.FrontDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.FrontDoor)
                  self:AddTimedCallback(NS2Gamerules.BlockAllBlockables, 4)
@@ -2249,6 +2280,15 @@ function NS2Gamerules:MaintainHiveDefense()
           
                   return true
 end
+/*
+Basically the siegewall that protects aliens
+These structures act as a sponge for the arcs to prioritize first over hives, by chance.
+By chance meaning the arcs can still shoot the hives dependent on circumstance...?
+Alas, these structures are also support for the alien players inside siegeroom.
+Rewarding them for making the journey and basically somehow tank up the player
+to handle a teamful of marines meanwhile not being overpowered
+enough to takeover siegeroom without any chance for marines to take it back.
+*/
 function NS2Gamerules:HiveDefenseMain(hive, shifts, crags, shades)
          local tres = kStructureDropCost
          local spawned = false

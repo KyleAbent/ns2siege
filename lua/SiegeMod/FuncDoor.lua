@@ -39,7 +39,7 @@ FuncDoor.kStateSound = { [FuncDoor.kState.Open] = FuncDoor.kOpenSound,
                         }
 
 
-local kUpdateAutoOpenRate = 1
+local kUpdateAutoOpenRate = 4
 local kWeldDelay = 10
 
 

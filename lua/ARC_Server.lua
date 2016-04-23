@@ -1,5 +1,17 @@
 --Kyle Abent
 --modified by
+/*
+function ARC:SetSiegeArcDmgBonus(amount)
+      local arc = GetEntitiesWithinRange("ARC", self:GetOrigin(), 999999)
+      if #arc == 0 then return end
+       for i = 1, #arc do
+         local entity = arc[i]
+        if entity:GetIsInSiege() then
+           entity:AddDmgBonus(amount)
+         end
+       end
+end
+*/
 function ARC:GetIsSiegeEnabled()
             local gameRules = GetGamerules()
             if gameRules then
@@ -137,8 +149,9 @@ function ARC:PerformSiegeAttack(self, finalTarget)
              local builtscalar = Clamp(entity:GetHealthScalar(), 0.10, 1)
              local unbuiltscalar = Clamp(entity:GetHealthScalar(), 0.35, 1)
              local healthscalar = ConditionalValue(entity.GetIsBuilt and entity:GetIsBuilt(), builtscalar, unbuiltscalar)
-              damage = (damage * healthscalar) 
-              damage = ConditionalValue(not entity:isa("Hive"), damage * 0.9, damage)
+              damage = (damage * healthscalar)
+             -- damage = damage * self.dmgbonus
+            --  damage = ConditionalValue(not entity:isa("Hive"), damage * 0.9, damage)
               
             local hitEntities = GetEntitiesWithMixinWithinRange("Live", entity:GetOrigin(), ARC.kSplashRadius)
             RadiusDamage(hitEntities, entity:GetOrigin(), ARC.kSplashRadius, damage, self, true)

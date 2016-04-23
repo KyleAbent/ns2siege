@@ -310,6 +310,7 @@ function GUIInsight_TopBar:Update(deltaTime)
     
     
         local frontTimeText = nil
+        local open = false
         
         
     if frontTime ~= 0 then
@@ -326,23 +327,26 @@ function GUIInsight_TopBar:Update(deltaTime)
      frontTimeText = string.format("FrontDoor: %d:%02d", minutes, seconds)
     else
       frontTimeText = string.format("FrontDoor: Open", minutes, seconds)
+      open = true
      end
 
 
         local siegeTimeText = nil
       if siegeTime ~= 0 then  
+          if open then
            local timerlength = PlayerUI_GetSiegeLength()
            local NowToSiege = timerlength - (Shared.GetTime() - PlayerUI_GetGameStartTime())
-          -- Print("kSiegeDoorTime is %s", timerlength)
            local SiegeLength =  math.ceil( Shared.GetTime() + NowToSiege - Shared.GetTime() )
            siegeTime = SiegeLength
-    local seconds = math.round(siegeTime)
-    local minutes = math.floor(seconds / 60)
-    local hours = math.floor(minutes / 60)
-    minutes = minutes - hours * 60
-    seconds = seconds - minutes * 60 - hours * 3600
-    
-    siegeTimeText = string.format("SiegeDoor: %d:%02d", minutes, seconds)
+           local seconds = math.round(siegeTime)
+           local minutes = math.floor(seconds / 60)
+           local hours = math.floor(minutes / 60)
+           minutes = minutes - hours * 60
+           seconds = seconds - minutes * 60 - hours * 3600
+          siegeTimeText = string.format("SiegeDoor: %d:%02d", minutes, seconds)
+        else
+       siegeTimeText = string.format("SiegeDoor: 25:00")
+       end
      else
        siegeTimeText = string.format("SiegeDoor: Open")
       end

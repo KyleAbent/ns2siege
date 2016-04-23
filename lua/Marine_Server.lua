@@ -141,7 +141,7 @@ end
 function Marine:CopyPlayerDataFrom(player)
 
     Player.CopyPlayerDataFrom(self, player)
-   if self:isa("JetpackMarine") then self.hasfirebullets = player.hasfirebullets end //May this prevent the always spawning with it if otherwise?
+  -- if self:isa("JetpackMarine") then self.hasfirebullets = player.hasfirebullets end //May this prevent the always spawning with it if otherwise?
     if player.parasited and GetGamerules():GetGameStarted() then
         self.timeParasited = player.timeParasited
         self.parasited = player.parasited

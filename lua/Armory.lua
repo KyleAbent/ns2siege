@@ -53,9 +53,9 @@ gArmoryHealthHeight = 1.4
 Armory.kResupplyUseRange = 2.5
 
 
-Armory.kSentryGainXp =  0.06
+Armory.kGainXp =  2.64
 //Armory.kSentryLoseXp = 0.06
-Armory.kMaxLevel = 99
+Armory.kMaxLevel = 100
 
 local kArmoryWeldGainXp =  0.45
 local kArmoryScaleSize = 1.8
@@ -237,12 +237,25 @@ end
 function Armory:GetMaxLevel()
 return Armory.kMaxLevel
 end
+function Armory:GetWeldAddXp()
+return 0.06
+end
 function Armory:GetAddXPAmount()
 local bonus = self:GetLevel()/self:GetMaxLevel()
 local experience = kArmoryWeldGainXp
       experience = ConditionalValue(self:GetIsSetup(), experience * 4, experience)
       experience = experience * bonus + experience
 return  experience
+end
+function Armory:GetDamageResistance()
+return (self.level/100) * 30
+end
+function Armory:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
+local damage = 1
+    if doer:isa("DotMarker") or doer:isa("Gore") then
+       damage = damage - (self:GetDamageResistance()/100) * damage
+    end
+  damageTable.damage = damageTable.damage * damage 
 end
 function Armory:GetIsSetup()
         if Server then
@@ -360,7 +373,7 @@ function Armory:OverrideHintString( hintString, forEntity )
 end
   function Armory:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Level %s Armory"), self:GetLevel())
+    unitName = string.format(Locale.ResolveString("Armory (%s) (%s)"), self:GetLevel(), math.round(self:GetDamageResistance(),1) )
 return unitName
 end  
 function Armory:OnUpdatePoseParameters()
@@ -422,6 +435,7 @@ function Armory:OnUpdateAnimationInput(modelMixin)
 
 
 end
+
 function Armory:OnUpdate(deltaTime)
 
     if Client then

@@ -53,8 +53,9 @@ ARC.kFov                    = 360
 ARC.kCapsuleHeight = .05
 ARC.kCapsuleRadius = .5
 ARC.MaxLevel = 90
-ARC.GainXP = 0.792
+ARC.GainXP = 2.64
 ARC.ScaleSize = 1.3
+ARC.MaxDmgBonus = 2
 
 ARC.kMode = enum( {'Stationary', 'Moving', 'Targeting', 'Destroyed'} )
 
@@ -66,6 +67,7 @@ local networkVars =
 {
     mode = "enum ARC.kMode",
     level = "float (0 to " .. ARC.MaxLevel .. " by .1)",
+    --dmgbonus = "float (1 to " .. ARC.MaxDmgBonus .. " by .10)",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -131,6 +133,7 @@ function ARC:OnCreate()
     
     self:SetLagCompensated(true)
     self.level = 0
+    --self.dmgbonus = 1
 
 end
 
@@ -162,6 +165,13 @@ function ARC:OnInitialized()
             InitMixin(self, MapBlipMixin)
         end
  
+     /*
+         if (self:GetIsSiegeEnabled() and self:GetIsInSiege()) then
+           if self:GetArcsInSiege() > 1 then
+           self:SetSiegeArcDmgBonus(-0.10)
+           end
+        end
+        */
 
     
     elseif Client then
@@ -208,11 +218,13 @@ end
 function ARC:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
 local damage = 1
     if doer:isa("DotMarker") or doer:isa("Gore") then
-       damage = damage - (self.level/100) * damage
+       damage = damage - (self:GetDamageResistance()/100) * damage
     end
   damageTable.damage = damageTable.damage * damage 
 end
-
+function ARC:GetDamageResistance()
+return self.level
+end
 function ARC:GetEyePos()
     return self:GetOrigin() + self:GetViewOffset()
 end
@@ -280,9 +292,9 @@ end
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         if string.find(locationName, "siege") or string.find(locationName, "Siege") then
-        unitName = string.format(Locale.ResolveString("Level %s Siege ARC (%s)"), self:GetLevel(), self:GetArcsInSiege())
+        unitName = string.format(Locale.ResolveString("Siege ARC (%s) (%s)"), self:GetLevel(), self:GetArcsInSiege() ) --, self.dmgbonus )
         else
-        unitName = string.format(Locale.ResolveString("Level %s ARC (%s)"), self:GetLevel(), self:GetArcsInRange())
+        unitName = string.format(Locale.ResolveString("ARC (%s) (%s)"), self:GetLevel(), self:GetArcsInRange(), math.round(self:GetDamageResistance(),1))
         end
    //end
 return unitName
@@ -388,13 +400,13 @@ function ARC:OnUpdate(deltaTime)
     
     if Server then
     
-    
+         /*
       
             if self.Levelslowly == nil or (Shared.GetTime() > self.Levelslowly + 4) then
             self:AddXP(self:GetGainXPAmount())
             self.Levelslowly = Shared.GetTime()
             end
-  
+        */
 
     end
   
@@ -418,11 +430,22 @@ function ARC:OnKill(attacker, doer, point, direction)
         self:ClearOrders()
         
         self:SetMode(ARC.kMode.Destroyed)
-        
+        /*
+        if (self:GetIsSiegeEnabled() and self:GetIsInSiege()) then
+          self:SetSiegeArcDmgBonus(0.10)
+        end
+        */
     end 
   
 end
-
+/*
+function ARC:AddDmgBonus(amount)
+    local dmgReward = 0
+        dmgReward = math.min(amount, ARC.MaxDmgBonus - self.dmgbonus)
+        self.dmgbonus = self.dmgbonus + dmgReward     
+    return dmgReward
+end
+*/
 function ARC:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ARC:OnUpdateAnimationInput")

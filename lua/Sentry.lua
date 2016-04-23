@@ -81,9 +81,9 @@ Sentry.kMuzzleNode = "fxnode_sentrymuzzle"
 Sentry.kEyeNode = "fxnode_eye"
 Sentry.kLaserNode = "fxnode_eye"
 Sentry.Damage = 5
-Sentry.kSentryGainXp =  0.08
+Sentry.kGainXp =  2.64
 Sentry.kSentryLoseXp = 0.06
-Sentry.kSentryMaxLevel = 99
+Sentry.kSentryMaxLevel = 100 
 
 // prevents attacking during deploy animation for kDeployTime seconds
 local kDeployTime = 3.5
@@ -377,8 +377,8 @@ end
 function Sentry:GetHealthbarOffset()
     return 0.4
 end 
-function Sentry:GetAddXPAmount()
-return self:GetIsSetup() and  kSentryWeldGainXp * 4 or kSentryWeldGainXp
+function Sentry:GetWeldAddXp()
+return self:GetIsSetup() and  0.08 * 4 or 0.08
 end
 function Sentry:GetLevelPercentage()
 return self.level / Sentry.kSentryMaxLevel * kSentryScaleSize
@@ -447,18 +447,41 @@ function Sentry:TriggerEMP()
     return true
     
 end
+/*
 function Sentry:OnDamageDone(doer, target)
 if doer == self then
 self:AddXP(Sentry.kSentryGainXp)
 end
 end
+*/
   function Sentry:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Level %s Sentry"), self:GetLevel())
+    unitName = string.format(Locale.ResolveString("Sentry (%s) (%s)"), self:GetLevel(), math.round(self:GetDamageResistance(),1) )
 return unitName
 end  
+function Sentry:GetDamageResistance()
+return (self.level/100) * 30
+end
+function Sentry:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
+local damage = 1
+    if doer:isa("DotMarker") or doer:isa("Gore") then
+       damage = damage - (self:GetDamageResistance()/100) * damage
+    end
+  damageTable.damage = damageTable.damage * damage 
+end
 if Server then
-
+function Sentry:GetGainXPAmount()
+local amount =  Sentry.kGainXp
+local multiplier = 1
+multiplier = ConditionalValue(self:GetIsSetup(), multiplier * 1.36, multiplier)
+multiplier = ConditionalValue(GetIsSiegeEnabled(),amount * 2, 1)
+multiplier = multiplier * self:GetSentrysInRange()
+  return amount
+end
+function Sentry:GetSentrysInRange()
+      local sentry = GetEntitiesWithinRange("Sentry", self:GetOrigin(), 24)
+           return Clamp(#sentry, 0, 8)
+end
     local function OnDeploy(self)
     
         self.attacking = false

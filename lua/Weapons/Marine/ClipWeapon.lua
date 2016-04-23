@@ -561,7 +561,7 @@ function ClipWeapon:OnTag(tagName)
             self:FirePrimary(player)
             
             // Don't decrement ammo in Darwin mode
-            if not player or not ( player:GetDarwinMode() or player.RTDinfiniteammomode ) then
+            if not player or not ( player:GetDarwinMode() ) then --or player.RTDinfiniteammomode ) then
                 self.clip = self.clip - 1
             end
             
