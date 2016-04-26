@@ -1337,6 +1337,14 @@ end
 --TODO:
 function PlayerUI_MarineAbilityIconsImage()
 end
+function PlayerUI_GetFrontOpen()
+    local entityList = Shared.GetEntitiesWithClassname("GameInfo")
+    if entityList:GetSize() > 0 then
+        local gameInfo = entityList:GetEntityAtIndex(0)
+         return gameInfo:GetFrontOpen()
+    end
+    return 0
+end
 function PlayerUI_GetFrontLength()
     local entityList = Shared.GetEntitiesWithClassname("GameInfo")
     if entityList:GetSize() > 0 then
@@ -1358,7 +1366,7 @@ function PlayerUI_GetSiegeLength()
         if state ~= kGameState.NotStarted and
            state ~= kGameState.PreGame and
            state ~= kGameState.Countdown then
-               return gameInfo:GetSiegeTime()
+               return gameInfo:GetSiegeTime() 
         end
     end
     return 0

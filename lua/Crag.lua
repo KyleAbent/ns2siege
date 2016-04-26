@@ -238,22 +238,21 @@ local function GetHealTargets(self)
         
     end
     
-    if self.siegewall then 
+   if self.siegewall then 
     
        local siegeroom = self:GetSiegeRoomLocation()
        local entities = siegeroom:GetEntitiesInTrigger()
        if #entities ~= 0 then  
        for i = 1, #entities do
         local healable = entities[i]
-        if not healable:isa("SoundEffect") and healable.GetIsAlive() and healable:isa("Player") and not healable:isa("Commander") then
+        if healable:isa("Player") and healable:isa("Alien") then
             table.insertunique(targets, healable)
         end
        end
+       end
     end 
-       
 
         
-    end
 
     for _, healable in ipairs(GetEntitiesWithMixinForTeamWithinRange("Live", self:GetTeamNumber(), self:GetOrigin(), Crag.kHealRadius)) do
         

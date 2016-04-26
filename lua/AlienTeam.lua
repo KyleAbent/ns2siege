@@ -88,6 +88,14 @@ function AlienTeam:GetEggCount()
     return self.eggCount or 0
 end
  if Server then
+ /*
+ function AlienTeam:DeployBeacons(powerorigin)
+     --Same as Phase cannons. Though rather inside siegeroom. To mimic the action
+     -- of Alien Commander trying to gain control of Siegeroom, as the comm would do
+     -- back in the December 2014 builds with Egg Beacon and Structure Beacon manually placed.
+ 
+ end
+ */
 function AlienTeam:DeployPhaseCannons(powerorigin)
 --So basically help the aliens out if marines defend too well and the game gets boring
 --By enabling this automatic script to base automatic entities spawning based on chance.

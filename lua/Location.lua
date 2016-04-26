@@ -75,6 +75,17 @@ if Server then
             end
             return cysts
     end
+    function Location:GetAlienPlayersInLocation(location)
+               local returnvalue = {}
+                         local entities = self:GetEntitiesInTrigger()
+                     for i = 1, #entities do
+                     local ent = entities[i]
+                           if ent:isa("Alien") and ent:isa("Player") then 
+                              table.insert(returnvalue,returnvalue)
+                           end
+                     end
+                     return returnvalue
+    end
     function Location:SetIsPoweredAtFrontOpen()
                          local entities = self:GetEntitiesInTrigger()
                      for i = 1, #entities do

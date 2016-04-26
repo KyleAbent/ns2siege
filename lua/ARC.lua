@@ -53,9 +53,9 @@ ARC.kFov                    = 360
 ARC.kCapsuleHeight = .05
 ARC.kCapsuleRadius = .5
 ARC.MaxLevel = 90
-ARC.GainXP = 2.64
+ARC.GainXP = 1.32
 ARC.ScaleSize = 1.3
-ARC.MaxDmgBonus = 2
+ARC.MaxDmgBonus = 100
 
 ARC.kMode = enum( {'Stationary', 'Moving', 'Targeting', 'Destroyed'} )
 
@@ -67,7 +67,7 @@ local networkVars =
 {
     mode = "enum ARC.kMode",
     level = "float (0 to " .. ARC.MaxLevel .. " by .1)",
-    --dmgbonus = "float (1 to " .. ARC.MaxDmgBonus .. " by .10)",
+    dmgbonus = "float (1 to " .. ARC.MaxDmgBonus .. " by 1)",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -133,7 +133,7 @@ function ARC:OnCreate()
     
     self:SetLagCompensated(true)
     self.level = 0
-    --self.dmgbonus = 1
+    self.dmgbonus = 1
 
 end
 
@@ -165,13 +165,13 @@ function ARC:OnInitialized()
             InitMixin(self, MapBlipMixin)
         end
  
-     /*
+     
          if (self:GetIsSiegeEnabled() and self:GetIsInSiege()) then
            if self:GetArcsInSiege() > 1 then
-           self:SetSiegeArcDmgBonus(-0.10)
+           self:AddSiegeArcDmgBonus(-100)
            end
         end
-        */
+        
 
     
     elseif Client then
@@ -292,7 +292,7 @@ end
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         if string.find(locationName, "siege") or string.find(locationName, "Siege") then
-        unitName = string.format(Locale.ResolveString("Siege ARC (%s) (%s)"), self:GetLevel(), self:GetArcsInSiege() ) --, self.dmgbonus )
+        unitName = string.format(Locale.ResolveString("Siege ARC (%s) (%s) (%s)"), self:GetLevel(), self:GetArcsInSiege(), self.dmgbonus )
         else
         unitName = string.format(Locale.ResolveString("ARC (%s) (%s)"), self:GetLevel(), self:GetArcsInRange(), math.round(self:GetDamageResistance(),1))
         end
@@ -430,22 +430,22 @@ function ARC:OnKill(attacker, doer, point, direction)
         self:ClearOrders()
         
         self:SetMode(ARC.kMode.Destroyed)
-        /*
+        
         if (self:GetIsSiegeEnabled() and self:GetIsInSiege()) then
-          self:SetSiegeArcDmgBonus(0.10)
+          self:AddSiegeArcDmgBonus(4)
         end
-        */
+        
     end 
   
 end
-/*
+
 function ARC:AddDmgBonus(amount)
     local dmgReward = 0
         dmgReward = math.min(amount, ARC.MaxDmgBonus - self.dmgbonus)
-        self.dmgbonus = self.dmgbonus + dmgReward     
+        self.dmgbonus = Clamp(self.dmgbonus + dmgReward, 0, ARC.MaxDmgBonus)     
     return dmgReward
 end
-*/
+
 function ARC:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ARC:OnUpdateAnimationInput")

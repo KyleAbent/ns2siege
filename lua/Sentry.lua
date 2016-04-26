@@ -81,7 +81,7 @@ Sentry.kMuzzleNode = "fxnode_sentrymuzzle"
 Sentry.kEyeNode = "fxnode_eye"
 Sentry.kLaserNode = "fxnode_eye"
 Sentry.Damage = 5
-Sentry.kGainXp =  2.64
+Sentry.kGainXp =  1.32
 Sentry.kSentryLoseXp = 0.06
 Sentry.kSentryMaxLevel = 100 
 

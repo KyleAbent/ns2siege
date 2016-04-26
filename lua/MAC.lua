@@ -769,7 +769,7 @@ function MAC:GetAddXPAmount()
 return self:GetIsSetup() and MAC.WeldXp * 4 or MAC.WeldXp
 end
 function MAC:GetGainXPAmount()
-return 2.64 * 0.75
+return 1.32 * 0.75 
 end
 function MAC:GetWeldAddXp()
 return self:GetIsSetup() and MAC.WeldXp * 4 or MAC.WeldXp

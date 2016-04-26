@@ -115,7 +115,8 @@ local networkVars =
     powerState = "enum PowerPoint.kPowerState",
     timeOfLightModeChange = "time",
     timeOfDestruction  = "time",
-    attackTime = "float (0 to " .. (kMaxAttackTime + 0.1) .. " by 0.01"
+    attackTime = "float (0 to " .. (kMaxAttackTime + 0.1) .. " by 0.01",
+    lastvalue = "float (0 to 999 by 1_",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -199,6 +200,7 @@ function PowerPoint:OnCreate()
     end
     
     SetupWithInitialSettings(self)
+    self.lastvalue = 0
     
 end
 
@@ -399,7 +401,14 @@ if Server then
 
 function PowerPoint:SetMainRoom()
 self:AttackDefendWayPoint()                         --Silly torpedos
-if self:GetIsSiegeEnabled() then self:GetEnemyTeam():DeployPhaseCannons(self) end
+
+   if self:GetIsSiegeEnabled() then 
+    self:GetEnemyTeam():DeployPhaseCannons(self) 
+    --  if self:GetIsInSiegeRoom then
+    --   self:GetEnemyTeam():DeployBeacons(self) 
+   --   end
+      
+   end
 self:SetLightMode(kLightMode.MainRoom)
 self:AddTimedCallback(function() self:SetLightMode(kLightMode.Normal) end, 10)
 end

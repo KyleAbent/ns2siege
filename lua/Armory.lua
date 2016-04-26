@@ -53,7 +53,7 @@ gArmoryHealthHeight = 1.4
 Armory.kResupplyUseRange = 2.5
 
 
-Armory.kGainXp =  2.64
+Armory.kGainXp =  1.32
 //Armory.kSentryLoseXp = 0.06
 Armory.kMaxLevel = 100
 

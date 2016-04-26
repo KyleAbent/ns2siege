@@ -164,6 +164,7 @@ if Server then
             self:AddTimedCallback(NS2Gamerules.UpdateHiveEggs, 8)
             self:AddTimedCallback(NS2Gamerules.UnBlockAllBlockables, 4)
             self:AddTimedCallback(NS2Gamerules.UpdateLevels, 8)
+            self.gameInfo:SetFrontOpen(false)
             
        //     self:AddTimedCallback(NS2Gamerules.FrontDoor, kFrontDoorTime) 
        //     self:AddTimedCallback(NS2Gamerules.SiegeDoor, kSiegeDoorTime) 
@@ -1779,16 +1780,59 @@ function NS2Gamerules:AutoBuildResTowers()
          respoint:AutoDrop()
     end//
 end
-    function NS2Gamerules:NodeRules(powerpoint)
+    function NS2Gamerules:LoadValues(value, built, killed, who)
+       local amount = math.abs(value)
+       
+           if built then
+            amount = amount
+           elseif killed then
+             amount = amount * -1
+           end
+           
+             Shared.ConsoleCommand(string.format("sh_addsiegetime %s", amount ))
+             SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, amount)
+             SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, amount)
+             
+             --Clear
+             who.lastvalue = 0 
+    end
+    function NS2Gamerules:NodeRules(powerpoint, built, killed)
+       
+       local lastvalue = powerpoint.lastvalue
+       
+       if lastvalue ~= 0 then 
+          
+          self:LoadValues(lastvalue, built, killed, powerpoint)
+          return
+        
+       end
+       
+        if self.siegedoorsopened then
+        
+             if built then
+             self:AddSiegeArcDmgBonus(0.01)
+             elseif killed then
+             self:AddSiegeArcDmgBonus(-0.02)
+             end
+             
+        end
+        
+    
                --Ratios
                local frontdooropenratio = self.setuppowernodecount 
+                 Print("frontdooropenratio is %s", frontdooropenratio)
                local built, unbuilt = self:CountCurrentNodes()       
                local currentstatusratio = (built/unbuilt)
+                 Print("currentstatusratio is %s", currentstatusratio)
                --Time
                local gameRules = GetGamerules()
                local gameLength = Shared.GetTime() - gameRules:GetGameStartTime()
                local currenttimeleft = math.abs(kSiegeDoorTimey - gameLength )
+                 Print("currenttimeleft is %s", currenttimeleft)
                local currentroundratio = GetRoundLengthToSiege()
+                 Print("currentroundratio is %s", currentroundratio)
+               local reveresedroundratio = GetReversedRoundLengthToSiege()
+                 Print("reveresedroundratio is %s", reveresedroundratio)
                --Positive or Negative?
                 local positive = false
                 local negative = false
@@ -1799,16 +1843,19 @@ end
                     negative = true
                    end
                -- Okay, how much time?
+               local maxtime = reveresedroundratio * 180
+                    Print("maxtime is %s", maxtime)
                local setsiegedoortime = 0
-                 setsiegedoortime = ConditionalValue(positive == true, currentroundratio * currentstatusratio + (currenttimeleft * currentroundratio), frontdooropenratio - currentstatusratio * (currenttimeleft * currentroundratio ))  
+               local value1 = maxtime*(math.abs(frontdooropenratio - (currentstatusratio * currentroundratio) ) )
+               value1 = math.round(value1, 0)
+               Print("value1 is %s", value1)
+               value1 = value1 * math.abs(currentstatusratio - frontdooropenratio) + value1
+               Print("value1 is %s", value1)
+               value1 = ConditionalValue(self.lastnode == true, value1 * 8, value1)
+               Print("value1 is %s", value1)
+               local value2 = value1 * -1 
+                 setsiegedoortime = ConditionalValue(positive == true, value1, value2)  
                   Print("setsiegedoortime is %s", setsiegedoortime)
-               setsiegedoortime = ConditionalValue(self.lastnode == true, setsiegedoortime * 8 , setsiegedoortime) --last node rules
-                  Print("setsiegedoortime is %s", setsiegedoortime)
-             --  setsiegedoortime = math.abs(currenttimeleft - (kSiegeDoorTime - gameLength) )
-             --      Print("setsiegedoortime is %s", setsiegedoortime)
-               
-             --  if negative == true then setsiegedoortime = setsiegedoortime * -1 end
-             --      Print("setsiegedoortime is %s", setsiegedoortime)
              local amount = math.round(setsiegedoortime,0)
              
              if not self.lastnode == true then
@@ -1829,6 +1876,16 @@ end
             
             end
              
+             if positive and amount + currenttimeleft >(1500) then
+                local overflow = 0
+                overflow = amount + currenttimeleft
+                overflow = overflow - (1500)
+                amount = amount - overflow
+             end
+             
+             
+             amount = math.round(amount,0)
+             powerpoint.lastvalue = amount
              Shared.ConsoleCommand(string.format("sh_addsiegetime %s", amount ))
              SendTeamMessage(self.team1, kTeamMessageTypes.SiegeTime, amount)
              SendTeamMessage(self.team2, kTeamMessageTypes.SiegeTime, amount)
@@ -1836,7 +1893,7 @@ end
     function NS2Gamerules:NodeBuiltFront(powerpoint)
     --Kyle Abent =] 
     
-         self:NodeRules(powerpoint)
+         self:NodeRules(powerpoint, true, false)
            
     end
         function NS2Gamerules:SetupRoomBluePrint(location, powerpoint, hasfrontdoor, issiege)
@@ -2013,7 +2070,7 @@ end
     end
     function NS2Gamerules:NodeKilledFront(powerpoint)
     --Kyle Abent 
-          self:NodeRules(powerpoint)
+          self:NodeRules(powerpoint, false, true)
     end
     function NS2Gamerules:CountCurrentNodes()
     local built = 0
@@ -2147,6 +2204,7 @@ function NS2Gamerules:OpenFrontDoors()
  self:CountNodes()
  self:CystUnbuiltRooms()
  self:SetLocationVar()
+ self.gameInfo:SetFrontOpen(true)
  
                  SendTeamMessage(self.team1, kTeamMessageTypes.FrontDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.FrontDoor)
@@ -2249,19 +2307,58 @@ function NS2Gamerules:GetHiveLocationForScan()
           end 
           return nil
 end
+function NS2Gamerules:AddSiegeArcDmgBonus(amount)
+      local arc = GetEntitiesWithinRange("ARC", self:GetHiveLocationForScan(), 999999)
+      if #arc == 0 then return end
+       for i = 1, #arc do
+         local entity = arc[i]
+        if entity:GetIsInSiege() then
+           entity:AddDmgBonus(amount)
+         end
+       end
+end
 function NS2Gamerules:DropshipArcs()
-   local arcspawnpoint = self:GetSiegePowerPoint():FindArcHiveSpawn()
-     if self:GetArcCountInSiege() <= 15 and self.team1:GetTeamResources() >= 8 then
 
+local frontdooropenratio = self.setuppowernodecount 
+       Print("frontdooropenratio is %s", frontdooropenratio)
+local built, unbuilt = self:CountCurrentNodes()       
+local currentstatusratio = (built/unbuilt)
+       Print("frontdooropenratio is %s", currentstatusratio)
+local lostnodes = math.round(math.abs(currentstatusratio - frontdooropenratio), 1) or 0.1
+       Print("lostnodes is %s", lostnodes)
+
+local weight = 0
+ 
+  if lostnodes > 1 and built <= 3 then
+       self:AddSiegeArcDmgBonus(0.01)
+  elseif built >= 2 then
+       weight = (built/lostnodes)
+       Print("Built >= 2, DropShipArcs weight is %s", weight)
+  end
+  
+local arcsinsiege = self:GetArcCountInSiege()
+local tres = self.team1:GetTeamResources()
+local toofat = weight >= 4 and arcsinsiege > 4
+
+       for i = 1, 4 do
+       Print("DropShipArcs toofat is %s", toofat)
+       end
+
+     if arcsinsiege <= 15 and tres >= 8 and not toofat then
+        local arcspawnpoint = self:GetSiegePowerPoint():FindArcHiveSpawn()
          if arcspawnpoint ~= nil then
          local dropship = CreateEntity(Dropship.kMapName, arcspawnpoint, 1) 
           self.team1:SetTeamResources(self.team1:GetTeamResources()  - 8)
-            dropship.flyspeed = .4
+          --  dropship.flyspeed = .4
         end
+     end
+     
+     if toofat then
+      self:AddSiegeArcDmgBonus(weight)
      end
     
      
-     if  self.team1:GetTeamResources() >= 3 then
+     if  self.team1:GetTeamResources() >= 8 then
           local origin = self:GetHiveLocationForScan()
           CreateEntity( Scan.kMapName, origin or arcspawnpoint, 1)
           self.team1:SetTeamResources(self.team1:GetTeamResources()  - 3)

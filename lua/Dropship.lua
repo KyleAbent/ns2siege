@@ -43,7 +43,7 @@ local networkVars = {
     techId = "string (128)",
     mapname = "string (128)",
     isbeacon = "boolean",
-     flyspeed = "float (0 to 10 by .1)",
+   --  flyspeed = "float (0 to 10 by .1)",
                      }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -99,7 +99,7 @@ function Dropship:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)  
     self.flying = true
-    self.flyspeed = 1
+   -- self.flyspeed = 1
     self.startsBuilt = true
     self.techId = kTechId.ARC
     self.mapname = ARC.kMapName
@@ -131,7 +131,7 @@ function Dropship:OnInitialized()
     
     InitMixin(self, IdleMixin)
         self:DoubleCheck()
-    self:AddTimedCallback(Dropship.Derp, (14*self.flyspeed))
+    self:AddTimedCallback(Dropship.Derp, 14) --(14*self.flyspeed))
 end
 function Dropship:DoubleCheck()
     if self:isa("DropshipBeacon") then self.isbeacon = true end
@@ -273,7 +273,7 @@ function Dropship:OnUpdateAnimationInput(modelMixin)
     PROFILE("Dropship:OnUpdateAnimationInput")
     
     modelMixin:SetAnimationInput("flying", self.flying)
-    modelMixin:SetAnimationInput("speed", self.flyspeed)
+    --modelMixin:SetAnimationInput("speed", self.flyspeed)
     
 end
 

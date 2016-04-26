@@ -557,6 +557,8 @@ local randomowner = nil
                    break
                    end
                    
+                   if randomowner == nil then return true end
+                   
                    local entrance = CreateEntity(TunnelEntrance.kMapName, self:FindFreeSpace(), 2) 
                    local exit = CreateEntity(TunnelEntrance.kMapName, self:FindFreeSpace(), 2) 
                    entrance:SetOwner(randomowner)

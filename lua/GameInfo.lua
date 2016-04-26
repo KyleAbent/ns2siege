@@ -22,6 +22,7 @@ local networkVars =
     numPlayersTotal = "integer",
     frontTime = "float",
     siegeTime = "float",
+    frontOpen = "boolean",
 }
 
 function GameInfo:OnCreate()
@@ -39,6 +40,7 @@ function GameInfo:OnCreate()
         self.numPlayersTotal = 0
         self.frontTime = kFrontDoorTime
         self.siegeTime = kSiegeDoorTimey 
+        self.frontOpen = false
         
     end
     
@@ -50,6 +52,12 @@ end
 
 function GameInfo:GetGameStarted()
     return self.state == kGameState.Started
+end
+function GameInfo:GetFrontOpen()
+    return self.frontOpen
+end
+function GameInfo:SetFrontOpen(boolean)
+     self.frontOpen = boolean
 end
 function GameInfo:GetSiegeTime()
        return self.siegeTime

@@ -22,7 +22,7 @@ function Plugin:AdjustTimer(Number)
 
 local newtimer = 0
 local calculation = kSiegeDoorTimey + (Number)
-kSiegeDoorTimey = Clamp(calculation, 0, 1500)
+kSiegeDoorTimey = Clamp(calculation, 0, 1500 + 300)
 self:UpdateGameInfo(kSiegeDoorTimey)                     
 end
 function Plugin:UpdateGameInfo(time)

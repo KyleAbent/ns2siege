@@ -313,7 +313,7 @@ function GUIInsight_TopBar:Update(deltaTime)
         local open = false
         
         
-    if frontTime ~= 0 then
+    if not PlayerUI_GetFrontOpen() then
         local timerlength = PlayerUI_GetFrontLength()
         local NowToFront = timerlength - (Shared.GetTime() - PlayerUI_GetGameStartTime())
         local FrontLength =  math.ceil( Shared.GetTime() + NowToFront - Shared.GetTime() )
