@@ -53,7 +53,9 @@ end
 function Player:GetName()
     return self.name ~= "" and self.name or kDefaultPlayerName
 end
-
+function Player:OnUpdatePlayer(deltaTime)    
+    -- do nothing
+end
 function Player:GetNameHasBeenSet()
     return self.name ~= ""
 end
@@ -219,8 +221,7 @@ function Player:OnKill(killer, doer, point, direction)
     end
     
     self.lastClass = self:GetMapName()
-    self:AddTimedCallback(Player.UpdateChangeToSpectator, 2)
-   --self:UpdateChangeToSpectator(self)
+
 end
 
 function Player:SetControllerClient(client)
@@ -323,10 +324,13 @@ function Player:GetDeathMapName()
     return Spectator.kMapName
 end
 
-function Player:UpdateChangeToSpectator()
+local function UpdateChangeToSpectator(self)
+
+    if not self:GetIsAlive() and not self:isa("Spectator") then
+    
         local time = Shared.GetTime()
-        local autobeacon = self:GetTeamNumber() == 1 and math.random(1,4) == 1 
-        
+        if self.timeOfDeath ~= nil and (time - self.timeOfDeath > kFadeToBlackTime) then
+           
             -- Destroy the existing player and create a spectator in their place (but only if it has an owner, ie not a body left behind by Phantom use)
             local owner = Server.GetOwner(self)
             if owner then
@@ -335,24 +339,32 @@ function Player:UpdateChangeToSpectator()
                 local killer = self.killedBy and Shared.GetEntity(self.killedBy) or nil
                     
                 local spectator = self:Replace(self:GetDeathMapName())
-                if autobeacon then
-                 local gameRules = GetGamerules()
-                 if gameRules then
-                   autobeacon = gameRules:AutoBeacon(spectator) 
-                    Print("auto beacon on marine active")
-                    end
-                 end
-                 
-                 if not autobeacon then
                 spectator:GetTeam():PutPlayerInRespawnQueue(spectator)
-                end
-                
 
                 if killer then
                     spectator:SetupKillCam(self, killer)
                 end
             
             end
+            
+        end
+        
+    end
+    
+end
+
+function Player:OnUpdatePlayer(deltaTime)
+
+    UpdateChangeToSpectator(self)
+    
+    local gamerules = GetGamerules()
+    self.gameStarted = gamerules:GetGameStarted()
+    if self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index then
+        self.countingDown = gamerules:GetCountingDown()
+    else
+        self.countingDown = false
+    end
+    
 end
 
 -- Remember game time player enters queue so they can be spawned in FIFO order

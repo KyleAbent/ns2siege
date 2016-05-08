@@ -6,9 +6,9 @@ kSearchFor = 45
 kExpandCystInterval =  8
 kStructureDropCost = 8
 kCystSpawnCost = 1
-kBuilderPowerRepairRate = 440
-kWelderPowerRepairRate = 880
-kMarineRepairHealthPerSecond = 2400
+--kBuilderPowerRepairRate = 440
+--kWelderPowerRepairRate = 880
+--kMarineRepairHealthPerSecond = 2400
 kLeapEnergyCost = 20
 kSentryBatteryHealth = 1200
 kHiveMoveUpVector = 0
@@ -94,6 +94,49 @@ kExosuitTechResearchCost = 0
 kGrenadeTechResearchCost = 0
 kAdvancedArmoryUpgradeCost = 0
 
+////// duration of seconds to unlock each teach automatically & passively
+
+kSecondMarkToUnlockCatPackTech = 480
+kSecondMarkToUnlockNanoTech = 660
+kSecondMarkToUnlockPhaseTech = 240
+kWeapons1SecondUnlock = 240
+kArmor1SecondUnlock = 310
+kWeapons2SecondUnlock = 360
+kArmor2SecondUnlock = 420
+kArmor3SecondUnlock = 540
+kWeapons3SecondUnlock = 660
+kRifleClipSecondUnlock = 780
+kMinuteMarkToUnlockMines = 60
+kMinuteMarkToUnlockGrenades = 120
+kMinuteMarkToUnlockShotguns = 180
+kMinuteMarkToUnlockHeavyRifle = 900
+kMinuteMarkToUnlockAA = 240 
+kJetpackMinuteUnlockTime = 180
+kExoSuitMinuteUnlockTime = 240
+
+
+/////////////min///////////////
+kSecondMarkToUnlockCatPackTechMin  = 300 // front/side door average
+kSecondMarkToUnlockNanoTechMin   = 300 // front/side door average
+kSecondMarkToUnlockPhaseTechMin  = 75 // some teaams and maps need this early
+kWeapons1SecondUnlockMin   = 60 
+kWeapons2SecondUnlockMin   = 330
+kWeapons3SecondUnlockMin   = 490 
+kArmor1SecondUnlockMin   = 60
+kArmor2SecondUnlockMin   = 360 
+kArmor3SecondUnlockMin   = 450
+kRifleClipSecondUnlockMin   = 480
+kMinuteMarkToUnlockMinesMin   = 15
+kMinuteMarkToUnlockGrenadesMin   = 45
+kMinuteMarkToUnlockShotgunsMin   = 60
+kMinuteMarkToUnlockHeavyRifleMin   = 780
+kMinuteMarkToUnlockAAMin   = 60
+kJetpackMinuteUnlockTimeMin   = 60
+kExoSuitMinuteUnlockTimeMin   = 60
+//////////////////////////////max////////////////////
+kSecondMarkToUnlockCatPackTechMax  = 660
+kSecondMarkToUnlockNanoTechMax  = 660
+kSecondMarkToUnlockPhaseTechMax  = 240
 kWeapons1SecondUnlockMax  = 240
 kArmor1SecondUnlockMax  = 310
 kWeapons2SecondUnlockMax  = 480
@@ -101,9 +144,17 @@ kArmor2SecondUnlockMax  = 750
 kArmor3SecondUnlockMax  = 690
 kWeapons3SecondUnlockMax  = 660
 kRifleClipSecondUnlockMax  = 780
+kMinuteMarkToUnlockMinesMax  = 60
+kMinuteMarkToUnlockGrenadesMax  = 120
+kMinuteMarkToUnlockShotgunsMax  = 180
+kMinuteMarkToUnlockHeavyRifleMax  = 900
+kMinuteMarkToUnlockAAMax  = 360
+kJetpackMinuteUnlockTimeMax  = 300
+kExoSuitMinuteUnlockTimeMax  = 300
+//////////////////////////////
 
 //////////////////////////////
-// For Siege doors for mappers
+// For Siege doors for mappers. Okay zycar i get it mappers require support than just this. 
 kMoveUpVector = 10   
 kMoveZVector = 0
 kMoveXVector = 0

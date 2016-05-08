@@ -1,3 +1,14 @@
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+//
+// lua\AlienTeam.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+//                  Max McGuire (max@unknownworlds.com)
+//
+// This class is used for teams that are actually playing the game, e.g. Marines or Aliens.
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/TechData.lua")
 Script.Load("lua/Skulk.lua")
 Script.Load("lua/PlayingTeam.lua")
@@ -71,110 +82,9 @@ function AlienTeam:GetCommander()
     end
     return nil
 end
-function AlienTeam:GetHive()
-    for _, hive in ipairs(GetEntitiesForTeam("Hive", 2)) do
-        if hive:GetIsBuilt() then
-        
-           return hive
-        end
-
-    end
-    return nil
-end
 function AlienTeam:GetEggCount()
     return self.eggCount or 0
 end
-function AlienTeam:GetEggCount()
-    return self.eggCount or 0
-end
- if Server then
- /*
- function AlienTeam:DeployBeacons(powerorigin)
-     --Same as Phase cannons. Though rather inside siegeroom. To mimic the action
-     -- of Alien Commander trying to gain control of Siegeroom, as the comm would do
-     -- back in the December 2014 builds with Egg Beacon and Structure Beacon manually placed.
- 
- end
- */
-function AlienTeam:DeployPhaseCannons(powerorigin)
---So basically help the aliens out if marines defend too well and the game gets boring
---By enabling this automatic script to base automatic entities spawning based on chance.
---The chance is based on how well or not the marines and aliens played, in theory.
-          --Print("Phase Cannons Deploying!")
-            local gameRules = GetGamerules()
-            if gameRules then
-                  local issiege, setupcount, siegecount = gameRules:CountNodes()
-                  -- Print("issiege = %s, setupcount = %s, siegecount = %s", issiege, setupcount, siegecount)
-
-           
-         if issiege then //and siegecount >= setupcount then
-           local chance = (siegecount/setupcount) * 100
-             local number = math.random(chance, 100)
-               -- Print("chance is %s!, number is %s", chance, number)
-              if chance >= number then
-                  self:FirePhaseCannons(powerorigin, chance)
-              end
-         end
-             
-            return issiege
-         end
-                        
-                        return false
-end
-function AlienTeam:FirePhaseCannons(powerpoint)
-              if Server then
-                   local gameRules = GetGamerules()
-                 if gameRules then
-                  local issiege, setupcount, siegecount = gameRules:CountNodes()
-
-            SendTeamMessage(self, kTeamMessageTypes.PhaseCannonLocation, powerpoint:GetLocationId())
-             local chance = (siegecount/setupcount) * 100                 
-                
-             local contaminationroll = math.random(chance, 100)
-              if chance >= contaminationroll then
-                CreateEntityForTeam(kTechId.Contamination, powerpoint:FindFreeSpace(), 2, nil)
-              end
-              
-                local mistroll = math.random(chance, 100)
-              if chance >= mistroll then
-                CreateEntityForTeam(kTechId.NutrientMist, powerpoint:FindFreeSpace(), 2, nil)
-              end
-                local rupturerull = math.random(chance, 100)
-              if chance >= rupturerull then
-                CreateEntityForTeam(kTechId.Rupture, powerpoint:FindFreeSpace(), 2, nil)
-              end
-                local bonewallroll1 = math.random(chance, 100)
-              if chance >= bonewallroll1 then
-                CreateEntityForTeam(kTechId.BoneWall, powerpoint:FindFreeSpace(), 2, nil)
-              end
-                local bonewallroll1 = math.random(chance, 100)
-              if chance >= bonewallroll1 then
-                CreateEntityForTeam(kTechId.BoneWall, powerpoint:FindFreeSpace(), 2, nil)
-              end
-                local bonewallroll1 = math.random(chance, 100)
-              if chance >= bonewallroll1 then
-                CreateEntityForTeam(kTechId.BoneWall, powerpoint:FindFreeSpace(), 2, nil)
-              end
-                local bonewallroll1 = math.random(chance, 100)
-              if chance >= bonewallroll1 then
-                CreateEntityForTeam(kTechId.BoneWall, powerpoint:FindFreeSpace(), 2, nil)
-              end
-              //  CreateEntityForTeam(kTechId.Shell,self:FindFreeSpace(powerorigin), 2, nil)
-              //  CreateEntityForTeam(kTechId.Whip, self:FindFreeSpace(powerorigin), 2, nil)
-              //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
-              //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
-              //  CreateEntityForTeam(kTechId.Crag, self:FindFreeSpace(powerorigin), 2, nil)
-              //  CreateEntityForTeam(kTechId.Shift, self:FindFreeSpace(powerorigin), 2, nil)
-                 end
-           end
-end
-function AlienTeam:ScanForHostiles(powerorigin, threatlevel)
-    
-    Print("Origin is %s, Threat Level is %s", origin, threatlevel)
-
-end
-end //of server
-
 
 local function SortByBioMassAdd(ent1, ent2)
     
@@ -478,12 +388,17 @@ function AlienTeam:OnEntityChange(oldEntityId, newEntityId)
 end
 
 local function CreateCysts(hive, harvester, teamNumber)
-        for i = 1, math.random(4,8) do
-        local spawnPoint = GetRandomBuildPosition( kTechId.Cyst, hive:GetOrigin(), 12 )
-            local cyst = CreateEntity(Cyst.kMapName, spawnPoint, 2)
+    
+    // Spawn all the Cyst spawn points close to the hive.
+    for c = 1, #Server.cystSpawnPoints do
+    
+        local spawnPoint = Server.cystSpawnPoints[c]
+        
+            local cyst = CreateEntityForTeam(kTechId.Cyst, spawnPoint, teamNumber, nil)
             cyst:SetConstructionComplete()
             cyst:SetInfestationFullyGrown()
-       end
+            cyst:SetImmuneToRedeploymentTime(1)
+    end
     
 end
 
@@ -493,8 +408,11 @@ function AlienTeam:SpawnInitialStructures(techPoint)
     
     hive:SetFirstLogin()
     hive:SetInfestationFullyGrown()
-    CreateCysts(hive)
-
+    
+    // It is possible there was not an available tower if the map is not designed properly.
+    if tower then
+        CreateCysts(hive, tower, self:GetTeamNumber())
+    end
     
     return tower, hive
     
@@ -522,7 +440,7 @@ local function UpdateEggCount(self)
 
     for _, egg in ipairs(GetEntitiesForTeam("Egg", self:GetTeamNumber())) do
     
-        if egg:GetIsFree() then        
+        if egg:GetIsFree() and egg:GetGestateTechId() == kTechId.Skulk then        
             self.eggCount = self:GetEggCount() + 1
         end
     
@@ -534,7 +452,8 @@ local function AssignPlayerToEgg(self, player, enemyTeamPosition)
 
     local success = false
     
-
+    // use non-preevolved eggs sorted by "critical hives position"
+    local lifeFormEgg = nil
     
     local spawnPoint = player:GetDesiredSpawnPoint()
 
@@ -545,14 +464,34 @@ local function AssignPlayerToEgg(self, player, enemyTeamPosition)
     local eggs = GetEntitiesForTeam("Egg", self:GetTeamNumber())        
     Shared.SortEntitiesByDistance(spawnPoint, eggs)
     
+    // Find the closest egg, doesn't matter which Hive owns it.
     for _, egg in ipairs(eggs) do
     
+        // Any unevolved egg is fine as long as it is free.
         if egg:GetIsFree() then
+        
+            if egg:GetGestateTechId() == kTechId.Skulk then
+        
                 egg:SetQueuedPlayerId(player:GetId())
                 success = true
                 break
+            
+            elseif lifeFormEgg == nil then
+                lifeFormEgg = egg
+            end
+            
         end
+        
     end
+    
+    // use life form egg
+    if not success and lifeFormEgg then
+    
+        lifeFormEgg:SetQueuedPlayerId(player:GetId())
+        success = true
+
+    end
+    
     return success
     
 end
@@ -580,6 +519,46 @@ local function GetCriticalHivePosition(self)
 
 end
 
+local function UpdateEggGeneration(self)
+
+    if not self.timeLastEggUpdate then
+        self.timeLastEggUpdate = Shared.GetTime()
+    end
+
+    if self.timeLastEggUpdate + ScaleWithPlayerCount(kEggGenerationRate, #GetEntitiesForTeam("Player", self:GetTeamNumber())) < Shared.GetTime() then
+
+        local enemyTeamPosition = GetCriticalHivePosition(self)
+        local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
+        
+        local builtHives = {}
+        
+        // allow only built hives to spawn eggs
+        for _, hive in ipairs(hives) do
+        
+            if hive:GetIsBuilt() and hive:GetIsAlive() then
+                table.insert(builtHives, hive)
+            end
+        
+        end
+        
+        if enemyTeamPosition then
+            Shared.SortEntitiesByDistance(enemyTeamPosition, builtHives)
+        end
+        
+        for _, hive in ipairs(builtHives) do
+        
+            if hive:UpdateSpawnEgg() then
+                break
+            end
+        
+        end
+        
+        self.timeLastEggUpdate = Shared.GetTime()
+    
+    end
+
+end
+
 local function UpdateAlienSpectators(self)
 
     if self.timeLastSpectatorUpdate == nil then
@@ -595,7 +574,7 @@ local function UpdateAlienSpectators(self)
         
             local alienSpectator = alienSpectators[i]
             // Do not spawn players waiting in the auto team balance queue.
-            if alienSpectator:isa("AlienSpectator") and self:GetHasAbilityToRespawn() then
+            if alienSpectator:isa("AlienSpectator") and not alienSpectator:GetIsWaitingForTeamBalance() and self:GetHasAbilityToRespawn() then
             
                 // Consider min death time.
                 if alienSpectator:GetRespawnQueueEntryTime() + kAlienSpawnTime < Shared.GetTime() then
@@ -629,6 +608,28 @@ local function UpdateAlienSpectators(self)
     
 end
 
+local function UpdateCystConstruction(self, deltaTime)
+
+    local numCystsToConstruct = self:GetNumCapturedTechPoints()
+
+    for _, cyst in ipairs(GetEntitiesForTeam("Cyst", self:GetTeamNumber())) do
+    
+        local parent = cyst:GetCystParent()
+        if not cyst:GetIsBuilt() and parent and parent:GetIsBuilt() then
+      
+            cyst:Construct(deltaTime)
+            numCystsToConstruct = numCystsToConstruct - 1
+
+        end
+        
+        if numCystsToConstruct <= 0 then
+            break
+        end
+    
+    end
+
+end
+
 function AlienTeam:Update(timePassed)
 
     PROFILE("AlienTeam:Update")
@@ -636,9 +637,12 @@ function AlienTeam:Update(timePassed)
     PlayingTeam.Update(self, timePassed)
     
     self:UpdateTeamAutoHeal(timePassed)
+    UpdateEggGeneration(self)
     UpdateEggCount(self)
     UpdateAlienSpectators(self)
     
+    
+    UpdateCystConstruction(self, timePassed)
     
 end
 
@@ -679,8 +683,8 @@ function AlienTeam:UpdateTeamAutoHeal(timePassed)
             if not entity:isa("Player") then
             
                 // we add whips as an exception here. construction should still be restricted to onInfestation, we only don't want whips to take damage off infestation
-                local requiresInfestation  = false // = ConditionalValue(entity:isa("Whip") or (entity:isa("Egg") and entity.moving), false, LookupTechData(entity:GetTechId(), kTechDataRequiresInfestation))
-                local isOnInfestation      = true // = entity:GetGameEffectMask(kGameEffect.OnInfestation) or entity:isa("TunnelEntrance") or entity:isa("Egg")
+                local requiresInfestation   = ConditionalValue(entity:isa("Whip") or (entity:isa("Egg") and entity.moving), false, LookupTechData(entity:GetTechId(), kTechDataRequiresInfestation))
+                local isOnInfestation       = entity:GetGameEffectMask(kGameEffect.OnInfestation)
                 local isHealable            = entity:GetIsHealable()
                 local deltaTime             = 0
                 
@@ -743,11 +747,6 @@ function AlienTeam:InitTechTree()
     self.techTree:AddOrder(kTechId.Grow)
     self.techTree:AddAction(kTechId.FollowAlien)    
     
-    
-    self.techTree:AddActivation(kTechId.ARCDeploy)
-    self.techTree:AddActivation(kTechId.ARCUndeploy)
-    
-    
     self.techTree:AddPassive(kTechId.Infestation)
     self.techTree:AddPassive(kTechId.SpawnAlien)
     self.techTree:AddPassive(kTechId.CollectResources, kTechId.Harvester)
@@ -801,7 +800,7 @@ function AlienTeam:InitTechTree()
     self.techTree:AddBuildNode(kTechId.Hive,                    kTechId.None,           kTechId.None)
     self.techTree:AddPassive(kTechId.HiveHeal)
     self.techTree:AddBuildNode(kTechId.CragHive,                kTechId.Hive,                kTechId.None)
-    self.techTree:AddPassive(kTechId.CragHiveTwo, kTechId.None)
+    self.techTree:AddPassive(kTechId.CragHiveTwo, kTechId.CragHive)
     self.techTree:AddBuildNode(kTechId.ShadeHive,               kTechId.Hive,                kTechId.None)
     self.techTree:AddBuildNode(kTechId.ShiftHive,               kTechId.Hive,                kTechId.None)
     
@@ -846,19 +845,19 @@ function AlienTeam:InitTechTree()
     self.techTree:AddAction(kTechId.Onos,                      kTechId.None,                kTechId.None)
     self.techTree:AddBuyNode(kTechId.Egg,                      kTechId.None,                kTechId.None)
     
-    self.techTree:AddUpgradeNode(kTechId.GorgeEgg, kTechId.None)
-    self.techTree:AddUpgradeNode(kTechId.LerkEgg, kTechId.None)
-    self.techTree:AddUpgradeNode(kTechId.FadeEgg, kTechId.None)
-    self.techTree:AddUpgradeNode(kTechId.OnosEgg, kTechId.None)
+    self.techTree:AddUpgradeNode(kTechId.GorgeEgg, kTechId.BioMassTwo)
+    self.techTree:AddUpgradeNode(kTechId.LerkEgg, kTechId.BioMassTwo)
+    self.techTree:AddUpgradeNode(kTechId.FadeEgg, kTechId.BioMassNine)
+    self.techTree:AddUpgradeNode(kTechId.OnosEgg, kTechId.BioMassNine)
     
     
 
     
     
     // Special alien structures. These tech nodes are modified at run-time, depending when they are built, so don't modify prereqs.
-    self.techTree:AddBuildNode(kTechId.Crag,                      kTechId.None,          kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Shift,                     kTechId.None,          kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Shade,                     kTechId.None,          kTechId.None)
+    self.techTree:AddBuildNode(kTechId.Crag,                      kTechId.CragHive,          kTechId.None)
+    self.techTree:AddBuildNode(kTechId.Shift,                     kTechId.ShiftHive,          kTechId.None)
+    self.techTree:AddBuildNode(kTechId.Shade,                     kTechId.ShadeHive,          kTechId.None)
     
     // Alien upgrade structure
         self.techTree:AddUpgradeNode(kTechId.Digest, kTechId.None, kTechId.None)
@@ -888,18 +887,18 @@ function AlienTeam:InitTechTree()
     self.techTree:AddSpecial(kTechId.ThreeSpurs, kTechId.TwoSpurs)
     
     // personal upgrades (all alien types)
-    self.techTree:AddBuyNode(kTechId.Carapace, kTechId.None, kTechId.None, kTechId.AllAliens)    
-    self.techTree:AddBuyNode(kTechId.Regeneration, kTechId.None, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.Rebirth, kTechId.None, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.Focus, kTechId.None, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.ThickenedSkin, kTechId.None, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Carapace, kTechId.CragHive, kTechId.None, kTechId.AllAliens)    
+    self.techTree:AddBuyNode(kTechId.Regeneration, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Rebirth, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Focus, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.ThickenedSkin, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
   //  self.techTree:AddBuyNode(kTechId.Illusionist, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.Hunger, kTechId.None, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.Redemption, kTechId.None, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.Aura, kTechId.None, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.Phantom, kTechId.None, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.Celerity, kTechId.None, kTechId.None, kTechId.AllAliens)  
-    self.techTree:AddBuyNode(kTechId.Adrenaline, kTechId.None, kTechId.None, kTechId.AllAliens)  
+    self.techTree:AddBuyNode(kTechId.Hunger, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Redemption, kTechId.CragHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Aura, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Phantom, kTechId.ShadeHive, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Celerity, kTechId.ShiftHive, kTechId.None, kTechId.AllAliens)  
+    self.techTree:AddBuyNode(kTechId.Adrenaline, kTechId.ShiftHive, kTechId.None, kTechId.AllAliens)  
 
     // Crag
     self.techTree:AddPassive(kTechId.CragHeal)

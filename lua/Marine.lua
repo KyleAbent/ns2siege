@@ -42,6 +42,7 @@ Script.Load("lua/PhaseGateUserMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 Script.Load("lua/MarineVariantMixin.lua")
 Script.Load("lua/MarineOutlineMixin.lua")
+Script.Load("lua/RegenerationMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -155,12 +156,13 @@ local networkVars =
     modelsize = "float (0 to 10 by .1)",
    --minemode = "boolean",
    --RTDinfiniteammomode = "boolean",
-   --hasjumppack = "boolean",
+   hasjumppack = "boolean",
        lastjump  = "time",
-   --hasfirebullets = "boolean",
+   hasfirebullets = "boolean",
    hasreupply = "boolean",
       heavyarmor = "boolean",
    lastsupply = "time",
+weaponBeforeUseId = "private entityid" 
    
     
 }
@@ -188,6 +190,7 @@ AddMixinNetworkVars(TunnelUserMixin, networkVars)
 AddMixinNetworkVars(PhaseGateUserMixin, networkVars)
 AddMixinNetworkVars(MarineVariantMixin, networkVars)
 AddMixinNetworkVars(ScoringMixin, networkVars)
+AddMixinNetworkVars(RegenerationMixin, networkVars)
 
 function Marine:OnCreate()
 
@@ -216,6 +219,8 @@ function Marine:OnCreate()
     InitMixin(self, PredictedProjectileShooterMixin)
     InitMixin(self, MarineVariantMixin)
     
+    InitMixin(self, RegenerationMixin)
+    
     if Server then
     
         self.timePoisoned = 0
@@ -224,6 +229,8 @@ function Marine:OnCreate()
         // stores welder / builder progress
         self.unitStatusPercentage = 0
         self.timeLastUnitPercentageUpdate = 0
+        self.grenadesLeft = 0
+        self.grenadeType = nil 
 
         
     elseif Client then
@@ -250,13 +257,25 @@ function Marine:OnCreate()
    self.modelsize = 1 
  --  self.minemode = false
  --  self.RTDinfiniteammomode = false
-   --self.hasjumppack = false
+   self.hasjumppack = false
    self.lastjump = 0
-  -- self.hasfirebullets = false
+   self.hasfirebullets = false
    self.hasreupply = true
    self.heavyarmor = false
    self.lastsupply = 0
    self.timeLastBeacon = Shared.GetTime()
+   
+    self.weaponDropTime = 0
+    self.timeLastSpitHit = 0
+    self.lastSpitDirection = Vector(0, 0, 0)
+    self.timeOfLastDrop = 0
+    self.timeOfLastPickUpWeapon = 0
+    self.ruptured = false
+    self.interruptAim = false
+    self.catpackboost = false
+    self.timeCatpackboost = 0
+    self.flashlightLastFrame = false
+    self.weaponBeforeUseId = Entity.invalidId
    
 end
 
@@ -313,12 +332,13 @@ function Marine:OnInitialized()
     Player.OnInitialized(self)
     
     // Calculate max and starting armor differently
-    self.armor = 0
+    --self.armor = 0
     
     if Server then
     
 
-        self:SetArmorAmount()
+        self.armor = self:GetArmorAmount()
+        self.maxArmor = self.armor
         
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -454,6 +474,25 @@ end
 
 function Marine:GetSlowOnLand()
     return true
+end
+function Marine:GetArmorAmount(armorLevels)
+
+    if not armorLevels then
+    
+        armorLevels = 0
+    
+        if GetHasTech(self, kTechId.Armor3, true) then
+            armorLevels = 3
+        elseif GetHasTech(self, kTechId.Armor2, true) then
+            armorLevels = 2
+        elseif GetHasTech(self, kTechId.Armor1, true) then
+            armorLevels = 1
+        end
+    
+    end
+    
+    return Marine.kBaseArmor + armorLevels * Marine.kArmorPerUpgradeLevel
+    
 end
 function Marine:GetHasHMG()
         local weapon = self:GetWeaponInHUDSlot(1)
@@ -617,7 +656,25 @@ function Marine:HandleButtons(input)
     
 end
 
+function Marine:GetFlashlightToggled()
+    local edgeOn, edgeOff = self.timeOfLastFlashlightOn, self.timeOfLastFlashlightOff
+    if edgeOn and edgeOff then
+        local diff = math.abs( edgeOn - edgeOff )
+        if diff < 0.75 then
+            return true, math.max( edgeOn, edgeOff )
+        end
+    end
+
+    return false        
+end
+
 function Marine:SetFlashlightOn(state)
+    local time = Shared.GetTime()
+    if state then
+        self.timeOfLastFlashlightOn = time
+    else
+        self.timeOfLastFlashlightOff = time
+    end
     self.flashlightOn = state
 end
 function Marine:GetFlashlightOn()
@@ -687,7 +744,7 @@ function Marine:GetControllerPhysicsGroup()
 end
 
 function Marine:GetJumpHeight()
-    return  ( (Player.kJumpHeight - Player.kJumpHeight * self.slowAmount * 0.8) / ConditionalValue(self.heavyarmor, 2, 1) ) --* ConditionalValue(self.hasjumppack, 4, 1)
+    return  ( (Player.kJumpHeight - Player.kJumpHeight * self.slowAmount * 0.8) / ConditionalValue(self.heavyarmor, 2, 1) ) *  ConditionalValue(self.hasjumppack, 4, 1)
 end
 
 function Marine:GetCanBeWeldedOverride()
@@ -878,37 +935,65 @@ function Marine:OnSpitHit(direction)
     end
 
 end
-
-
+/*
+function Marine:GetCanChangeViewAngles()
+    return true --not self:GetIsStunned()
+end    
+*/
 function Marine:GetIsTaunting()
    return self.istaunting
 end
 function Marine:OnUseTarget(target)
 
+
     local activeWeapon = self:GetActiveWeapon()
 
-    if target and HasMixin(target, "Construct") and ( target:GetCanConstruct(self) or (target.CanBeWeldedByBuilder and target:CanBeWeldedByBuilder()) ) then
-    
-        if activeWeapon and activeWeapon:GetMapName() ~= Builder.kMapName then
-            self:SetActiveWeapon(Builder.kMapName, true)
-            self.weaponBeforeUse = activeWeapon:GetMapName()
+    if target and HasMixin(target, "Construct") 
+        and ( target:GetCanConstruct(self) or (target.CanBeWeldedByBuilder and target:CanBeWeldedByBuilder()) )
+        and not 
+            (  target:isa("PowerPoint") and -- is a powerpoint
+            not target:GetIsBuilt() and target.buildFraction == 1 -- which is primed
+            and not target:CanBeCompletedByScriptActor( self ) ) -- but can't be finished
+    then
+        
+        local buildTool = Builder.kMapName
+        if self:GetWeapon(Welder.kMapName) ~= nil then
+            buildTool = Welder.kMapName
+        end
+        
+        if self.weaponBeforeUseId == Entity.invalidId  then
+            self.weaponBeforeUseId = activeWeapon:GetId()
+            self:SetActiveWeapon(buildTool, true)
+        end
+        
+        activeWeapon = self:GetActiveWeapon()
+        if activeWeapon:GetMapName() == Welder.kMapName then
+            self:PrimaryAttack()
         end
         
     else
-        if activeWeapon and activeWeapon:GetMapName() == Builder.kMapName and self.weaponBeforeUse then
-            self:SetActiveWeapon(self.weaponBeforeUse, true)
-        end    
+        
+        self:OnUseEnd()
+        
     end
 
 end
 
 function Marine:OnUseEnd() 
 
-    local activeWeapon = self:GetActiveWeapon()
+    local activeWeapon = self:GetActiveWeapon()        
 
-    if activeWeapon and activeWeapon:GetMapName() == Builder.kMapName and self.weaponBeforeUse then
-        self:SetActiveWeapon(self.weaponBeforeUse)
+    if activeWeapon and ( activeWeapon:GetMapName() == Builder.kMapName or activeWeapon:GetMapName() == Welder.kMapName ) and self.weaponBeforeUseId ~= Entity.invalidId then
+        if activeWeapon:GetMapName() == Welder.kMapName then
+            self:PrimaryAttackEnd()
+        end
+        local weaponBeforeUse = self.weaponBeforeUseId and (Shared.GetEntity(self.weaponBeforeUseId))
+        if weaponBeforeUse then
+            self:SetActiveWeapon(weaponBeforeUse:GetMapName(),true)
+        end
     end
+    
+    self.weaponBeforeUseId = Entity.invalidId
 
 end
 
@@ -996,9 +1081,9 @@ function Marine:OnProcessMove(input)
     end
         ///Untested hotfix after 9.5 to disallow player gravity and dont push Y height vector for OP ness also with 12 instead of 15
     /// Jump Pack from NS1 // HL1 ? - Copied from Leap ! :P // Delay of usage 
-    if not self:isa("JetpackMarine") and not self:isa("Exo") then  --self.hasjumppack then
+    if self.hasjumppack then
        if Shared.GetTime() >  self.lastjump + 1.5 and bit.band(input.commands, Move.Jump) ~= 0 and bit.band(input.commands, Move.Crouch) ~= 0 then
-     --  if self:GetGravity() ~= 0 then self:JumpPackNotGravity() end
+       if self:GetGravity() ~= 0 then self:JumpPackNotGravity() end
        local range = 12
        local force = 12
        local velocity = self:GetVelocity() * 0.5

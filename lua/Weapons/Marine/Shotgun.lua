@@ -1,18 +1,20 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Shotgun.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Shotgun.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Balance.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
-Script.Load("lua/Hitreg.lua") 
+--Script.Load("lua/AchievementGiverMixin.lua")
+Script.Load("lua/Hitreg.lua")
+Script.Load("lua/ShotgunVariantMixin.lua")
 
 class 'Shotgun' (ClipWeapon)
 
@@ -27,8 +29,9 @@ local networkVars =
 }
 
 AddMixinNetworkVars(LiveMixin, networkVars)
+AddMixinNetworkVars(ShotgunVariantMixin, networkVars)
 
-// higher numbers reduces the spread
+-- higher numbers reduces the spread
 local kSpreadDistance = 10
 local kStartOffset = 0
 local kSpreadVectors =
@@ -71,6 +74,8 @@ function Shotgun:OnCreate()
     InitMixin(self, PickupableWeaponMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, PointGiverMixin)
+--    InitMixin(self, AchievementGiverMixin)
+    InitMixin(self, ShotgunVariantMixin)
     
     self.emptyPoseParam = 0
 
@@ -91,7 +96,7 @@ function Shotgun:GetPrimaryMinFireDelay()
 end
 
 function Shotgun:GetAnimationGraphName()
-    return kAnimationGraph
+    return ShotgunVariantMixin.kShotgunAnimationGraph
 end
 
 function Shotgun:GetViewModelName(sex, variant)
@@ -118,7 +123,7 @@ function Shotgun:GetRange()
     return 100
 end
 
-// Only play weapon effects every other bullet to avoid sonic overload
+-- Only play weapon effects every other bullet to avoid sonic overload
 function Shotgun:GetTracerEffectFrequency()
     return 0.5
 end
@@ -192,18 +197,11 @@ function Shotgun:OnTag(tagName)
     
 end
 
-// used for last effect
+-- used for last effect
 function Shotgun:GetEffectParams(tableParams)
     tableParams[kEffectFilterEmpty] = self.clip == 1
 end
-function Shotgun:GetDamageType()
-    local parent = self:GetParent()
-    if parent and parent.hasfirebullets then
-      return kDamageType.Flame
-   else
-      return kDamageType.Normal
-    end
-end
+
 function Shotgun:FirePrimary(player)
 
     local viewAngles = player:GetViewAngles()
@@ -211,13 +209,13 @@ function Shotgun:FirePrimary(player)
 
     local shootCoords = viewAngles:GetCoords()
 
-    // Filter ourself out of the trace so that we don't hit ourselves.
+    -- Filter ourself out of the trace so that we don't hit ourselves.
     local filter = EntityFilterTwo(player, self)
     local range = self:GetRange()
     
-//    if GetIsVortexed(player) then
- //       range = 5
- //   end
+    if GetIsVortexed(player) then
+        range = 5
+    end
     
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
@@ -305,7 +303,7 @@ if Client then
     end
     
     function Shotgun:GetUIDisplaySettings()
-        return { xSize = 256, ySize = 128, script = "lua/GUIShotgunDisplay.lua" }
+        return { xSize = 256, ySize = 128, script = "lua/GUIShotgunDisplay.lua", variant = self:GetShotgunVariant() }
     end
     
     function Shotgun:OnUpdateRender()        
@@ -341,7 +339,14 @@ function Shotgun:ModifyDamageTaken(damageTable, attacker, doer, damageType)
         damageTable.damage = 0
     end
 end
-
+function Shotgun:GetDamageType()
+    local parent = self:GetParent()
+    if parent and parent.hasfirebullets then
+      return kDamageType.Flame
+   else
+      return kDamageType.Normal
+    end
+end
 function Shotgun:GetCanTakeDamageOverride()
     return self:GetParent() == nil
 end

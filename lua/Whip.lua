@@ -8,8 +8,8 @@ Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
 // ragdolls on death
 Script.Load("lua/RagdollMixin.lua")
-
-
+// counts against the supply limit
+Script.Load("lua/SupplyUserMixin.lua")
 // is responsible for an alien upgrade tech
 Script.Load("lua/UpgradableMixin.lua")
 
@@ -22,7 +22,7 @@ Script.Load("lua/DamageMixin.lua")
 // Handle movement
 Script.Load("lua/AlienStructureMoveMixin.lua")
 //Script.Load("lua/ResearchMixin.lua")
-local kWhipMaxLevel = 99
+local kWhipMaxLevel = 20
 local kWhipScaleSize = 1.8
 local kWhipXPGain = 1
 local kWhipHealXPGain = 1
@@ -67,7 +67,6 @@ local networkVars =
     // used for rooting/unrooting
     unblockTime = "time",
     level = "float (0 to " .. kWhipMaxLevel .. " by .1)",
-     cystid = "entityid",
 }
 
 AddMixinNetworkVars(UpgradableMixin, networkVars)
@@ -112,7 +111,6 @@ function Whip:OnCreate()
     
     end
    self.level = 0
-   self.cystid =  Entity.invalidI
 end
 
 function Whip:OnInitialized()
@@ -122,12 +120,11 @@ function Whip:OnInitialized()
     if Server then
     
         InitMixin(self, RepositioningMixin)
-
+        InitMixin(self, SupplyUserMixin)
         InitMixin(self, TargetCacheMixin)
   
         local targetTypes = { kAlienStaticTargets, kAlienMobileTargets }
         self.slapTargetSelector = TargetSelector():Init(self, Whip.kRange, true, targetTypes, { self.FilterTarget(self) })
-        self.slapTargetSelector.visibilityRequired = false
      //   self.bombardTargetSelector = TargetSelector():Init(self, Whip.kBombardRange * (self.level/100) + Whip.kBombardRange, true, targetTypes)
         self.bombardTargetSelector = TargetSelector():Init(self, Whip.kBombardRange, true, targetTypes, { self.FilterTarget(self) })
         
@@ -143,35 +140,6 @@ end
 function Whip:GetInfestationRadius()
     return kWhipInfestationRadius
 end
-function Whip:GetIsOccupying()
-    local mate = Shared.GetEntity(self.cystid)
-    return not mate
-end
-function Whip:SetIsOccupying(who, LosAngelesCityHall)
-
-   local cyst = Shared.GetEntity(self.cystid)
-   
-      if cyst then
-      
-         if LosAngelesCityHall == false then
-            cyst:SetOccupied(self, false)
-            self.cystid =  Entity.invalidI
-          elseif LosAngelesCityHall == true then
-             cyst:SetOccupied(self, false)
-             self.cystid = who:GetId()
-          end
-          
-    elseif not cyst then
-      
-         if LosAngelesCityHall == true then
-          self.cystid = who:GetId()
-           end
-   end
-   
-end
-function Whip:GetCanOccupy(cyst)
-    return true --not self:GetIsOccupying() or GetLocationForPoint(self:GetOrigin()) ~= GetLocationForPoint(cyst:GetOrigin())
-end
 function Whip:GetInfestationMaxRadius()
     return kWhipInfestationRadius
 end
@@ -180,7 +148,7 @@ function Whip:GetStructureMoveable()
 end
 
 function Whip:GetMaxSpeed()
-    return Whip.kMoveSpeed * (self.level/100) + Whip.kMoveSpeed
+    return Whip.kMoveSpeed
 end
 
 // ---  RepositionMixin
@@ -223,36 +191,15 @@ function Whip:GetFov()
     return Whip.kFov
 end
 function Whip:GetAddXPAmount()
-return 0 //self:GetIsSetup() and kWhipHealXPGain * 4 or kWhipHealXPGain
+return kWhipHealXPGain
 end
-function Whip:GetIsSetup()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function Whip:GetIsSiege()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
+/*
 function Whip:OnTakeDamage(damage, attacker, doer, point)
-if not self:GetIsSiege() and self:GetIsBuilt() and attacker and attacker:GetTeamNumber() == 1 then
+if self:GetIsBuilt() and attacker and attacker:GetTeamNumber() == 1 then
 self:AddXP(kWhipXPGain/100)
 end
 end
-
+*/
 // --- DamageMixin
 function Whip:GetShowHitIndicator()
     return false
@@ -358,11 +305,7 @@ function Whip:OnResearchComplete(researchId)
     end
         
 end
-function Whip:MoveBitch(origin, cyst)
-         if (self:GetOrigin() - origin):GetLength() >= 24 then
-             self:GiveOrder(kTechId.Move, cyst:GetId(), origin, nil, true, true) 
-         end
-end
+
 function Whip:GetTechAllowed(techId, techNode, player)
     
     local allowed, canAfford = AlienStructure.GetTechAllowed(self, techId, techNode, player)
@@ -436,14 +379,12 @@ function Whip:OnAdjustModelCoords(modelCoords)
     return coords
 end
 */
-/*
 function Whip:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
     unitName = string.format(Locale.ResolveString("Level %s Whip"), self:GetLevel())
 return unitName
-
 end
-*/
+
 // --- end CommanderInterface
 
 // --- Whip specific
@@ -479,9 +420,6 @@ function Whip:OnUpdate(deltaTime)
             self.timeLastMoveUpdateCheck = Shared.GetTime()
         end
        */ 
-       if self.moving and not self.waitingForEndAttack then
-            self.waitingForEndAttack = self.moving
-       end
         self:UpdateRootState()           
         self:UpdateOrders(deltaTime)
         
@@ -542,20 +480,6 @@ Script.Load("lua/Ballistics.lua")
 
 function Whip:PreOnKill(attacker, doer, point, direction)
 if self.level ~= 1 then self.level = 1 end
-                  
-                  local cyst = Shared.GetEntity(self.cystid)
-                  if cyst and cyst.SetOccupied then
-                  cyst:SetOccupied(self, false)
-                  self:SetIsOccupying(cyst, false)
-                  end
-
-end
-function Whip:OnOrderGiven(order)
-                  local cyst = Shared.GetEntity(self.cystid)
-                  if cyst then
-                  cyst:SetOccupied(self, false)
-                  self.cystid =  Entity.invalidI
-                  end
 end
 function Whip:UpdateOrders(deltaTime)
 
@@ -650,8 +574,8 @@ function Whip:UpdateAttacks()
 end
 
 function Whip:UpdateRootState()
-
-    local infested = true //self:GetGameEffectMask(kGameEffect.OnInfestation)
+    
+    local infested = self:GetGameEffectMask(kGameEffect.OnInfestation)
     local moveOrdered = self:GetCurrentOrder() and self:GetCurrentOrder():GetType() == kTechId.Move //or self:GetCurrentOrder():GetType() == kTechId.Follow
     // unroot if we have a move order or infestation recedes
     if self.rooted and (moveOrdered or not infested) then
@@ -700,7 +624,6 @@ function Whip:Unroot()
 end
 
 function Whip:GetCanStartSlapAttack()
-
     if self.slapping or self.bombarding or not self.rooted or self:GetIsOnFire() then
         return false
     end
@@ -870,10 +793,8 @@ function Whip:SlapTarget(target)
     // fudge a bit - put the point of attack 0.5m short of the target
     local hitPosition = targetPoint - hitDirection * 0.5
     
-    self:DoDamage(kWhipSlapDamage, target, hitPosition, hitDirection, nil, true)
+    self:DoDamage(Whip.kDamage * (self.level/100) + kWhipSlapDamage, target, hitPosition, hitDirection, nil, true)
     self:TriggerEffects("whip_attack")
-    self:StealFlamethrower(target)
-    
 
 end
 
@@ -951,7 +872,7 @@ function Whip:OnAttackStart()
     
 end
 //self:GiveUpgrade(kTechId.WhipBombard)
-
+/*
 function Whip:CreateFTAtAttachPointandFlickIt()
 
     local bombStart = self:GetAttachPointOrigin("Whip_Ball")
@@ -964,30 +885,28 @@ local flamethrower = CreateEntity(Flamethrower.kMapName, bombStart + Vector(0,1,
 
 
 end
-
-  function Whip:StealFlamethrower(target)      
+*/
+/*
+            
                 if target:isa("Marine") or target:isa("JetpackMarine") then 
                      local client = target:GetClient()
                      if not client then return end
                      local controlling = client:GetControllingPlayer()
                   if controlling:GetWeaponInHUDSlot(1) ~= nil and controlling:GetWeaponInHUDSlot(1):isa("Flamethrower") then
                      local roll = math.random(1,100)
-                  if roll <=30 then
+                     if roll <=30 then
                     DestroyEntity(controlling:GetWeaponInHUDSlot(1))
                     if controlling:GetWeaponInHUDSlot(2) ~= nil then
                      controlling:SwitchWeapon(2)
                      else
                       controlling:SwitchWeapon(3)
-                      end //
+                      end
                        self:CreateFTAtAttachPointandFlickIt()
                        
-                  end//
-                end//
-              end//
-  end
+         end
+                    end
                    
-function Whip:RepositionTimer()
-end
+*/
 function Whip:OnAttackHit(target)
 
     if target and self.slapping then

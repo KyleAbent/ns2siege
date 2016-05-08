@@ -1,15 +1,16 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\CommandStructure.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\CommandStructure.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+--Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -64,6 +65,7 @@ function CommandStructure:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+--    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
@@ -101,6 +103,23 @@ function CommandStructure:GetEffectParams(tableParams)
 end
 
 if Client then
+
+    local function DisplayHelpArrows(self, visible)
+    
+        if not self.helpArrows and visible then
+        
+            self.helpArrows = Client.CreateCinematic(RenderScene.Zone_Default)
+            self.helpArrows:SetCinematic(self:GetHelpArrowsCinematicName())
+            self.helpArrows:SetCoords(self:GetCoords())
+            self.helpArrows:SetRepeatStyle(Cinematic.Repeat_Endless)
+            
+        end
+        
+        if self.helpArrows then
+            self.helpArrows:SetIsVisible(visible)
+        end
+        
+    end
     
     function CommandStructure:OnUpdateRender()
     
@@ -112,12 +131,33 @@ if Client then
             self.lastTimeOccupied = now
         end
         
+        local displayHelpArrows = Client.GetOptionInteger("hudmode", kHUDMode.Full) == kHUDMode.Full
+        if player and displayHelpArrows then
+        
+            -- Display the help arrows (get into Comm structure) when the
+            -- team does not have a commander and the Comm structure is built
+            -- and some time has passed.
+            displayHelpArrows = displayHelpArrows and player:GetTeamNumber() == self:GetTeamNumber()
+            displayHelpArrows = displayHelpArrows and self:GetIsBuilt() and self:GetIsAlive()
+            displayHelpArrows = displayHelpArrows and not ScoreboardUI_GetTeamHasCommander(self:GetTeamNumber())
+            displayHelpArrows = displayHelpArrows and not self:GetIsOccupied() and (now - self.lastTimeOccupied) >= 8
+            
+        end
+        
+        DisplayHelpArrows(self, displayHelpArrows)
+        
     end
     
     function CommandStructure:OnDestroy()
     
         ScriptActor.OnDestroy(self)
         
+        if self.helpArrows then
+        
+            Client.DestroyCinematic(self.helpArrows)
+            self.helpArrows = nil
+            
+        end
         
     end
     
@@ -134,5 +174,9 @@ function CommandStructure:GetCanBeUsedConstructed(byPlayer)
     return not ( byPlayer:isa("Exo") or GetTeamHasCommander(self:GetTeamNumber()))
 end
 
+-- allow players to enter the hives before game start to signal that they want to command
+function CommandStructure:GetUseAllowedBeforeGameStart()
+    return true
+end
 
 Shared.LinkClassToMap("CommandStructure", CommandStructure.kMapName, networkVars, true)

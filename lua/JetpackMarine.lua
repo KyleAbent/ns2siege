@@ -65,6 +65,7 @@ local networkVars =
 
     jumpedInAir = "private compensated boolean",
     modelsize = "float (0 to 10 by .1)",
+    InfiniteFuel = "boolean",
 
     
 }
@@ -77,6 +78,8 @@ function JetpackMarine:OnCreate()
     
     self.jetpackLoopId = Entity.invalidId
     self.modelsize = 1
+    self.infinitefuel = false
+    self.wheninfinitefuelexpires = 0
 end
 
 local function InitEquipment(self)
@@ -134,7 +137,12 @@ end
 function JetpackMarine:GetHasEquipment()
     return true
 end
-
+function JetpackMarine:GetHasInfiniteFuel()
+return self.infinitefuel
+end
+function JetpackMarine:GiveInfiniteFuel(duration)
+        self.wheninfinitefuelexpires = duration + Shared.GetTime()
+end
 function JetpackMarine:GetFuel()
 
     local dt = Shared.GetTime() - self.timeJetpackingChanged
@@ -145,7 +153,8 @@ function JetpackMarine:GetFuel()
         dt = math.max(0, dt - JetpackMarine.kJetpackFuelReplenishDelay)
     end
     
-    if self:GetDarwinMode() or self:GetIsSetup() then
+    
+    if self:GetDarwinMode() or self:GetIsSetup() or self:GetHasInfiniteFuel() then
         return 1
     else
         return Clamp(self.jetpackFuelOnChange + rate * dt, 0, 1)

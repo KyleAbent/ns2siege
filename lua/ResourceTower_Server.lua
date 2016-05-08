@@ -1,14 +1,15 @@
-function ResourceTower:OnSighted(sighted)
+// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\ResourceTower_Server.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+//
+// Generic resource structure that marine and alien structures inherit from.
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-    local attached = self:GetAttached()
-    if attached and sighted then
-        attached.showObjective = true
-    end
-
-end
 function ResourceTower:GetIsCollecting()
-
-return GetIsUnitActive(self) and GetGamerules():GetGameStarted()
-
+    return GetIsUnitActive(self) and GetGamerules():GetGameStarted()
 end
+
 

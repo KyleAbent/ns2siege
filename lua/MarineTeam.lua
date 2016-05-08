@@ -1,10 +1,20 @@
+// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\MarineTeam.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+//                  Max McGuire (max@unknownworlds.com)
+//
+// This class is used for teams that are actually playing the game, e.g. Marines or Aliens.
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Marine.lua")
 Script.Load("lua/PlayingTeam.lua")
 
 class 'MarineTeam' (PlayingTeam)
 
 MarineTeam.gSandboxMode =  true
-
 
 // How often to send the "No IPs" message to the Marine team in seconds.
 local kSendNoIPsMessageRate = 20
@@ -40,8 +50,7 @@ function MarineTeam:OnResetComplete()
         end
         
     end
-    self.beacons = 16
-    self.lastbeacontime = Shared.GetTime()
+    
 end
 
 function MarineTeam:GetTeamType()
@@ -62,15 +71,8 @@ function MarineTeam:Initialize(teamName, teamNumber)
     
     self.lastTimeNoIPsMessageSent = Shared.GetTime()
     
-    
 end
-function MarineTeam:DeductBeacon()
-self.lastbeacontime = Shared.GetTime()
-end
-function MarineTeam:GetBeacons()
-local time = self.lastbeacontime == nil or Shared.GetTime() > self.lastbeacontime + kBeaconDelay
-return time
-end
+
 function MarineTeam:GetHasAbilityToRespawn()
 /*
           if Server then
@@ -85,11 +87,11 @@ function MarineTeam:GetHasAbilityToRespawn()
     // Any active IPs on team? There could be a case where everyone has died and no active
     // IPs but builder bots are mid-construction so a marine team could theoretically keep
     // playing but ignoring that case for now
-    local spawningStructures = GetEntitiesForTeam("CommandStation", self:GetTeamNumber())
+    local spawningStructures = GetEntitiesForTeam("InfantryPortal", self:GetTeamNumber())
     
     for index, current in ipairs(spawningStructures) do
     
-        if current:GetIsBuilt() then
+        if current:GetIsBuilt() and current:GetIsPowered() then
             return true
         end
         
@@ -105,7 +107,7 @@ function MarineTeam:OnRespawnQueueChanged()
     
     for index, current in ipairs(spawningStructures) do
     
-        if current:GetIsBuilt() then
+        if current:GetIsBuilt() and current:GetIsPowered() then
             current:FillQueueIfFree()
         end
         
@@ -149,6 +151,36 @@ function MarineTeam:GetTotalInRespawnQueue()
 end
 
 
+// Clear distress flag for all players on team, unless affected by distress beaconing Observatory. 
+// This function is here to make sure case with multiple observatories and distress beacons is
+// handled properly.
+function MarineTeam:UpdateGameMasks(timePassed)
+
+    PROFILE("MarineTeam:UpdateGameMasks")
+
+    local beaconState = false
+    
+    for obsIndex, obs in ipairs(GetEntitiesForTeam("Observatory", self:GetTeamNumber())) do
+    
+        if obs:GetIsBeaconing() then
+        
+            beaconState = true
+            break
+            
+        end
+        
+    end
+    
+    for playerIndex, player in ipairs(self:GetPlayers()) do
+    
+        if player:GetGameEffectMask(kGameEffect.Beacon) ~= beaconState then
+            player:SetGameEffectMask(kGameEffect.Beacon, beaconState)
+        end
+        
+    end
+    
+end
+
 local function CheckForNoIPs(self)
 
     PROFILE("MarineTeam:CheckForNoIPs")
@@ -167,30 +199,163 @@ local function CheckForNoIPs(self)
     
 end
 
-local function SpawnBaseEntities(self, techPoint)
-//messy and mir-air. But whatever. Requires GetGroundPosition
-    local techPointOrigin = techPoint:GetOrigin()
-        local IPspawnPoint1 = GetRandomBuildPosition( kTechId.InfantryPortal, techPointOrigin, 12 )
-        local IPspawnPoint2 = GetRandomBuildPosition( kTechId.InfantryPortal, techPointOrigin, 12 )
-        local ArmoryPoint = GetRandomBuildPosition( kTechId.Armory, techPointOrigin, 12 )
-        local ArmsLabPoint = GetRandomBuildPosition( kTechId.ArmsLab, techPointOrigin, 12 )
-        local MacPoint1 = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, 12 )
-        local MacPoint2 = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, 12 )
-        local MacPoint3 = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, 12 )
-        local PrototypeLabPoint = GetRandomBuildPosition( kTechId.PrototypeLab, techPointOrigin, 12 )
-        local PhaseGatePoint = GetRandomBuildPosition( kTechId.PhaseGate, techPointOrigin, 12 )
-  
-    CreateEntity(InfantryPortal.kMapName, IPspawnPoint1, self:GetTeamNumber())
-    CreateEntity(InfantryPortal.kMapName, IPspawnPoint2, self:GetTeamNumber())
-    CreateEntity(Armory.kMapName, ArmoryPoint, self:GetTeamNumber())
-    CreateEntity(ArmsLab.kMapName, ArmsLabPoint, self:GetTeamNumber())
-    CreateEntity(MAC.kMapName, MacPoint1, self:GetTeamNumber())
-    CreateEntity(MAC.kMapName, MacPoint2, self:GetTeamNumber())
-    CreateEntity(MAC.kMapName, MacPoint3, self:GetTeamNumber())
-    CreateEntity(PrototypeLab.kMapName, PrototypeLabPoint, self:GetTeamNumber())
-    CreateEntity(PhaseGate.kMapName, PhaseGatePoint, self:GetTeamNumber())
-        
+local function SpawnInfantryPortal(self, techPoint)
+
+    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
     
+    local spawnPoint = nil
+    
+    // First check the predefined spawn points. Look for a close one.
+    for p = 1, #Server.infantryPortalSpawnPoints do
+		
+		if not takenInfantryPortalPoints[p] then 
+			local predefinedSpawnPoint = Server.infantryPortalSpawnPoints[p]
+			if (predefinedSpawnPoint - techPointOrigin):GetLength() <= kInfantryPortalAttachRange then
+				spawnPoint = predefinedSpawnPoint
+				takenInfantryPortalPoints[p] = true
+				break
+			end
+		end
+        
+    end
+    
+    if not spawnPoint then
+		
+        spawnPoint = GetRandomBuildPosition( kTechId.InfantryPortal, techPointOrigin, kInfantryPortalAttachRange )
+        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
+		
+    end
+    
+    if spawnPoint then
+    
+        local ip = CreateEntity(InfantryPortal.kMapName, spawnPoint, self:GetTeamNumber())
+        
+        SetRandomOrientation(ip)
+        ip:SetConstructionComplete()
+        
+    end
+    
+end
+local function SpawnMac(self, techPoint)
+
+    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
+    
+    local spawnPoint = nil
+    
+		
+        spawnPoint = GetRandomBuildPosition( kTechId.MAC, techPointOrigin, kInfantryPortalAttachRange + 5 )
+        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
+		
+    
+    if spawnPoint then
+    
+        local pt = CreateEntity(MAC.kMapName, spawnPoint, self:GetTeamNumber())
+        
+        
+    end
+    
+end
+local function SpawnArc(self, techPoint)
+
+    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
+    
+    local spawnPoint = nil
+    
+		
+        spawnPoint = GetRandomBuildPosition( kTechId.ARC, techPointOrigin, kInfantryPortalAttachRange - 5)
+        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
+		
+    
+    if spawnPoint then
+    
+        local arc = CreateEntity(ARC.kMapName, spawnPoint, self:GetTeamNumber())
+        arc:GiveOrder(kTechId.ARCDeploy, arc:GetId(), arc:GetOrigin(), nil, false, false)
+        
+        
+    end
+    
+end
+local function SpawnObservatory(self, techPoint)
+
+    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
+    
+    local spawnPoint = nil
+    
+		
+        spawnPoint = GetRandomBuildPosition( kTechId.Observatory, techPointOrigin, kInfantryPortalAttachRange )
+        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
+		
+    
+    if spawnPoint then
+    
+        local pt = CreateEntity(Observatory.kMapName, spawnPoint, self:GetTeamNumber())
+        SetRandomOrientation(pt)
+        pt:SetConstructionComplete()
+        
+    end
+    
+end
+local function SpawnPrototypeLab(self, techPoint)
+
+    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
+    
+    local spawnPoint = nil
+    
+		
+        spawnPoint = GetRandomBuildPosition( kTechId.PrototypeLab, techPointOrigin, kInfantryPortalAttachRange + 5)
+        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
+		
+    
+    if spawnPoint then
+    
+        local pt = CreateEntity(PrototypeLab.kMapName, spawnPoint, self:GetTeamNumber())
+        
+        SetRandomOrientation(pt)
+        pt:SetConstructionComplete()
+        
+    end
+    
+end
+local function SpawnArmory(self, techPoint)
+
+    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
+    
+    local spawnPoint = nil
+    
+		
+        spawnPoint = GetRandomBuildPosition( kTechId.Armory, techPointOrigin, kInfantryPortalAttachRange + 5)
+        spawnPoint = spawnPoint and spawnPoint - Vector( 0, 0.6, 0 )
+		
+    
+    if spawnPoint then
+    
+        local aa = CreateEntity(Armory.kMapName, spawnPoint, self:GetTeamNumber())
+        
+        SetRandomOrientation(aa)
+        aa:SetConstructionComplete()
+        
+    end
+    
+end
+local function GetArmorLevel(self)
+
+    local armorLevels = 0
+    
+    local techTree = self:GetTechTree()
+    if techTree then
+    
+        if techTree:GetHasTech(kTechId.Armor3) then
+            armorLevels = 3
+        elseif techTree:GetHasTech(kTechId.Armor2) then
+            armorLevels = 2
+        elseif techTree:GetHasTech(kTechId.Armor1) then
+            armorLevels = 1
+        end
+    
+    end
+    
+    return armorLevels
+
 end
 
 function MarineTeam:Update(timePassed)
@@ -199,11 +364,17 @@ function MarineTeam:Update(timePassed)
 
     PlayingTeam.Update(self, timePassed)
     
+    // Update distress beacon mask
+    self:UpdateGameMasks(timePassed)    
 
     if GetGamerules():GetGameStarted() then
         CheckForNoIPs(self)
     end
-   
+    
+    local armorLevel = GetArmorLevel(self)
+    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
+        player:UpdateArmorAmount(armorLevel)
+    end
     
 end
 
@@ -257,12 +428,12 @@ function MarineTeam:InitTechTree()
     self.techTree:AddResearchNode(kTechId.CatPackTech)
     self.techTree:AddResearchNode(kTechId.BluePrintTech)
     
-    self.techTree:AddTargetedActivation(kTechId.NanoShield,       kTechId.None)
+    self.techTree:AddTargetedActivation(kTechId.NanoShield,       kTechId.NanoShieldTech)
     self.techTree:AddTargetedActivation(kTechId.Scan,             kTechId.Observatory)
     self.techTree:AddTargetedActivation(kTechId.PowerSurge,       kTechId.RoboticsFactory)
     self.techTree:AddTargetedActivation(kTechId.MedPack,          kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.AmmoPack,         kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.CatPack,          kTechId.None) 
+    self.techTree:AddTargetedActivation(kTechId.CatPack,          kTechId.CatPackTech) 
     
     self.techTree:AddAction(kTechId.SelectObservatory)
 
@@ -289,12 +460,10 @@ function MarineTeam:InitTechTree()
     
     self.techTree:AddBuildNode(kTechId.AdvancedArmory,               kTechId.Armory,        kTechId.None)
     self.techTree:AddResearchNode(kTechId.PhaseTech,                    kTechId.Observatory,        kTechId.None)
-    self.techTree:AddBuildNode(kTechId.PhaseGate,                    kTechId.None,        kTechId.None, true)
+    self.techTree:AddBuildNode(kTechId.PhaseGate,                    kTechId.PhaseTech,        kTechId.None, true)
 
 
-    self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.None,       kTechId.None)     
-    self.techTree:AddBuildNode(kTechId.Dropship,               kTechId.None,       kTechId.None)  
-    self.techTree:AddBuildNode(kTechId.DropshipBeacon,               kTechId.None,       kTechId.None)  
+    self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.None,       kTechId.None)      
     self.techTree:AddActivation(kTechId.DistressBeacon,           kTechId.Observatory) 
     self.techTree:AddActivation(kTechId.LevelSentry,           kTechId.None)  
     self.techTree:AddActivation(kTechId.LevelIP,           kTechId.None)   
@@ -319,48 +488,39 @@ function MarineTeam:InitTechTree()
     self.techTree:AddUpgradeNode(kTechId.ArmoryHealth,           kTechId.None,              kTechId.None)
    
 
-    self.techTree:AddTargetedBuyNode(kTechId.HeavyMachineGun,            kTechId.None,         kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.HeavyMachineGun,            kTechId.AdvancedArmoryUpgrade,         kTechId.None)
         
     self.techTree:AddResearchNode(kTechId.ShotgunTech,           kTechId.Armory,              kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.Shotgun,            kTechId.None,         kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.DropShotgun,     kTechId.None,         kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.Shotgun,            kTechId.ShotgunTech,         kTechId.None)
+    self.techTree:AddTargetedActivation(kTechId.DropShotgun,     kTechId.ShotgunTech,         kTechId.None)
     
         self.techTree:AddResearchNode(kTechId.HeavyRifleTech,           kTechId.None,              kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.HeavyRifle,            kTechId.None,         kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.HeavyRifle,            kTechId.HeavyRifleTech,         kTechId.None)
         self.techTree:AddTargetedBuyNode(kTechId.HeavyArmor,            kTechId.None,         kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.DropHeavyRifle,     kTechId.None,         kTechId.None)
+    self.techTree:AddTargetedActivation(kTechId.DropHeavyRifle,     kTechId.HeavyRifleTech,         kTechId.None)
     
         self.techTree:AddTargetedBuyNode(kTechId.ExoNanoArmor,            kTechId.Armor1,         kTechId.None)
-            self.techTree:AddTargetedBuyNode(kTechId.JumpPack,            kTechId.None,         kTechId.None)
+            self.techTree:AddTargetedBuyNode(kTechId.JumpPack,            kTechId.JetpackTech,         kTechId.None)
                 self.techTree:AddTargetedBuyNode(kTechId.FireBullets,            kTechId.None,         kTechId.None)
            self.techTree:AddTargetedBuyNode(kTechId.Resupply,            kTechId.None,         kTechId.None)
                 
     self.techTree:AddResearchNode(kTechId.AdvancedWeaponry,      kTechId.None,      kTechId.None)    
     
-    self.techTree:AddTargetedBuyNode(kTechId.GrenadeLauncher,  kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.DropGrenadeLauncher,  kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.GrenadeLauncher,  kTechId.AdvancedArmoryUpgrade)
+    self.techTree:AddTargetedActivation(kTechId.DropGrenadeLauncher,  kTechId.AdvancedArmoryUpgrade)
     
     self.techTree:AddResearchNode(kTechId.AdvancedArmoryUpgrade,  kTechId.None)
         
     self.techTree:AddResearchNode(kTechId.GrenadeTech,           kTechId.Armory,                   kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.ClusterGrenade,     kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.GasGrenade,         kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.PulseGrenade,       kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.ClusterGrenade,     kTechId.GrenadeTech)
+    self.techTree:AddTargetedBuyNode(kTechId.GasGrenade,         kTechId.GrenadeTech)
+    self.techTree:AddTargetedBuyNode(kTechId.PulseGrenade,       kTechId.GrenadeTech)
     
-    self.techTree:AddTargetedBuyNode(kTechId.Flamethrower,     kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.DropFlamethrower,    kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.Flamethrower,     kTechId.AdvancedArmoryUpgrade)
+    self.techTree:AddTargetedActivation(kTechId.DropFlamethrower,    kTechId.AdvancedArmoryUpgrade)
     self.techTree:AddResearchNode(kTechId.MinesTech,            kTechId.Armory,           kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.LayMines,          kTechId.None,        kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.LayStructures,          kTechId.None,        kTechId.None)
-    
-    self.techTree:AddTargetedBuyNode(kTechId.LayStructureIP,          kTechId.None,        kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.LayStructurePG,          kTechId.None,        kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.LayStructureRobo,          kTechId.None,        kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.LayStructureSentry,          kTechId.None,        kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.LayStructureObs,          kTechId.None,        kTechId.None)
-    self.techTree:AddTargetedBuyNode(kTechId.LayStructureARC,          kTechId.None,        kTechId.None)
-    
-    self.techTree:AddTargetedActivation(kTechId.DropMines,      kTechId.None,        kTechId.None)
+    self.techTree:AddTargetedBuyNode(kTechId.LayMines,          kTechId.MinesTech,        kTechId.None)
+    self.techTree:AddTargetedActivation(kTechId.DropMines,      kTechId.MinesTech,        kTechId.None)
     
     self.techTree:AddTargetedBuyNode(kTechId.Welder,          kTechId.Armory,        kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.DropWelder,   kTechId.Armory,        kTechId.None)
@@ -403,21 +563,21 @@ function MarineTeam:InitTechTree()
 
     // Jetpack
     self.techTree:AddResearchNode(kTechId.JetpackTech,           kTechId.PrototypeLab, kTechId.None)
-    self.techTree:AddBuyNode(kTechId.Jetpack,                    kTechId.None, kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.DropJetpack,    kTechId.None, kTechId.None)
+    self.techTree:AddBuyNode(kTechId.Jetpack,                    kTechId.JetpackTech, kTechId.None)
+    self.techTree:AddTargetedActivation(kTechId.DropJetpack,    kTechId.JetpackTech, kTechId.None)
     
     // Exosuit
     self.techTree:AddResearchNode(kTechId.ExosuitTech,           kTechId.PrototypeLab, kTechId.None)
-    self.techTree:AddBuyNode(kTechId.Exosuit,                    kTechId.None, kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.DropExosuit,     kTechId.None, kTechId.None)
-    self.techTree:AddResearchNode(kTechId.DualMinigunTech,       kTechId.None, kTechId.None)
-    self.techTree:AddResearchNode(kTechId.DualMinigunExosuit,    kTechId.None, kTechId.None)
-    self.techTree:AddResearchNode(kTechId.ClawRailgunExosuit,    kTechId.None, kTechId.None)
-    self.techTree:AddResearchNode(kTechId.DualRailgunTech,       kTechId.None, kTechId.None)
-    self.techTree:AddBuyNode(kTechId.DualRailgunExosuit,    kTechId.None, kTechId.None)
+    self.techTree:AddBuyNode(kTechId.Exosuit,                    kTechId.ExosuitTech, kTechId.None)
+    self.techTree:AddTargetedActivation(kTechId.DropExosuit,     kTechId.ExosuitTech, kTechId.None)
+    self.techTree:AddResearchNode(kTechId.DualMinigunTech,       kTechId.ExosuitTech, kTechId.TwoCommandStations)
+    self.techTree:AddResearchNode(kTechId.DualMinigunExosuit,    kTechId.DualMinigunTech, kTechId.TwoCommandStations)
+    self.techTree:AddResearchNode(kTechId.ClawRailgunExosuit,    kTechId.ExosuitTech, kTechId.None)
+    self.techTree:AddResearchNode(kTechId.DualRailgunTech,       kTechId.ExosuitTech, kTechId.TwoCommandStations)
+    self.techTree:AddResearchNode(kTechId.DualRailgunExosuit,    kTechId.DualMinigunTech, kTechId.TwoCommandStations)
     
-    self.techTree:AddBuyNode(kTechId.UpgradeToDualMinigun, kTechId.None, kTechId.TwoCommandStations)
-    self.techTree:AddBuyNode(kTechId.UpgradeToDualRailgun, kTechId.None, kTechId.TwoCommandStations)
+    self.techTree:AddBuyNode(kTechId.UpgradeToDualMinigun, kTechId.DualMinigunTech, kTechId.TwoCommandStations)
+    self.techTree:AddBuyNode(kTechId.UpgradeToDualRailgun, kTechId.DualMinigunTech, kTechId.TwoCommandStations)
 
     self.techTree:AddActivation(kTechId.SocketPowerNode,    kTechId.None,   kTechId.None)
     
@@ -429,7 +589,8 @@ function MarineTeam:SpawnInitialStructures(techPoint)
 
     local tower, commandStation = PlayingTeam.SpawnInitialStructures(self, techPoint)
     
-    SpawnBaseEntities(self, techPoint)
+    SpawnInfantryPortal(self, techPoint)
+    SpawnInfantryPortal(self, techPoint)
     return tower, commandStation
     
 end

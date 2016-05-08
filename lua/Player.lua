@@ -21,6 +21,8 @@ Script.Load("lua/WeaponOwnerMixin.lua")
 Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/Mixins/ControllerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
+--Script.Load("lua/AchievementReceiverMixin.lua")
+--Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -32,6 +34,7 @@ Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/AFKMixin.lua")
 Script.Load("lua/SmoothedRelevancyMixin.lua")
+Script.Load("lua/ClientLOSMixin.lua") 
 
 if Client then
     Script.Load("lua/HelpMixin.lua")
@@ -61,6 +64,10 @@ end
 
 if Predict then
 
+
+function Player:OnUpdatePlayer(deltaTime)    
+    -- do nothing
+end
 
 function Player:UpdateMisc(input)
     -- do nothing
@@ -214,6 +221,9 @@ local networkVars =
     resources = "private float (0 to " .. kMaxPersonalResources .." by 0.01)",
     credits = "private float (0 to 999999 by 0.01)",
     teamResources = "private float (0 to " .. kMaxTeamResources .." by 0.01)",
+    gameStarted = "private boolean",
+    countingDown = "private boolean",
+    frozen = "private boolean",
     
     timeOfLastUse = "private time",
     
@@ -227,7 +237,7 @@ local networkVars =
     darwinMode = "private boolean",
     
     moveButtonPressed = "compensated boolean",
-    --gravity = "float (-5 to 5 by 1)",
+    gravity = "float (-5 to 5 by 1)",
     buildspeed = "float (0 to 3 by .1)",
     
     --[[
@@ -260,7 +270,7 @@ local networkVars =
     isMoveBlocked = "private boolean",
     
     communicationStatus = "enum kPlayerCommunicationStatus",
-    alltalktoggled = "boolean",
+    --alltalktoggled = "boolean",
 
 }
 
@@ -273,10 +283,12 @@ AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(ControllerMixin, networkVars)
 AddMixinNetworkVars(WeaponOwnerMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
+--AddMixinNetworkVars(AchievementReceiverMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+AddMixinNetworkVars(ClientLOSMixin, networkVars) 
 
 local function GetTabDirectionVector(buttonReleased)
 
@@ -299,6 +311,8 @@ function Player:OnCreate()
     InitMixin(self, DoorMixin)
     -- TODO: move LiveMixin to child classes (some day)
     InitMixin(self, LiveMixin)
+    --InitMixin(self, AchievementReceiverMixin)
+    --InitMixin(self, AchievementGiverMixin)
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
@@ -309,6 +323,8 @@ function Player:OnCreate()
 
     if Client then
         InitMixin(self, HelpMixin)
+	   InitMixin(self, ClientLOSMixin) 	
+	   local ent = self:GetCrossHairTarget() 
         self:AddFieldWatcher("locationId", Player.OnLocationIdChange)
     end
 
@@ -375,10 +391,10 @@ function Player:OnCreate()
     
     self.pushImpulse = Vector(0, 0, 0)
     self.pushTime = 0
-    --self.gravity = 0
+    self.gravity = 0
     self.buildspeed = .1
     self.credits = 0
-    self.alltalktoggled = false
+    --self.alltalktoggled = false
     
 end
 
@@ -455,9 +471,11 @@ function Player:GetIsSteamFriend()
 
     return self.isSteamFriend
 end
+/*
 function Player:GetAllTalkToggled()
 return self.alltalktoggled
 end
+*/
 
 
 --[[
@@ -962,7 +980,7 @@ end
     Returns true if the player is currently on a team and the game has started.
 ]]
 function Player:GetIsPlaying()
-    return self:GetIsOnPlayingTeam()
+    return self.gameStarted and self:GetIsOnPlayingTeam()
 end
 
 function Player:GetIsOnPlayingTeam()
@@ -1073,7 +1091,7 @@ end
 function Player:JumpPackNotGravity()
 self.gravity = ConditionalValue(self:isa("Onos"), 1, 0)
 end
-/*
+
 function Player:GetGravity()
 return self.gravity
 end
@@ -1087,7 +1105,7 @@ function Player:ModifyGravityForce(gravityTable)
     
 
 end
-*/
+
 function Player:OnUseTarget(target)
 end
 
@@ -1142,13 +1160,18 @@ end
 function Player:AdjustMove(input)
 
     PROFILE("Player:AdjustMove")
-        
+    
+    -- Don't allow movement when frozen in place
+    if self.frozen then
+        input.move:Scale(0)
+    else        
     
         -- Allow child classes to affect how much input is allowed at any time
         if self.mode == kPlayerMode.Taunt then
             input.move:Scale(Player.kTauntMovementScalar)
         end
         
+    end
     
     return input
     
@@ -1367,7 +1390,7 @@ end
 
 function Player:OnProcessIntermediate(input)
    
-    if self:GetIsAlive() then
+    if self:GetIsAlive() and not self.countingDown then
         -- Update to the current view angles so that the mouse feels smooth and responsive.
         self:UpdateViewAngles(input)
     end
@@ -1420,21 +1443,43 @@ end
 -- compensated fields are rolled back in time, so it needs to restore them once the processing
 -- is done. So it backs up, synchs to the old state, runs the OnProcessMove(), then restores them. 
 function Player:OnProcessMove(input)
+    
+    -- ensure that a player is always moving itself using full precision
     self:SetOrigin(self.fullPrecisionOrigin)
-    SetMoveForHitregAnalysis(input) 
+    -- Log("%s: TrackVel-0-start : vel=%s", self, self.velocity)
+    -- Log("%s: TrackYaw-0-input: input.yaw=%s|input.pitch=%s", self, input.yaw, input.pitch)
+    -- Log("%s: TrackYaw-1-start : y=%s|yR=%s|standY=%s|runY=", self, self.bodyYaw, self.bodyYawRun, self.standingBodyYaw, self.runningBodyYaw)
+    -- local startOrigin = self:GetEyePos()
+    -- Log("%s: TrackProcessMove-0-start : eye=%s|vel=%s", self, startOrigin, self:GetVelocity())
+
+    SetMoveForHitregAnalysis(input)
+    
     local commands = input.commands
     if self:GetIsAlive() then
     
+        if self.countingDown then
+        
+            input.move:Scale(0)
+            input.commands = 0
+            
+        else
+        
+            -- Allow children to alter player's move before processing. To alter the move
+            -- before it's sent to the server, use OverrideInput
             input = self:AdjustMove(input)
             
             -- Update player angles and view angles smoothly from desired angles if set. 
             -- But visual effects should only be calculated when not predicting.
             self:UpdateViewAngles(input)  
             
+        end
         
     end
     
-
+    if true then
+       PROFILE("Player:OnProcessMove:OnUpdatePlayer")
+        self:OnUpdatePlayer(input.time)
+    end
     
     ScriptActor.OnProcessMove(self, input)
     
@@ -1482,6 +1527,26 @@ function Player:OnProcessMove(input)
     if Client then
         self:ConfigurePhysicsCuller()
     end
+    
+    -- for debugging hitreg; if hitreg scan is enabled, we generate a hitreg scan every move
+    -- very spammy and wasteful of network resources
+    if self.hitregDebugAlways then
+        local viewAxis = self:GetViewAngles():GetCoords().zAxis
+        local startPoint = self:GetEyePos()
+        local endPoint = startPoint + viewAxis * 100
+        local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(self))
+        -- Log("%s: TrackHitreg-1 : view=%s|start=%s", self, viewAxis, startPoint)
+        HandleHitregAnalysis(self, startPoint, endPoint, trace)
+    end
+    
+    -- local amount = self:GetCrouchAmount()
+    -- local offset = -self:GetCrouchShrinkAmount() * amount
+    -- Log("%s: Crouching-2-Camera:offset=%s|amount=%s|time=%s|crouch=%s", self, offset, amount, self.timeOfCrouchChange, self.crouching)
+
+    -- local distMoved = self:GetEyePos() - startOrigin
+    -- Log("%s: TrackProcessMove-1-end : eye=%s|vel=%s|moved=%s", self, self:GetEyePos()(), self:GetVelocity(), distMoved)
+    -- Log("%s: TrackVel-1-end : vel=%s", self, self.velocity)
+    -- Log("%s: TrackY-1-end : startY=%s|y=%s", self, startOrigin.y, self:GetOrigin().y)
 end
 
 function Player:OnProcessSpectate(deltaTime)
@@ -1503,6 +1568,18 @@ function Player:OnProcessSpectate(deltaTime)
         viewModel:ProcessMoveOnModel(deltaTime)
     end
     
+        self:OnUpdatePlayer(deltaTime)
+
+end
+
+function Player:OnUpdate(deltaTime)
+    
+    ScriptActor.OnUpdate(self, deltaTime)
+
+    if true then
+        PROFILE("Player:OnUpdate:OnUpdatePlayer")
+        self:OnUpdatePlayer(deltaTime)
+    end
 
 end
 
@@ -1574,6 +1651,9 @@ end
 --[[
     Moves the player downwards (by at most a meter).
 ]]
+function Player:GetGameStarted()
+    return self.gameStarted
+end
 function Player:DropToFloor()
 
     PROFILE("Player:DropToFloor")
@@ -2378,7 +2458,7 @@ end
 function Player:SetCommunicationStatus(status)
     self.communicationStatus = status
 end
-/*
+
 if Server then
      
     function Player:SetWaitingForTeamBalance(waiting)
@@ -2394,7 +2474,7 @@ if Server then
     end
     
 end
-*/
+
 function Player:GetPositionForMinimap()
 
     local tunnels = GetEntitiesWithinRange("Tunnel", self:GetOrigin(), 30)

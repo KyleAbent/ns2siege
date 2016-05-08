@@ -141,12 +141,15 @@ end
 function Marine:CopyPlayerDataFrom(player)
 
     Player.CopyPlayerDataFrom(self, player)
-  -- if self:isa("JetpackMarine") then self.hasfirebullets = player.hasfirebullets end //May this prevent the always spawning with it if otherwise?
+   if self:isa("JetpackMarine") then self.hasfirebullets = player.hasfirebullets end //May this prevent the always spawning with it if otherwise?
     if player.parasited and GetGamerules():GetGameStarted() then
         self.timeParasited = player.timeParasited
         self.parasited = player.parasited
         self:OnParasited()
     end
+    self.hasreupply = player.hasreupply
+    self.heavyarmor = player.heavyarmor
+    self.hasjumppack = player.hasjumppack
     self.timeLastBeacon = player.timeLastBeacon
 end
 
@@ -237,9 +240,9 @@ end
 function GetHostStructureFor(entity, techId)
 
     local hostStructures = {}
-       table.copy(GetEntitiesForTeamWithinRange("ArmsLab", entity:GetTeamNumber(), entity:GetOrigin(), 2.5), hostStructures, true)
-    --table.copy(GetEntitiesForTeamWithinRange("Armory", entity:GetTeamNumber(), entity:GetOrigin(), Armory.kResupplyUseRange), hostStructures, true)
-    --table.copy(GetEntitiesForTeamWithinRange("PrototypeLab", entity:GetTeamNumber(), entity:GetOrigin(), PrototypeLab.kResupplyUseRange), hostStructures, true)
+       --table.copy(GetEntitiesForTeamWithinRange("ArmsLab", entity:GetTeamNumber(), entity:GetOrigin(), 2.5), hostStructures, true)
+    table.copy(GetEntitiesForTeamWithinRange("Armory", entity:GetTeamNumber(), entity:GetOrigin(), Armory.kResupplyUseRange), hostStructures, true)
+    table.copy(GetEntitiesForTeamWithinRange("PrototypeLab", entity:GetTeamNumber(), entity:GetOrigin(), PrototypeLab.kResupplyUseRange), hostStructures, true)
     
     if table.count(hostStructures) > 0 then
     
@@ -356,6 +359,75 @@ kIsExoTechId = { [kTechId.Exosuit] = true, [kTechId.DualMinigunExosuit] = true,
 function Marine:AttemptToBuy(techIds)
 
     local techId = techIds[1]
+    
+               if techId == kTechId.JumpPack then
+                StartSoundEffectForPlayer(Marine.activatedsound, self)
+            //    self:AddResources(-GetCostForTech(techId))
+                self.hasjumppack = true
+                return true
+              elseif techId == kTechId.FireBullets then
+              //  self:AddResources(-GetCostForTech(techId))
+                self.hasfirebullets = true
+                return true
+              elseif techId == kTechId.HeavyMachineGun then
+                         self:GiveItem(HeavyMachineGun.kMapName)
+                         self:SetArmorAmount()
+                return true
+              elseif techId == kTechId.Resupply then
+                self.hasreupply = true
+                return true
+              elseif techId == kTechId.HeavyArmor then
+               self.heavyarmor = true
+                return true
+               end
+                
+    local hostStructure = GetHostStructureFor(self, techId)
+
+    if hostStructure then
+    
+        local mapName = LookupTechData(techId, kTechDataMapName)
+        
+        if mapName then
+        
+            Shared.PlayPrivateSound(self, Marine.kSpendResourcesSoundName, nil, 1.0, self:GetOrigin())
+            
+            if self:GetTeam() and self:GetTeam().OnBought then
+                self:GetTeam():OnBought(techId)
+            end
+            
+            if techId == kTechId.Jetpack then
+
+                // Need to apply this here since we change the class.
+                self:AddResources(-GetCostForTech(kJumpPackCost))
+                self:GiveJetpack()
+            elseif kIsExoTechId[techId] then
+                BuyExo(self, techId)    
+            else
+            
+                // Make sure we're ready to deploy new weapon so we switch to it properly.
+                if self:GiveItem(mapName) then
+                
+                    StartSoundEffectAtOrigin(Marine.kGunPickupSound, self:GetOrigin())                    
+                    return true
+                    
+                end
+                
+            end
+            
+            return false
+            
+        end
+        
+    end
+    
+    return false
+    
+end
+   
+ /*                
+function Marine:AttemptToBuy(techIds)
+
+    local techId = techIds[1]
     local deductres = true
                if techId == kTechId.JumpPack then
                 StartSoundEffectForPlayer(Marine.activatedsound, self)
@@ -455,6 +527,7 @@ function Marine:DelayStructureTo(boughtid, techid, mapname)
    end
     self:UpdateCredits(self)
 end
+*/
 // special threatment for mines and welders
 function Marine:TellMarine(self)
 

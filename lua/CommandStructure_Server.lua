@@ -26,12 +26,6 @@ function CommandStructure:OnKill(attacker, doer, point, direction)
         self.objectiveInfoEntId = Entity.invalidId
         
     end
-    if Server then
-      local gameRules = GetGamerules()
-            if gameRules then
-               gameRules:CheckGameEndInAMoment()
-            end
-    end
 
 end
 

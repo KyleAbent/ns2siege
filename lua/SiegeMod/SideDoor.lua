@@ -18,6 +18,7 @@ local networkVars =
     model = "string (128)",
     moveSpeed = "float",
    isvisible = "boolean",
+    cleaning = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -35,6 +36,7 @@ function SideDoor:OnCreate()
     InitMixin(self, MoveableMixin)
     InitMixin(self, TeamMixin)
     self.isvisible = true
+    self.cleaning = true
 end
 function SideDoor:OnInitialized()
 

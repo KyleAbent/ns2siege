@@ -540,6 +540,8 @@ function OnUpdateClient(deltaTime)
         
         UpdateTracers(deltaTime)
         
+        Client.SendItemDropHeartbeat() 
+        
         
     end
     
@@ -1054,8 +1056,9 @@ local function OnLoadComplete()
     HiveVision_Initialize()
     EquipmentOutline_Initialize()
     
-    // Set default player name to one set in Steam, or one we've used and saved previously
-    local playerName = Client.GetOptionString(kNicknameOptionsKey, Client.GetUserName())
+    -- In case name changed during load
+    SetNameWithSteamPersona()
+    local playerName = GetNickName()
     Client.SendNetworkMessage("SetName", { name = playerName }, true)
     
     Lights_UpdateLightMode()

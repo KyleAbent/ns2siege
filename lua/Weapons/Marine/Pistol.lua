@@ -1,11 +1,11 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Pistol.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Pistol.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
@@ -115,7 +115,7 @@ if Client then
 
     function Pistol:GetLaserAttachCoords()
     
-        // return first person coords
+        -- return first person coords
         local parent = self:GetParent()
         if parent and parent == Client.GetLocalPlayer() then
 
@@ -128,15 +128,15 @@ if Client then
                 
                 attachCoords.origin = viewCoords:TransformPoint(attachCoords.origin)
                 
-                // when we are not reloading or sprinting then return the view axis (otherwise the laser pointer goes in wrong direction)
-                /*
+                -- when we are not reloading or sprinting then return the view axis (otherwise the laser pointer goes in wrong direction)
+                --[[
                 if not self:GetIsReloading() and not parent:GetIsSprinting() then
                 
                     attachCoords.zAxis = viewCoords.zAxis
                     attachCoords.xAxis = viewCoords.xAxis
                     attachCoords.yAxis = viewCoords.yAxis
 
-                else*/
+                else--]]
                 
                     attachCoords.zAxis = viewCoords:TransformVector(attachCoords.zAxis)
                     attachCoords.xAxis = viewCoords:TransformVector(attachCoords.xAxis)
@@ -146,7 +146,7 @@ if Client then
                     attachCoords.zAxis = attachCoords.xAxis
                     attachCoords.xAxis = zAxis
                     
-                //end
+                --end
                 
                 attachCoords.origin = attachCoords.origin - attachCoords.zAxis * 0.1
                 
@@ -156,7 +156,7 @@ if Client then
             
         end
         
-        // return third person coords
+        -- return third person coords
         return self:GetAttachPointCoords(kLaserAttachPoint)
         
     end
@@ -176,9 +176,16 @@ function Pistol:GetAnimationGraphName()
 end
 
 function Pistol:GetHasSecondary(player)
-    return false
+    return true
 end
-
+function Pistol:GetDamageType()
+    local parent = self:GetParent()
+    if parent and parent.hasfirebullets then
+      return kDamageType.Flame
+   else
+      return kDamageType.Normal
+    end
+end
 function Pistol:GetViewModelName(sex, variant)
     return kViewModels[sex][variant]
 end
@@ -187,22 +194,15 @@ function Pistol:GetDeathIconIndex()
     return kDeathMessageIcon.Pistol
 end
 
-// When in alt-fire mode, keep very accurate
+-- When in alt-fire mode, keep very accurate
 function Pistol:GetInaccuracyScalar(player)
     return ClipWeapon.GetInaccuracyScalar(self, player) * ConditionalValue(self.altMode, .5, 1)
 end
 
 function Pistol:GetHUDSlot()
-    return 3
+    return kSecondaryWeaponSlot
 end
-function Pistol:GetDamageType()
-    local parent = self:GetParent()
-    if parent and parent.hasfirebullets then
-      return kDamageType.Flame
-   else
-      return kDamageType.Light
-    end
-end
+
 function Pistol:GetPrimaryMinFireDelay()
     return kPistolRateOfFire    
 end
@@ -236,7 +236,16 @@ function Pistol:GetIdleAnimations(index)
     return animations[index]
 end
 
-
+--[[ wut? We have two OnProcessMove? This one will get overrun...
+function Pistol:OnProcessMove(input)
+    ClipWeapon.OnProcessMove(self, input)
+    if self.clip ~= 0 then
+        self.emptyPoseParam = 0
+    else
+        self.emptyPoseParam = Clamp(Slerp(self.emptyPoseParam, 1, input.time * 5), 0, 1)
+    end
+end
+--]]
 
 function Pistol:UpdateViewModelPoseParameters(viewModel)
     viewModel:SetPoseParam("empty", self.emptyPoseParam)

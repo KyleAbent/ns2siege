@@ -62,8 +62,8 @@ LiveMixin.networkVars =
     health = string.format("float (0 to %f by 0.0625)", LiveMixin.kMaxHealth),
     maxHealth = string.format("integer (0 to %f)", LiveMixin.kMaxHealth),
     
-    armor = string.format("float (0 to %f by 1)", LiveMixin.kMaxArmor),
-    maxArmor = string.format("float (0 to %f by 1)", LiveMixin.kMaxArmor),
+    armor = string.format("float (0 to %f by 0.0625)", LiveMixin.kMaxArmor), 
+    maxArmor = string.format("integer (0 to %f)", LiveMixin.kMaxArmor),
     
     // for heal effect
     timeLastHealed = "time",

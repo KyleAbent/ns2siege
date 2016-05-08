@@ -22,69 +22,10 @@ function GetCommanderForTeam(teamNumber)
     end    
 
 end
-function Armory:GetGainXPAmount()
-local amount =  Armory.kGainXp
-local multiplier = 1
-multiplier = ConditionalValue(GetIsSiegeEnabled(),amount * 2, 1)
-multiplier = multiplier * self:GetArmoriesInRange()
-  return amount
-end
-function Armory:GetArmoriesInRange()
-      local armory = GetEntitiesWithinRange("Armory", self:GetOrigin(), 14)
-           return Clamp(#armory, 0, 8)
-end
-function Armory:GetWeaponsCount()   
-      local shotguns = 0
-     -- local hmgs = 0
-      local flamethrowers = 0
-      local GLS = 0
-                    local entities = GetEntitiesForTeamWithinRange("ClipWeapon", 1, self:GetOrigin(), 18)
-                     for i = 1, #entities do
-                     local ent = entities[i]
-                           if ent:isa("Shotgun") then
-                                 shotguns = shotguns + 1
-                           elseif ent:isa("HeavyRifle") then
-                                 hmgs = hmgs + 1
-                           elseif ent:isa("Flamethrower") then
-                                 flamethrowers = flamethrowers + 1
-                           elseif ent:isa("GrenadeLauncher") then
-                                 GLS = GLS + 1
-                           end
-                     end
-                  --   return shotguns, hmgs, flamethrowers, GLS
-                  return shotguns, flamethrowers, GLS
-end  
-    function Armory:FindFreeSpace()
-    
-        for index = 1, 24 do
-           local extents = Vector(1,1,1)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 8, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation then
-           return spawnPoint
-           end
-       end
-           Print("No valid spot found for armory spawn weapons")
-           return nil
-    end
-function Armory:SpawnWeapons()
-                      local gameRules = GetGamerules()
-            if gameRules then
-                           gameRules:SpawnArmoryEnts(self)  
-            end
-    return true
-end
+
 function Armory:OnConstructionComplete()
     self:AddTimedCallback(OnDeploy, kDeployTime)
+    
 end
 
 // west/east = x/-x
@@ -121,15 +62,21 @@ function Armory:GetTimeToResupplyPlayer(player)
     
 end
 function Armory:OnStun()
-      /*
+    
                 local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
                 bonewall.modelsize = 0.5
-                bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
-                bonewall.targetid = self:GetId()
-       */
-                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThroughHit)
-                self.stunned = true
-                self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
+                bonewall:AdjustMaxHealth(bonewall:GetMaxHealth() / 2)
+end
+function Armory:GetGainXPAmount()
+local amount =  1.32 --Armory.kGainXp
+local multiplier = 1
+multiplier = ConditionalValue(GetIsSiegeEnabled(),amount * 2, 1)
+multiplier = multiplier * self:GetArmoriesInRange()
+  return amount
+end
+function Armory:GetArmoriesInRange()
+      local armory = GetEntitiesWithinRange("Armory", self:GetOrigin(), 14)
+           return Clamp(#armory, 0, 8)
 end
 function Armory:GetShouldResupplyPlayer(player)
 
@@ -137,12 +84,20 @@ function Armory:GetShouldResupplyPlayer(player)
         return false
     end
     
+ --   if self:GetIsStunned() then
+ --   return false
+  --  end
     
     local isVortexed = self:GetIsVortexed() or ( HasMixin(player, "VortexAble") and player:GetIsVortexed() )
     if isVortexed then
         return false
     end    
-   
+    
+--    local stunned = HasMixin(player, "Stun") and player:GetIsStunned()
+    
+  --  if stunned then
+  --      return false
+  --  end
     
     local inNeed = false
     
@@ -366,7 +321,6 @@ function Armory:OnResearchCancel(researchId)
 
 end
 function Armory:UpdateResearch(deltaTime)
- //if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
    //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
     local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
     if researchNode then
@@ -375,15 +329,15 @@ function Armory:UpdateResearch(deltaTime)
         local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
 
         if researchNode:GetTechId() == kTechId.MinesTech then
-           projectedminutemarktounlock = Armory.MinesTime
+           projectedminutemarktounlock = kMinuteMarkToUnlockMines
         elseif researchNode:GetTechId() == kTechId.GrenadeTech then
-          projectedminutemarktounlock = Armory.GrenadesTime
+          projectedminutemarktounlock = kMinuteMarkToUnlockGrenades
         elseif researchNode:GetTechId() == kTechId.ShotgunTech then
-          projectedminutemarktounlock = Armory.ShotGunTime
+          projectedminutemarktounlock = kMinuteMarkToUnlockShotguns
+        elseif researchNode:GetTechId() == kTechId.HeavyRifleTech then
+          projectedminutemarktounlock = kMinuteMarkToUnlockHeavyRifle
          elseif researchNode:GetTechId() == kTechId.AdvancedArmoryUpgrade then
-          projectedminutemarktounlock = Armory.AATime
-          elseif researchNode:GetTechId() == kTechId.HeavyRifleTech then
-          projectedminutemarktounlock = Armory.HeavyRifleTime
+          projectedminutemarktounlock = kMinuteMarkToUnlockAA
          end
         
      /// kRecycleTime
@@ -423,8 +377,7 @@ function Armory:UpdateResearch(deltaTime)
         end
         
     end 
-//self.timeLastUpdateCheck = Shared.GetTime()
-//end
+
 end
 
 function Armory:UpdateLoggedIn()

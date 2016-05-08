@@ -34,6 +34,7 @@ Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
 Script.Load("lua/MinimapConnectionMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
@@ -139,6 +140,7 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -169,6 +171,7 @@ function PhaseGate:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, StunMixin) 
     if Client then
@@ -209,6 +212,7 @@ function PhaseGate:OnInitialized()
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
         InitMixin(self, MinimapConnectionMixin)
+        InitMixin(self, SupplyUserMixin)
     
     elseif Client then
     
@@ -220,46 +224,7 @@ function PhaseGate:OnInitialized()
     InitMixin(self, IdleMixin)
     
 end
-if Server then
-   function PhaseGate:GetIsFront()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function PhaseGate:GetCanBeUsedConstructed(byPlayer)
-  return (not self:GetIsFront() or self:GetOwner() == byPlayer) and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
-end
-function PhaseGate:GetCanBeUsed(player, useSuccessTable)
-  useSuccessTable.useSuccess = true --self:GetCanBeUsedConstructed(player)
-end
-function PhaseGate:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
-    // Play flavor sounds when using MAC.
-    if Server then
-    
-        local time = Shared.GetTime()
-        
-       // if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + 4)) then
-        
-           local laystructure = player:GiveItem(LayStructures.kMapName)
-           laystructure:SetTechId(kTechId.PhaseGate)
-           laystructure:SetMapName(PhaseGate.kMapName)
-           laystructure.originalposition = self:GetOrigin()
-           DestroyEntity(self)
-           // self.timeOfLastUse = time
-            
-      //  end
-       //self:PlayerUse(player) 
-    end
-    
-end
-end
 function PhaseGate:GetIsWallWalkingAllowed()
     return false
 end 
@@ -271,7 +236,6 @@ function PhaseGate:OnStun()
                 local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
                 bonewall.modelsize = 0.5
                 bonewall:AdjustMaxHealth(bonewall:GetMaxHealth() / 2)
-                bonewall:SetLifeSpan(1)
 end
 function PhaseGate:GetTechButtons(techId)
 
@@ -479,7 +443,6 @@ function PhaseGate:OnUpdateAnimationInput(modelMixin)
 
     modelMixin:SetAnimationInput("linked", self.linked)
     modelMixin:SetAnimationInput("phase", self.phase)
-    modelMixin:SetAnimationInput("powered", true)
     
 end
 

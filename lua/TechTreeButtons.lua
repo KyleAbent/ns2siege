@@ -1,3 +1,16 @@
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\TechTreeButtons.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+//
+// Hard-coded data which maps tech tree constants to indices into a texture. Used to display
+// icons in the commander build menu and alien buy menu.
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+// These are the icons that appear next to alerts or as hotkey icons.
+// Icon size should be 20x20. Also used for the alien buy menu.
 function CommanderUI_Icons()
 
     local player = Client.GetLocalPlayer()
@@ -45,25 +58,18 @@ kTechIdToMaterialOffset[kTechId.CommandStation] = 0
 kTechIdToMaterialOffset[kTechId.BluePrintTech] = 0
 kTechIdToMaterialOffset[kTechId.TwoCommandStations] = 0
 kTechIdToMaterialOffset[kTechId.Armory] = 1
-kTechIdToMaterialOffset[kTechId.LayStructures] = 1
 kTechIdToMaterialOffset[kTechId.AdvancedArmory] = 1
 kTechIdToMaterialOffset[kTechId.Hive] = 2
 kTechIdToMaterialOffset[kTechId.Redemption] = 2
 kTechIdToMaterialOffset[kTechId.Extractor] = 3
 kTechIdToMaterialOffset[kTechId.ExtractorArmor] = 14
 kTechIdToMaterialOffset[kTechId.InfantryPortal] = 4
-kTechIdToMaterialOffset[kTechId.LayStructureIP] = 4
 kTechIdToMaterialOffset[kTechId.LevelIP] = 4
 kTechIdToMaterialOffset[kTechId.Sentry] = 5
-kTechIdToMaterialOffset[kTechId.LayStructureSentry] = 5
 kTechIdToMaterialOffset[kTechId.LevelSentry] = 5
 kTechIdToMaterialOffset[kTechId.RoboticsFactory] = 6
-kTechIdToMaterialOffset[kTechId.LayStructureRobo] = 6
 kTechIdToMaterialOffset[kTechId.ARCRoboticsFactory] = 6
 kTechIdToMaterialOffset[kTechId.Observatory] = 7
-kTechIdToMaterialOffset[kTechId.Dropship] = 7
-kTechIdToMaterialOffset[kTechId.DropshipBeacon] = 7
-kTechIdToMaterialOffset[kTechId.LayStructureObs] = 7
 kTechIdToMaterialOffset[kTechId.AdvancedBeaconTech] = 7
 kTechIdToMaterialOffset[kTechId.SelectObservatory] = 74
 kTechIdToMaterialOffset[kTechId.MinesTech] = 8
@@ -94,7 +100,6 @@ kTechIdToMaterialOffset[kTechId.PrototypeLab] = 15
 kTechIdToMaterialOffset[kTechId.Harvester] = 16
 kTechIdToMaterialOffset[kTechId.PresBonus] = 16
 kTechIdToMaterialOffset[kTechId.PhaseGate] = 17
-kTechIdToMaterialOffset[kTechId.LayStructurePG] = 17
 kTechIdToMaterialOffset[kTechId.PGchannelOne] = 17
 kTechIdToMaterialOffset[kTechId.PGchannelTwo] = 17
 kTechIdToMaterialOffset[kTechId.PGchannelThree] = 17
@@ -125,7 +130,6 @@ kTechIdToMaterialOffset[kTechId.FullVeil] = 152
 kTechIdToMaterialOffset[kTechId.Marine] = 24
 kTechIdToMaterialOffset[kTechId.ExosuitTech] = 25
 kTechIdToMaterialOffset[kTechId.Exo] = 25
-kTechIdToMaterialOffset[kTechId.DualRailgunExosuit] = 25
 kTechIdToMaterialOffset[kTechId.DropExosuit] = 25
 kTechIdToMaterialOffset[kTechId.JetpackMarine] = 26    
 kTechIdToMaterialOffset[kTechId.JetpackFuelTech] = 26    
@@ -150,7 +154,6 @@ kTechIdToMaterialOffset[kTechId.UpgradeOnos] = 31
 kTechIdToMaterialOffset[kTechId.OnosMenu] = 31  
 kTechIdToMaterialOffset[kTechId.OnosEgg] = 31
 kTechIdToMaterialOffset[kTechId.ARC] = 32
-kTechIdToMaterialOffset[kTechId.LayStructureARC] = 32
 kTechIdToMaterialOffset[kTechId.CragArcBonus] = 32
 kTechIdToMaterialOffset[kTechId.ARCUndeploy] = 32
 kTechIdToMaterialOffset[kTechId.ARCDeploy] = 33

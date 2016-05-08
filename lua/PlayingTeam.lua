@@ -539,12 +539,13 @@ function PlayingTeam:GetHasTeamLost()
     if GetGamerules():GetGameStarted() and not Shared.GetCheatsEnabled() then
     
         // Team can't respawn or last Command Station or Hive destroyed
-     //   local activePlayers = self:GetHasActivePlayers()
+        local activePlayers = self:GetHasActivePlayers()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
         local numAliveCommandStructures = self:GetNumAliveCommandStructures()
         
-        if  (not abilityToRespawn) or
+        if  (not activePlayers and not abilityToRespawn) or
             (numAliveCommandStructures == 0) or
+            (self:GetNumPlayers() == 0) or 
             self:GetHasConceded() then
             
             return true
@@ -606,8 +607,6 @@ local function SpawnCommandStructure(techPoint, teamNumber)
     assert(commandStructure ~= nil)
     commandStructure:SetConstructionComplete()
     
-    techPoint:SpawnOtherHives() -- I want 3 hives at start not 1 darnit!
-    
     // Use same align as tech point.
     local techPointCoords = techPoint:GetCoords()
     techPointCoords.origin = commandStructure:GetOrigin()
@@ -650,36 +649,15 @@ end
  * Transform player to appropriate team respawn class and respawn them at an appropriate spot for the team.
  * Pass nil origin/angles to have spawn entity chosen.
  */
-function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName, isbeacon, isroundstart)
+function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName)
 
     local spawnMapName = self.respawnEntity
-    
-         local currentmod = nil
-         
-        if isbeacon or (isroundstart and player:GetTeamNumber() == 1 ) then
-    
-         if GetGamerules():GetIsSuddenDeath() then
-             mapName = Exo.kMapName
-             currentmod = SD
-         elseif GetGamerules():GetSiegeDoorsOpen() or isroundstart then
-              mapName = JetpackMarine.kMapName
-              if not isroundstart then currentmod = siege end
-         end
-    
-    end
     
     if mapName ~= nil then
         spawnMapName = mapName
     end
-
-     
-      local extraValues = {}
-      
-     if currentmod == SD then
-             extraValues = {}
-    end
- 
-    local newPlayer = player:Replace(spawnMapName, self:GetTeamNumber(), false, origin, extraValues)
+    
+    local newPlayer = player:Replace(spawnMapName, self:GetTeamNumber(), false, origin)
     
     // If we fail to find a place to respawn this player, put them in the Team's
     // respawn queue.
@@ -695,23 +673,6 @@ function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName, isbea
         newPlayer:ClearUpgrades()
     end
     
-            if isbeacon then
-        
-              if currentmod ~= nil then
-              
-                 if currentmod == SD then
-                   player:GiveItem(HeavyMachineGun.kMapName)
-                 elseif currentmod == siege then
-                   player:GiveItem(Shotgun.kMapName)
-                 else                
-                   player:GiveItem(Welder.kMapName)
-                 end
-                 
-              end
-        
-          end
-
-    newPlayer:SetCameraDistance(0)
     return (newPlayer ~= nil), newPlayer
     
 end
@@ -724,8 +685,7 @@ function PlayingTeam:ReplaceRespawnAllPlayers()
 		
 		local playerId = playerIds[ i ]
         local player = Shared.GetEntity(playerId)
-        self:ReplaceRespawnPlayer(player, nil, nil, Gorge.kMapName, false, true)
-
+        self:ReplaceRespawnPlayer(player, nil, nil)
 
     end
     
@@ -851,6 +811,7 @@ function PlayingTeam:Update(timePassed)
 
     if GetGamerules():GetGameStarted() then
 
+        self:UpdateMinResTick()
 
         if #gServerBots > 0 or #GetEntitiesWithMixinForTeam("PlayerHallucination", self:GetTeamNumber()) > 0 then
             self:GetTeamBrain():Update(timePassed)
@@ -870,6 +831,31 @@ function PlayingTeam:Update(timePassed)
     
 end
 
+function PlayingTeam:UpdateMinResTick()
+
+    PROFILE("PlayingTeam:UpdateMinResTick")
+
+    if not self.timeLastMinResUpdate or self.timeLastMinResUpdate + kResourceTowerResourceInterval * 2 <= Shared.GetTime() then
+    
+        local rtActiveCount = 0
+        local rts = GetEntitiesForTeam("ResourceTower", self:GetTeamNumber())
+        for index, rt in ipairs(rts) do
+        
+            if rt:GetIsAlive() and rt:GetIsCollecting() then
+                rtActiveCount = rtActiveCount + 1
+            end
+            
+        end
+        
+        if rtActiveCount == 0 then
+            self:AddTeamResources(kTeamResourcePerTick)
+        end
+    
+        self.timeLastMinResUpdate = Shared.GetTime()
+    
+    end
+
+end
 
 function PlayingTeam:PrintWorldTextForTeamInRange(messageType, data, position, range)
 
@@ -1096,15 +1082,7 @@ function PlayingTeam:GetCommander()
 
     return nil
 end
-function PlayingTeam:GetHasPlayer()
 
-    local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
-    if players and #players > 0 then
-        return true
-    end    
-
-    return false
-end
 function PlayingTeam:PlayCommanderSound(soundName)
 
     local commander = self:GetCommander()

@@ -360,6 +360,11 @@ end
 
 function GetTeamHasCommander(teamNumber)
 
+    local gameInfoEntity = GetGameInfoEntity()
+    local teamInfoEntity = GetTeamInfoEntity(teamNumber)
+
+    if gameInfoEntity and teamInfoEntity and gameInfoEntity:GetRookieMode() and teamInfoEntity:GetLastCommIsBot() then return false end
+
     if Client then
     
         local commTable = ScoreboardUI_GetOrderedCommanderNames(teamNumber)
@@ -410,7 +415,7 @@ function GetIsClassHasEnergyFor(className, entity, techId, techNode, commander)
 end
 
 function GetIsUnitActive(unit, debug)
-
+    local powered = not HasMixin(unit, "PowerConsumer") or not unit:GetRequiresPower() or unit:GetIsPowered() 
     local alive = not HasMixin(unit, "Live") or unit:GetIsAlive()
     local isBuilt = not HasMixin(unit, "Construct") or unit:GetIsBuilt()
     local isRecycled = HasMixin(unit, "Recycle") and (unit:GetIsRecycled() or unit:GetIsRecycling())
@@ -423,7 +428,7 @@ function GetIsUnitActive(unit, debug)
         Print("-----------------------------")
     end
     
-    return not GetIsVortexed(unit)  and alive and isBuilt and not isRecycled
+    return not GetIsVortexed(unit)  and powered  and alive and isBuilt and not isRecycled
     
 end
 
@@ -514,7 +519,7 @@ local function FindPoweredAttachEntities(className, teamNumber, origin, range)
     ASSERT(type(range) == "number")
     
     local function teamAndPoweredFilterFunction(entity)
-        return entity:GetTeamNumber() == teamNumber and entity:GetIsBuilt()
+        return entity:GetTeamNumber() == teamNumber and entity:GetIsBuilt() and entity:GetIsPowered()
     end
     
     return Shared.GetEntitiesWithTagInRange("class:" .. className, origin, range, teamAndPoweredFilterFunction)
@@ -1929,13 +1934,19 @@ function GetSelectionText(entity, teamNumber)
         local techId = entity:GetTechId()
         
         local secondaryText = ""
-        if HasMixin(entity, "Construct") and not entity:GetIsBuilt() then        
-            secondaryText = "Unbuilt "
+        if entity:isa("PowerPoint") and not entity:GetIsBuilt() and entity.buildFraction == 1 then
+            secondaryText = Locale.ResolveString("CONSTRUCT_PRIMED")
+
+        elseif HasMixin(entity, "Construct") and not entity:GetIsBuilt() then        
+            secondaryText = Locale.ResolveString("CONSTRUCT_UNBUILT")
+            
+        elseif HasMixin(entity, "PowerConsumer") and entity:GetRequiresPower() and not entity:GetIsPowered() then
+            secondaryText = Locale.ResolveString("CONSTRUCT_UNPOWERED")
             
         elseif entity:isa("Whip") then
         
             if not entity:GetIsRooted() then
-                secondaryText = "Unrooted "
+                secondaryText = Locale.ResolveString("CONSTRUCT_UNROOTED")
             end
             
         end
@@ -2279,6 +2290,7 @@ function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords
     local didHitNow
     local damageMult = 1
     local stepSize = 1 / kNumMeleeZones
+    local trace
     
     for i = 1, kNumMeleeZones do
     
@@ -2301,7 +2313,8 @@ function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords
         weapon:DoDamage(damage * damageMult, target, endPoint, direction, surface, altMode)
     end
     
-    return didHit, target, endPoint, direction, surface
+    return didHit, target, endPoint, direction, surface, trace
+
 
 end
 
@@ -2310,21 +2323,24 @@ end
  */
 function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMode, filter)
 
+    
     local targets = {}
-    local didHit, target, endPoint, direction, surface
+    local didHit, target, endPoint, direction, surface, startPoint, trace
     
     if not filter then
         filter = EntityFilterTwo(player, weapon)
     end
 
+   -- loop upto 20 times just to go through any soft targets. 
+   -- Stops as soon as nothing is hit or a non-soft target is hit
     for i = 1, 20 do
     
         local traceFilter = function(test)
             return EntityFilterList(targets)(test) or filter(test)
         end
     
-        // Enable tracing on this capsule check, last argument.
-        didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1, nil, traceFilter)
+       -- Enable tracing on this capsule check, last argument.
+        didHit, target, endPoint, direction, surface, startPoint, trace = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1, nil, traceFilter)
         local alreadyHitTarget = target ~= nil and table.contains(targets, target)
 
         if didHit and not alreadyHitTarget then
@@ -2340,6 +2356,8 @@ function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMo
         end
     
     end
+    
+    HandleHitregAnalysis(player, startPoint, endPoint, trace)
     
     return didHit, targets[#targets], endPoint, surface
     
@@ -2703,6 +2721,7 @@ function GetTexCoordsForTechId(techId)
         gTechIdPosition[kTechId.GasGrenade] = kDeathMessageIcon.GasGrenade
         gTechIdPosition[kTechId.PulseGrenade] = kDeathMessageIcon.PulseGrenade
         gTechIdPosition[kTechId.Exo] = kDeathMessageIcon.Crush
+        gTechIdPosition[kTechId.PowerSurge] = kDeathMessageIcon.EMPBlast
         
         // alien abilities
         gTechIdPosition[kTechId.Bite] = kDeathMessageIcon.Bite

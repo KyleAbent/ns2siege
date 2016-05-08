@@ -262,6 +262,7 @@ end
 function PowerPoint:GetCanBeNanoShieldedOverride(resultTable)
     resultTable.shieldedAllowed = resultTable.shieldedAllowed and self:GetPowerState() == PowerPoint.kPowerState.socketed and self:GetIsBuilt()
 end
+/*
   function PowerPoint:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
           if not GetPowerPointRecentlyDestroyed(self) then
@@ -275,6 +276,7 @@ end
 
 return unitName
 end  
+*/
 function PowerPoint:GetWeldPercentageOverride()
 
     if self:GetPowerState() == PowerPoint.kPowerState.unsocketed then
@@ -598,7 +600,7 @@ end
         
        // self:UpdateMiniMap()
        //if self:GetIsInSiegeRoom() then self.nanoShielded = true end
-       if self:GetIsSetup() or (self:GetIsInSiegeRoom() and self:GetIsSiegeEnabled() ) then self:GameRulesBluePrints() end
+     if self:GetIsSetup() or (self:GetIsInSiegeRoom() and self:GetIsSiegeEnabled() ) then self:GameRulesBluePrints() end
     end
             function PowerPoint:GameRulesBluePrints()
                     if Server then

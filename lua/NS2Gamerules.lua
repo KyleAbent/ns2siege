@@ -134,6 +134,10 @@ if Server then
             self.timeGameStateChanged = Shared.GetTime()
             self.timeSinceGameStateChanged = 0
             
+            local frozenState = (state == kGameState.Countdown) and (not Shared.GetDevMode())
+            self.team1:SetFrozenState(frozenState)
+            self.team2:SetFrozenState(frozenState)
+            
             
             if self.gameState == kGameState.Started then    
         //   self:AddTimedCallback(NS2Gamerules.DisplayFrontDoorLocation, 30)
@@ -158,10 +162,10 @@ if Server then
             self.lastnode = false
             self.lastexploitcheck = Shared.GetTime()
             self:AddTimedCallback(NS2Gamerules.CollectResources, kResourceTowerResourceInterval) 
-            self:AddTimedCallback(NS2Gamerules.ExpandKingCyst, kExpandCystInterval)
+            --self:AddTimedCallback(NS2Gamerules.ExpandKingCyst, kExpandCystInterval)
             self:AddTimedCallback(NS2Gamerules.OpenFrontMaybe, 1)
             self:AddTimedCallback(NS2Gamerules.OpenSiegeMaybe, 1)
-            self:AddTimedCallback(NS2Gamerules.UpdateHiveEggs, 8)
+            --self:AddTimedCallback(NS2Gamerules.UpdateHiveEggs, 8)
             self:AddTimedCallback(NS2Gamerules.UnBlockAllBlockables, 4)
             self:AddTimedCallback(NS2Gamerules.UpdateLevels, 8)
             self.gameInfo:SetFrontOpen(false)
@@ -868,7 +872,99 @@ if Server then
         end
         
     end
+ local function UpdateAutoTeamBalance(self, dt)
     
+        local wasDisabled = false
+        
+        // Check if auto-team balance should be enabled or disabled.
+        local autoTeamBalance = Server.GetConfigSetting("auto_team_balance")
+        if autoTeamBalance and autoTeamBalance.enabled then
+        
+            local enabledOnUnbalanceAmount = autoTeamBalance.enabled_on_unbalance_amount or 2
+            // Prevent the unbalance amount from being 0 or less.
+            enabledOnUnbalanceAmount = enabledOnUnbalanceAmount > 0 and enabledOnUnbalanceAmount or 2
+            local enabledAfterSeconds = autoTeamBalance.enabled_after_seconds or 10
+            
+            local team1Players = self.team1:GetNumPlayers()
+            local team2Players = self.team2:GetNumPlayers()
+            
+            local unbalancedAmount = math.abs(team1Players - team2Players)
+            if unbalancedAmount >= enabledOnUnbalanceAmount then
+            
+                if not self.autoTeamBalanceEnabled then
+                
+                    self.teamsUnbalancedTime = self.teamsUnbalancedTime or 0
+                    self.teamsUnbalancedTime = self.teamsUnbalancedTime + dt
+                    
+                    if self.teamsUnbalancedTime >= enabledAfterSeconds then
+                    
+                        self.autoTeamBalanceEnabled = true
+                        if team1Players > team2Players then
+                            self.team1:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
+                        else
+                            self.team2:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
+                        end
+                        
+                        SendTeamMessage(self.team1, kTeamMessageTypes.TeamsUnbalanced)
+                        SendTeamMessage(self.team2, kTeamMessageTypes.TeamsUnbalanced)
+                        Print("Auto-team balance enabled")
+                        
+
+                        
+                    end
+                    
+                end
+                
+            // The autobalance system itself has turned itself off.
+            elseif self.autoTeamBalanceEnabled then
+                wasDisabled = true
+            end
+            
+        // The autobalance system was turned off by the admin.
+        elseif self.autoTeamBalanceEnabled then
+            wasDisabled = true
+        end
+        
+        if wasDisabled then
+        
+            self.team1:SetAutoTeamBalanceEnabled(false)
+            self.team2:SetAutoTeamBalanceEnabled(false)
+            self.teamsUnbalancedTime = 0
+            self.autoTeamBalanceEnabled = false
+            SendTeamMessage(self.team1, kTeamMessageTypes.TeamsBalanced)
+            SendTeamMessage(self.team2, kTeamMessageTypes.TeamsBalanced)
+            Print("Auto-team balance disabled")
+            
+
+            
+        end
+        
+    end
+    
+    local function CheckForNoCommander(self, onTeam, commanderType)
+
+        self.noCommanderStartTime = self.noCommanderStartTime or { }
+        
+        if not self:GetGameStarted() then
+            self.noCommanderStartTime[commanderType] = nil
+        else
+        
+            local commanderExists = Shared.GetEntitiesWithClassname(commanderType):GetSize() ~= 0
+            
+            if commanderExists then
+                self.noCommanderStartTime[commanderType] = nil
+            elseif not self.noCommanderStartTime[commanderType] then
+                self.noCommanderStartTime[commanderType] = Shared.GetTime()
+            elseif Shared.GetTime() - self.noCommanderStartTime[commanderType] >= kSendNoCommanderMessageRate then
+            
+                self.noCommanderStartTime[commanderType] = nil
+                SendTeamMessage(onTeam, kTeamMessageTypes.NoCommander)
+                
+            end
+            
+        end
+        
+    end
     // Network variable type time has a maximum value it can contain, so reload the map if
     // the age exceeds the limit and no game is going on.
     local kMaxServerAgeBeforeMapChange = 36000
@@ -1005,13 +1101,14 @@ function NS2Gamerules:OnUpdate(timePassed)
             if self:GetMapLoaded() then
             
 
-
+                self:CheckGameStart()
+                self:CheckGameEnd()
                 
                 self:UpdatePregame(timePassed)
                 self:UpdateToReadyRoom()
                 self:UpdateMapCycle()
                 ServerAgeCheck(self)
-                //UpdateAutoTeamBalance(self, timePassed)
+                UpdateAutoTeamBalance(self, timePassed)
                 
                 self.timeSinceGameStateChanged = self.timeSinceGameStateChanged + timePassed
                 
@@ -1328,10 +1425,10 @@ function NS2Gamerules:OnUpdate(timePassed)
         if self:GetGameState() == kGameState.NotStarted or self:GetGameState() == kGameState.PreGame then
         
             // Start pre-game when both teams have commanders or when once side does if cheats are enabled
-            local team1hasplayer = self.team1:GetHasPlayer()
-            local team2hasplayer = self.team2:GetHasPlayer()
+            local team1Commander = self.team1:GetCommander()
+            local team2Commander = self.team2:GetCommander()
             
-            if ((team1hasplayer or team2hasplayer) or Shared.GetCheatsEnabled())  then
+            if ((team1Commander and team2Commander) or Shared.GetCheatsEnabled()) and (not self.tournamentMode or self.teamsReady) then
             
                 if self:GetGameState() == kGameState.NotStarted then
                     self:SetGameState(kGameState.PreGame)
@@ -1342,7 +1439,14 @@ function NS2Gamerules:OnUpdate(timePassed)
                 if self:GetGameState() == kGameState.PreGame then
                     self:SetGameState(kGameState.NotStarted)
                 end
-               
+                
+                if (not team1Commander or not team2Commander) and not self.nextGameStartMessageTime or Shared.GetTime() > self.nextGameStartMessageTime then
+                
+                   -- SendTeamMessage(self.team1, kTeamMessageTypes.GameStartCommanders)
+                   -- SendTeamMessage(self.team2, kTeamMessageTypes.GameStartCommanders)
+                    self.nextGameStartMessageTime = Shared.GetTime() + kGameStartMessageInterval
+                    
+                end
                 
             end
             
@@ -1770,16 +1874,17 @@ function NS2Gamerules:CollectResources()
         
         self.team1:AddTeamResources(kTeamResourcePerTick  * extractors)
         self.team2:AddTeamResources(kTeamResourcePerTick  * harvesters)
-        self:AutoBuildResTowers()
+        --self:AutoBuildResTowers()
            return true
 end
-
+/*
 function NS2Gamerules:AutoBuildResTowers()
 //if self.doorsopened == true then return end
   for _, respoint in ientitylist(Shared.GetEntitiesWithClassname("ResourcePoint")) do
          respoint:AutoDrop()
     end//
 end
+*/
     function NS2Gamerules:LoadValues(value, built, killed, who)
        local amount = math.abs(value)
        
@@ -2177,7 +2282,7 @@ function NS2Gamerules:UpdateLevels()
     end
 function NS2Gamerules:UnBlockAllBlockables()
            for _, entity in ipairs(GetEntitiesWithMixinForTeam("Construct", 1)) do
-                   if entity:GetPhysicsGroup() == PhysicsGroup.BigStructuresGroup or
+                   if entity:GetPhysicsGroup() == PhysicsGroup.BigStructuresGroup and not entity:isa("CommandStructure") or
                    entity:GetPhysicsGroup() == PhysicsGroup.MediumStructuresGroup then
                     entity:SetPhysicsGroup(PhysicsGroup.SetupPhaseGroup)
                    end
@@ -2202,8 +2307,8 @@ function NS2Gamerules:BlockAllBlockables()
 function NS2Gamerules:OpenFrontDoors()
  self.doorsopened = true
  self:CountNodes()
- self:CystUnbuiltRooms()
- self:SetLocationVar()
+ --self:CystUnbuiltRooms()
+ --self:SetLocationVar()
  self.gameInfo:SetFrontOpen(true)
  
                  SendTeamMessage(self.team1, kTeamMessageTypes.FrontDoor)
@@ -2216,6 +2321,7 @@ function NS2Gamerules:OpenFrontDoors()
                  for index, frontdoor in ientitylist(Shared.GetEntitiesWithClassname("FrontDoor")) do
                 frontdoor.driving = true
                 frontdoor.isvisible = false
+                frontdoor.cleaning = false
                 end
                 
               self:AddTimedCallback(NS2Gamerules.PickMainRoom, 10)
@@ -2256,6 +2362,7 @@ function NS2Gamerules:OpenSideDoors()
                  for index, sidedoor in ientitylist(Shared.GetEntitiesWithClassname("SideDoor")) do
                 sidedoor.driving = true
                 sidedoor.isvisible = false
+                sidedoor.cleaning = false
                 end
 end
 function NS2Gamerules:SwitchShadesToSiegeMode()
@@ -2437,7 +2544,7 @@ function NS2Gamerules:OpenSiegeDoors()
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
                
-               self:AddTimedCallback(NS2Gamerules.DropshipArcs, 16)
+           --    self:AddTimedCallback(NS2Gamerules.DropshipArcs, 16)
                self:AddTimedCallback(NS2Gamerules.MaintainHiveDefense, 8)
 
                 

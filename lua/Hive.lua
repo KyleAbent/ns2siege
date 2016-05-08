@@ -159,6 +159,17 @@ function Hive:OnInitialized()
     
 end
 
+local kHelpArrowsCinematicName = PrecacheAsset("cinematics/alien/commander_arrow.cinematic")
+PrecacheAsset("models/misc/commander_arrow_aliens.model")
+
+if Client then
+
+    function Hive:GetHelpArrowsCinematicName()
+        return kHelpArrowsCinematicName
+    end
+    
+end
+
 function Hive:GetEvolutionChamber()
     return Shared.GetEntity( self.evochamberid )
 end
@@ -243,8 +254,16 @@ end
 
 function Hive:GetTechButtons()
 
-    local techButtons = { kTechId.ShiftHatch, kTechId.UpgradeToCragHive, kTechId.UpgradeToShadeHive, kTechId.UpgradeToShiftHive,
+    local techButtons = { kTechId.ShiftHatch, kTechId.None, kTechId.None, kTechId.None,
                           kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+
+    if self:GetTechId() == kTechId.Hive then
+    
+        techButtons[5] = ConditionalValue(GetHiveTypeResearchAllowed(self, kTechId.UpgradeToCragHive), kTechId.UpgradeToCragHive, kTechId.None)
+        techButtons[6] = ConditionalValue(GetHiveTypeResearchAllowed(self, kTechId.UpgradeToShadeHive), kTechId.UpgradeToShadeHive, kTechId.None)
+        techButtons[7] = ConditionalValue(GetHiveTypeResearchAllowed(self, kTechId.UpgradeToShiftHive), kTechId.UpgradeToShiftHive, kTechId.None)
+    
+    end
    
     
     return techButtons

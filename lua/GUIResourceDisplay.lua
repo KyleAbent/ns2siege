@@ -1,13 +1,13 @@
 
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIResourceDisplay.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Manages displaying resources and number of resource towers.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIResourceDisplay.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Manages displaying resources and number of resource towers.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/GUIScript.lua")
 
@@ -74,7 +74,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     
     self.textureName = ConditionalValue(PlayerUI_GetTeamType() == kAlienTeamType, GUIResourceDisplay.kBackgroundTextureAlien, GUIResourceDisplay.kBackgroundTextureMarine)
     
-    // Background, only used for positioning
+    -- Background, only used for positioning
     self.background = GUIManager:CreateGraphicItem()
     self.background:SetSize(Vector(GUIResourceDisplay.kBackgroundWidth, GUIResourceDisplay.kBackgroundHeight, 0))
     self.background:SetAnchor(GUIItem.Middle, GUIItem.Top)
@@ -85,7 +85,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
         self:InitSmokeyBackground()
     end
     
-    // Team display.
+    -- Team display.
     self.teamIcon = GUIManager:CreateGraphicItem()
     self.teamIcon:SetSize(Vector(GUIResourceDisplay.kTeamResourceIcon.Width, GUIResourceDisplay.kTeamResourceIcon.Height, 0))
     self.teamIcon:SetAnchor(GUIItem.Left, GUIItem.Center)
@@ -107,7 +107,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     GUIMakeFontScale(self.teamText)
     self.teamIcon:AddChild(self.teamText)
     
-    // Tower display.
+    -- Tower display.
     self.towerIcon = GUIManager:CreateGraphicItem()
     self.towerIcon:SetSize(Vector(GUIResourceDisplay.kResourceTowerIcon.Width, GUIResourceDisplay.kResourceTowerIcon.Height, 0))
     self.towerIcon:SetAnchor(GUIItem.Middle, GUIItem.Center)
@@ -129,7 +129,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     GUIMakeFontScale(self.towerText)
     self.towerIcon:AddChild(self.towerText)
     
-    // worker display.
+    -- worker display.
     self.workerIcon = GUIManager:CreateGraphicItem()
     self.workerIcon:SetSize(Vector(GUIResourceDisplay.kResourceTowerIcon.Width, GUIResourceDisplay.kResourceTowerIcon.Height, 0))
     self.workerIcon:SetAnchor(GUIItem.Right, GUIItem.Center)
@@ -139,7 +139,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     self.workerIcon:SetTexture(self.textureName)
     GUISetTextureCoordinatesTable(self.workerIcon, GUIResourceDisplay.kWorkerIcon.Coords)
     self.background:AddChild(self.workerIcon)
-    
+
     self.workerText = GUIManager:CreateTextItem()
     self.workerText:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.workerText:SetTextAlignmentX(GUIItem.Align_Min)
@@ -223,7 +223,7 @@ function GUIResourceDisplay:Update(deltaTime)
     
     local numHarvesters = CommanderUI_GetTeamHarvesterCount()
     self.towerText:SetText(ToString(numHarvesters))
-    /*
+    
     local supplyUsed = GetSupplyUsedByTeam(Client.GetLocalPlayer():GetTeamNumber())
     local maxSupply = GetMaxSupplyForTeam(Client.GetLocalPlayer():GetTeamNumber())
     
@@ -232,7 +232,7 @@ function GUIResourceDisplay:Update(deltaTime)
     self.workerText:SetText(string.format("%d / %d", supplyUsed, maxSupply))
     self.workerText:SetColor(useColor)
     self.workerIcon:SetColor(useColor)
-    */
+    
     local eggCount = AlienUI_GetEggCount()   
     self.eggsText:SetText(ToString(eggCount))
     

@@ -31,6 +31,7 @@ Script.Load("lua/TargettingMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 
 local kSpinUpSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_up")
 local kSpinDownSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_down")
@@ -225,6 +226,7 @@ function Sentry:OnInitialized()
         
         // TargetSelectors require the TargetCacheMixin for cleanup.
         InitMixin(self, TargetCacheMixin)
+        InitMixin(self, SupplyUserMixin)
         
         // configure how targets are selected and validated
         self.targetSelector = TargetSelector():Init(
@@ -345,7 +347,7 @@ function Sentry:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Sentry:OnUpdateAnimationInput")    
     modelMixin:SetAnimationInput("attack", self.attacking)
-    modelMixin:SetAnimationInput("powered", true)
+    modelMixin:SetAnimationInput("powered", self.attachedToBattery)
     
 end
 
@@ -470,6 +472,18 @@ local damage = 1
   damageTable.damage = damageTable.damage * damage 
 end
 if Server then
+function Sentry:GetGainXPAmount()
+local amount =  Sentry.kGainXp
+local multiplier = 1
+multiplier = ConditionalValue(self:GetIsSetup(), multiplier * 1.36, multiplier)
+multiplier = ConditionalValue(GetIsSiegeEnabled(),amount * 2, 1)
+multiplier = multiplier * self:GetSentrysInRange()
+  return amount
+end
+function Sentry:GetSentrysInRange()
+      local sentry = GetEntitiesWithinRange("Sentry", self:GetOrigin(), 24)
+           return Clamp(#sentry, 0, 8)
+end
 function Sentry:GetGainXPAmount()
 local amount =  Sentry.kGainXp
 local multiplier = 1

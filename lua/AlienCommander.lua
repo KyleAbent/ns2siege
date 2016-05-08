@@ -421,14 +421,14 @@ end
 
 local gAlienMenuButtons =
 {
-    [kTechId.BuildMenu] = { kTechId.Crag, kTechId.Shade, kTechId.Shift, kTechId.Whip,
-                            kTechId.NutrientMist, kTechId.Rupture, kTechId.BoneWall, kTechId.Contamination },
+    [kTechId.BuildMenu] = { kTechId.Cyst, kTechId.Harvester, kTechId.DrifterEgg, kTechId.Hive,
+                            kTechId.ThreatMarker, kTechId.NeedHealingMarker, kTechId.ExpandingMarker, kTechId.CommTunnel },
                             
-    [kTechId.AdvancedMenu] = { kTechId.Drifter, kTechId.ControlledHallucination, kTechId.Hive, kTechId.None,
-                               kTechId.None, kTechId.Veil, kTechId.None, kTechId.EtheralGate},
+    [kTechId.AdvancedMenu] = { kTechId.Crag, kTechId.Shade, kTechId.Shift, kTechId.Whip,
+                               kTechId.Shell, kTechId.Veil, kTechId.ControlledHallucination, kTechId.EtheralGate},
 
     [kTechId.AssistMenu] = { kTechId.HealWave, kTechId.ShadeInk, kTechId.SelectShift, kTechId.SelectDrifter,
-                             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+                             kTechId.NutrientMist, kTechId.Rupture, kTechId.BoneWall, kTechId.Contamination }
 }
 
 function AlienCommander:GetButtonTable()

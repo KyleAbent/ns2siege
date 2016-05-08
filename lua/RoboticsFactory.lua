@@ -29,10 +29,12 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 
@@ -62,6 +64,7 @@ local networkVars =
 {
     open = "boolean",
     automaticspawningmac = "boolean",
+    automaticspawningarc = "boolean",
     stunned = "boolean",
 }
 
@@ -81,6 +84,7 @@ AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -112,6 +116,7 @@ function RoboticsFactory:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, StunMixin)
     
@@ -124,7 +129,8 @@ function RoboticsFactory:OnCreate()
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
         
     self.open = false
-   self.automaticspawningmac = true
+   self.automaticspawningmac = false
+   self.automaticspawningarc = false
    self.stunned = false
 end
 
@@ -151,6 +157,7 @@ function RoboticsFactory:OnInitialized()
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
+        InitMixin(self, SupplyUserMixin)
     
     elseif Client then
     
@@ -240,6 +247,53 @@ end
 function RoboticsFactory:GetIsStunAllowed()
     return  self:GetLastStunTime() + 8 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
 end
+function RoboticsFactory:GetTechButtons(techId)
+
+    local techButtons = {  kTechId.None, kTechId.MAC, kTechId.None, kTechId.None, 
+               kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+               
+    if self:GetTechId() ~= kTechId.ARCRoboticsFactory then
+        techButtons[5] = kTechId.UpgradeRoboticsFactory
+    else
+    
+       if self:GetArcsAmount() <=12 then
+       techButtons[1] = kTechId.ARC
+       end
+       
+    end           
+
+   if not self.automaticspawningmac and not self.automaticspawningarc then 
+      techButtons[6] = kTechId.MacSpawnOn
+   elseif self.automaticspawningmac then
+      techButtons[6] = kTechId.MacSpawnOff
+    end
+   
+    
+       if not self.automaticspawningmac and not self.automaticspawningarc then 
+      techButtons[7] = kTechId.ArcSpawnOn
+   elseif self.automaticspawningarc then
+      techButtons[7] = kTechId.ArcSpawnOff
+    end
+    
+    return techButtons
+    
+end
+ function RoboticsFactory:PerformActivation(techId, position, normal, commander)
+ 
+     local success = false
+    if techId == kTechId.MacSpawnOn then
+    self.automaticspawningmac = true
+    elseif techId == kTechId.MacSpawnOff then
+    self.automaticspawningmac = false
+    end
+    
+    if techId == kTechId.ArcSpawnOn then
+    self.automaticspawningarc = true
+    elseif techId == kTechId.ArcSpawnOff then
+    self.automaticspawningarc = false
+    end
+        return success, true
+end
 local kRoboticsMinRange = 8
 function GetRoboticsRangeLimit(techId, origin, normal, commander)
 
@@ -300,48 +354,7 @@ function RoboticsFactory:GetPositionForEntity(entity)
     return Coords.GetLookIn( origin, direction )
 
 end
-if Server then
-   function RoboticsFactory:GetIsFront()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function RoboticsFactory:GetCanBeUsedConstructed(byPlayer)
-  return (not self:GetIsFront() or self:GetOwner() == byPlayer) and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
-end
-  function RoboticsFactory:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-        unitName = string.format(Locale.ResolveString("AntiBody-Factory"))
-return unitName
-end 
-function RoboticsFactory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
-    // Play flavor sounds when using MAC.
-    if Server then
-    
-        local time = Shared.GetTime()
-        
-       // if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + 4)) then
-        
-           local laystructure = player:GiveItem(LayStructures.kMapName)
-           laystructure:SetTechId(kTechId.RoboticsFactory)
-           laystructure:SetMapName(RoboticsFactory.kMapName)
-           laystructure.originalposition = self:GetOrigin()
-           DestroyEntity(self)
-           // self.timeOfLastUse = time
-            
-      //  end
-       //self:PlayerUse(player) 
-    end
-    
-end
-end
 function RoboticsFactory:ManufactureEntity()
 
     local mapName = LookupTechData(self.researchId, kTechDataMapName)    
@@ -417,6 +430,14 @@ if Server then
             self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources() - kMACCost )
         end
     end
+    if self.automaticspawningarc then
+        if self:GetTeam():GetTeamResources() >= kARCCost and ( kMaxSupply - GetSupplyUsedByTeam(1) >= LookupTechData(kTechId.ARC, kTechDataSupply, 0)) and self.deployed and GetIsUnitActive(self) and self:GetResearchProgress() == 0 and not self.open and self:GetArcsAmount() <= 12 - 1 then
+        
+            self:OverrideCreateManufactureEntity(kTechId.ARC)
+            //self.spawnedFreeMAC = true
+            self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources() - kARCCost )
+        end
+    end
     self.timeOfLastHealCheck = Shared.GetTime()  
     end
   end
@@ -440,7 +461,7 @@ if Server then
     end
     
     function RoboticsFactory:OnConstructionComplete()    
-       self:UpgradeToTechId(kTechId.ARCRoboticsFactory)
+    
         self:AddTimedCallback(RoboticsFactory.Deploy, 3)      
         if self.arcFactory then
             self:UpgradeToTechId(kTechId.ARCRoboticsFactory)
@@ -463,15 +484,6 @@ function RoboticsFactory:GetHealthbarOffset()
     return 1
 end 
 
-function RoboticsFactory:GetIsInSiege()
-if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
-return false
-end
-function RoboticsFactory:GetLocationName()
-        local location = GetLocationForPoint(self:GetOrigin())
-        local locationName = location and location:GetName() or ""
-        return locationName
-end
 function RoboticsFactory:ManufactureEntity()
 
     local mapName = LookupTechData(self.researchId, kTechDataMapName)    

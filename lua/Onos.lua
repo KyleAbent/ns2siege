@@ -185,9 +185,7 @@ end
 function Onos:GetAcceleration()
     return 6.5
 end
-function Onos:JumpPackNotGravity()
-self.gravity = 1
-end
+
 function Onos:GetAirControl()
     return 4
 end
@@ -286,28 +284,52 @@ function Onos:EndCharge()
     self.charging = false
     self.chargeSpeed = 0
     self.timeLastChargeEnd = Shared.GetTime()
-    if self:GetActiveWeapon():GetHUDSlot() == 1 and not self:GetActiveWeapon().primaryAttacking then
-    self:GetActiveWeapon():Attack(self, true)
-    end
 
 end
 
 function Onos:PreUpdateMove(input, runningPrediction)
-    if self.charging and not self:GetIsSiege() then
-        self:DeductAbilityEnergy(Onos.kChargeEnergyCost * input.time) 
+
+    // determines how manuverable the onos is. When not charging, manuverability is 1.
+    // when charging it goes towards zero as the speed increased. At zero, you can't strafe or change
+    // direction.
+    // The math.sqrt makes you drop manuverability quickly at the start and then drop it less and less
+    // the 0.8 cuts manuverability to zero before the max speed is reached
+    // Fiddle until it feels right.
+    // 0.8 allows about a 90 degree turn in atrium, ie you can start charging
+    // at the entrance, and take the first two stairs before you hit the lockdown.
+    local manuverability = ConditionalValue(self.charging, math.max(0, 0.8 - math.sqrt(self:GetChargeFraction())), 1)
+    
+    if self.charging then
+    
+        // fiddle here to determine strafing
+        input.move.x = input.move.x * math.max(0.3, manuverability)
+        input.move.z = 1
+        
+        self:DeductAbilityEnergy(Onos.kChargeEnergyCost * input.time)
+        
         // stop charging if out of energy, jumping or we have charged for a second and our speed drops below 4.5
         // - changed from 0.5 to 1s, as otherwise touchin small obstactles orat started stopped you from charging
         if self:GetEnergy() == 0 or
            self:GetIsJumping() or
           (self.timeLastCharge + 1 < Shared.GetTime() and self:GetVelocity():GetLengthXZ() < 4.5) then
+        
             self:EndCharge()
+            
         end
         
     end
+    
     if self.autoCrouching then
         self.crouching = self.autoCrouching
     end
-
+    /*
+    if Client and self == Client.GetLocalPlayer() and not GetHasTech(self, kTechId.UpgradedCharge) then
+    
+        // Lower mouse sensitivity when charging, only affects the local player.
+        Client.SetMouseSensitivityScalarX(manuverability)
+        
+    end
+    */
 end
 function Onos:OnAdjustModelCoords(modelCoords)
     modelCoords.origin = modelCoords.origin - modelCoords.zAxis * 0.55
@@ -345,17 +367,6 @@ end
 function Onos:GetMaxShieldAmount()
     return self:GetBaseHealth() * 0.40
 end
-function Onos:GetIsSiege()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
 function Onos:TriggerCharge(move)
 
     if not self.charging and self:GetHasMovementSpecial() and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and not self:GetIsBoneShieldActive() then
@@ -366,6 +377,7 @@ function Onos:TriggerCharge(move)
         if Server and (GetHasSilenceUpgrade(self) and ConditionalValue(self.RTDSilence == true, 3, GetVeilLevel(self:GetTeamNumber())) == 0) or not GetHasSilenceUpgrade(self) then
             self:TriggerEffects("onos_charge")
         end
+        
         self:TriggerUncloak()
     
     end
@@ -679,6 +691,7 @@ local function GetHitsBoneShield(self, doer, hitPoint)
     return false
 
 end
+
 function Onos:GetSurfaceOverride(damage)
 
     if self:GetIsBoneShieldActive() and damage == 0 then
@@ -691,27 +704,17 @@ function Onos:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoin
 
 local damage = 1
 
-  //  if doer:isa("Rifle") and GetHasTech(attacker, kTechId.HeavyRifleTech) then
-  //  damage = damage * math.random(kOnifleDamageBonusMin, kOnifleDamageBonusMax)
+    if doer:isa("Rifle") and GetHasTech(attacker, kTechId.HeavyRifleTech) then
+    damage = damage * math.random(kOnifleDamageBonusMin, kOnifleDamageBonusMax)
   //  elseif doer:isa("MiniGun") then
   //  damage = damage * 1.07
-   // end
-    
-    if hitPoint ~= nil then
-
-        if GetHitsBoneShield(self, doer, hitPoint) then 
-
-
-          if self:GetIsBoneShieldActive() then 
-    
-         damage =  damage * kBoneShieldDamageReduction
-         self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )
-         //elseif self:GetIsSiege() then
-         //damage =  damage * (kBoneShieldDamageReduction/2)
-         //self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )      
-         end
     end
     
+    if hitPoint ~= nil and self:GetIsBoneShieldActive() and GetHitsBoneShield(self, doer, hitPoint) then
+    
+       damage =  damage * kBoneShieldDamageReduction
+        self:TriggerEffects("boneshield_blocked", {effecthostcoords = Coords.GetTranslation(hitPoint)} )
+        
     end
   damageTable.damage = damageTable.damage * damage 
 end

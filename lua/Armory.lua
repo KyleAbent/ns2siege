@@ -1,3 +1,11 @@
+// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\Armory.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -18,11 +26,13 @@ Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
@@ -52,12 +62,18 @@ gArmoryHealthHeight = 1.4
 // Players can use menu and be supplied by armor inside this range
 Armory.kResupplyUseRange = 2.5
 
+///Siege
+Armory.MinesTime = 0
+Armory.GrenadesTime = 0
+Armory.ShotGunTime = 0 
+Armory.AATime = 0
+Armory.HeavyRifleTime = 0
 
-Armory.kGainXp =  1.32
+Armory.kSentryGainXp =  0.06
 //Armory.kSentryLoseXp = 0.06
-Armory.kMaxLevel = 100
+Armory.kMaxLevel = 50
 
-local kArmoryWeldGainXp =  0.45
+local kArmoryWeldGainXp =  0.30
 local kArmoryScaleSize = 1.8
 
 
@@ -96,6 +112,7 @@ AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
@@ -126,6 +143,7 @@ function Armory:OnCreate()
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
     InitMixin(self, CombatMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -194,6 +212,7 @@ function Armory:OnInitialized()
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
+        InitMixin(self, SupplyUserMixin)
         InitMixin(self, StunMixin)
     elseif Client then
     
@@ -204,49 +223,48 @@ function Armory:OnInitialized()
     end
     
     InitMixin(self, IdleMixin)
+    self:Generate()
 end
-    function Armory:OnConstructionComplete()    
-      local parent = self:GetParent()
-       if parent then
-         self:SetOrigin(self:GetOrigin() + Vector(0,1,0) )       
-        end
-         self:AddTimedCallback(Armory.SpawnWeapons, 8)
-    end
-if Server then
-function Armory:GetCanBeUsedConstructed(byPlayer)
-    return not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure()
-end    
-function Armory:OnUse(player, elapsedTime, useSuccessTable)
+function Armory:Generate()
+if Armory.MinesTime ~= 0 then return end
+Armory.MinesTime = math.random(kMinuteMarkToUnlockMinesMin, kMinuteMarkToUnlockMinesMax)
+Armory.GrenadesTime = math.random(kMinuteMarkToUnlockGrenadesMin, kMinuteMarkToUnlockGrenadesMax)
+Armory.ShotGunTime = math.random(kMinuteMarkToUnlockShotgunsMin, kMinuteMarkToUnlockShotgunsMax)
+Armory.AATime = math.random(kMinuteMarkToUnlockAAMin, kMinuteMarkToUnlockAAMax)
+Armory.HeavyRifleTime =  math.random(kMinuteMarkToUnlockHeavyRifleMin, kMinuteMarkToUnlockHeavyRifleMax)
+Print("Mines: %s, Grenades: %s, Shotgun: %s, AA: %s, HR: %s", Armory.MinesTime, Armory.GrenadesTime, Armory.ShotGunTime, Armory.AATime, Armory.HeavyRifleTime )
+end
+function Armory:Reset()
+Armory.MinesTime = math.random(kMinuteMarkToUnlockMinesMin, kMinuteMarkToUnlockMinesMax)
+Armory.GrenadesTime = math.random(kMinuteMarkToUnlockGrenadesMin, kMinuteMarkToUnlockGrenadesMax)
+Armory.ShotGunTime = math.random(kMinuteMarkToUnlockShotgunsMin, kMinuteMarkToUnlockShotgunsMax)
+Armory.AATime = math.random(kMinuteMarkToUnlockAAMin, kMinuteMarkToUnlockAAMax)
+Armory.HeavyRifleTime =  math.random(kMinuteMarkToUnlockHeavyRifleMin, kMinuteMarkToUnlockHeavyRifleMax)
+Print("Mines: %s, Grenades: %s, Shotgun: %s, AA: %s, HR: %s", Armory.MinesTime, Armory.GrenadesTime, Armory.ShotGunTime, Armory.AATime, Armory.HeavyRifleTime )
+end
+function Armory:GetCanBeUsed(player, useSuccessTable)
 
-    // Play flavor sounds when using MAC.
-    if Server then
-
-        local time = Shared.GetTime()
-        
-
-        
-           local laystructure = player:GiveItem(LayStructures.kMapName)
-           laystructure:SetTechId(kTechId.Armory)
-           laystructure:SetMapName(Armory.kMapName)
-           laystructure.originalposition = self:GetOrigin()
-           DestroyEntity(self)
+    if player:isa("Exo") then
+        useSuccessTable.useSuccess = false
     end
     
 end
+
+function Armory:GetCanBeUsedConstructed(byPlayer)
+    return not byPlayer:isa("Exo")
+end    
+
+function Armory:GetRequiresPower()
+    return true
 end
 function Armory:GetMaxLevel()
 return Armory.kMaxLevel
 end
-function Armory:GetWeldAddXp()
-return 0.06
-end
 function Armory:GetAddXPAmount()
-local bonus = self:GetLevel()/self:GetMaxLevel()
-local experience = kArmoryWeldGainXp
-      experience = ConditionalValue(self:GetIsSetup(), experience * 4, experience)
-      experience = experience * bonus + experience
-return  experience
+return kArmoryWeldGainXp
 end
+
+
 function Armory:GetDamageResistance()
 return (self.level/100) * 30
 end
@@ -257,30 +275,14 @@ local damage = 1
     end
   damageTable.damage = damageTable.damage * damage 
 end
-function Armory:GetIsSetup()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
+  function Armory:GetUnitNameOverride(viewer)
+    local unitName = GetDisplayName(self)   
+    unitName = string.format(Locale.ResolveString("Armory (%s) (%s)"), self:GetLevel(), math.round(self:GetDamageResistance(),1) )
+return unitName
+end  
 function Armory:GetLevelPercentage()
 return self.level / Armory.kMaxLevel * kArmoryScaleSize
 end
-/*
-function Armory:GetAttachPointOriginHardcoded(attachPointName)
-    return self:GetOrigin() + Vector(0,4,0)
-end
-*/
-/*
-function Armory:OnAttached(entity)
-    entity:SetOrigin(self:GetOrigin() + Vector(0,1.5,0))
-end
-*/
 /* Overboard
 function Armory:OnAdjustModelCoords(modelCoords)
     local coords = modelCoords
@@ -299,7 +301,7 @@ function Armory:AddXP(amount)
         xpReward = math.min(amount, Armory.kMaxLevel - self.level)
         self.level = self.level + xpReward
        
-        self:AdjustMaxHealth(kArmoryHealth * (self.level/Armory.kMaxLevel) + kArmoryHealth) 
+        self:AdjustMaxHealth(kSentryHealth * (self.level/Armory.kMaxLevel) + kSentryHealth) 
 
       
     return xpReward
@@ -370,12 +372,7 @@ function Armory:OverrideHintString( hintString, forEntity )
 
     return hintString
     
-end
-  function Armory:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Armory (%s) (%s)"), self:GetLevel(), math.round(self:GetDamageResistance(),1) )
-return unitName
-end  
+end 
 function Armory:OnUpdatePoseParameters()
 
     if GetIsUnitActive(self) and self.deployed then
@@ -428,18 +425,16 @@ local function UpdateArmoryAnim(self, extension, loggedIn, scanTime, timePassed)
     self.scannedParamValue[extension] = ConditionalValue(scanTime == 0 or (Shared.GetTime() > scanTime + 3), 0, 1)
     
 end
-function Armory:OnUpdateAnimationInput(modelMixin)
-
-
-    modelMixin:SetAnimationInput("powered", true)
-
-
-end
 
 function Armory:OnUpdate(deltaTime)
 
     if Client then
         self:UpdateArmoryWarmUp()
+    elseif Server then
+     if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
+        self:UpdatePassive()
+        self.timeLastUpdatePassiveCheck = Shared.GetTime()
+     end
     end
     
     if GetIsUnitActive(self) and self.deployed then
@@ -454,6 +449,33 @@ function Armory:OnUpdate(deltaTime)
     
     ScriptActor.OnUpdate(self, deltaTime)
     
+end
+function Armory:UpdatePassive()
+   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
+    if GetHasTech(self, kTechId.AdvancedArmoryUpgrade) or not  GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
+    local commander = GetCommanderForTeam(1)
+    if not commander then return end
+    
+
+    local techid = nil
+    
+    if not GetHasTech(self, kTechId.MinesTech) then
+    techid = kTechId.MinesTech
+    elseif GetHasTech(self, kTechId.MinesTech) and not GetHasTech(self, kTechId.GrenadeTech) then
+    techid = kTechId.GrenadeTech
+    elseif GetHasTech(self, kTechId.GrenadeTech) and not GetHasTech(self, kTechId.ShotgunTech) then
+    techid = kTechId.ShotgunTech
+    elseif GetHasTech(self, kTechId.ShotgunTech) and not GetHasTech(self, kTechId.AdvancedArmoryUpgrade) then
+    techid = kTechId.AdvancedArmoryUpgrade   
+    elseif GetHasTech(self, kTechId.AdvancedArmoryUpgrade) then
+    techid = kTechId.HeavyRifleTech   
+    else
+       return  
+    end
+    
+   local techNode = commander:GetTechTree():GetTechNode( techid ) 
+   commander.isBotRequestedAction = true
+   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
 end
 function Armory:GetReceivesStructuralDamage()
     return true
@@ -554,7 +576,7 @@ local addonNetworkVars =
     // required for smoother raise animation
     creationTime = "float"
 }
-AddMixinNetworkVars(BaseModelMixin, addonNetworkVars) 
+
 AddMixinNetworkVars(ClientModelMixin, addonNetworkVars)
 AddMixinNetworkVars(TeamMixin, addonNetworkVars)
 
@@ -602,6 +624,7 @@ end
 function ArmoryAddon:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ArmoryAddon:OnUpdateAnimationInput")
+    
     local parent = self:GetParent()
     if parent then
         modelMixin:SetAnimationInput("built", parent:GetTechId() == kTechId.AdvancedArmory)        

@@ -138,6 +138,23 @@ function GetEntitiesForTeam(className, teamNumber)
     
 end
 
+function GetEntitiesForTeamByLocation( className, teamNumber, locationId )
+    
+    assert(type(className) == "string")
+    assert(type(teamNumber) == "number")
+    assert(type(locationId) == "number")
+    
+    local function filterFunction(entity)
+        return HasMixin(entity, "Team") 
+            and entity:isa("ScriptActor")
+            and entity:GetTeamNumber() == teamNumber
+            and entity.locationId == locationId    
+    end
+    
+    return GetEntitiesWithFilter( Shared.GetEntitiesWithClassname(className), filterFunction )
+    
+end
+
 function GetEntities(className)
 
     assert(type(className) == "string")
@@ -601,10 +618,12 @@ function GetIsInFov(seeingEntity, target, fov)
     
     local eyePos = GetEntityEyePos(seeingEntity)
 
-    // Reuse vector
+    -- Reuse vector
     toEntity.x = targetOrigin.x - eyePos.x
     toEntity.y = targetOrigin.y - eyePos.y
-    toEntity.z = targetOrigin.z - eyePos.z    
+    toEntity.z = targetOrigin.z - eyePos.z   
+    local dist = toEntity.x * toEntity.x + toEntity.y * toEntity.y + toEntity.z * toEntity.z
+    
     toEntity:Normalize()
     
     local dotProduct = Math.DotProduct(toEntity, normViewVec)    
@@ -612,7 +631,7 @@ function GetIsInFov(seeingEntity, target, fov)
     local halfFov = math.rad(fov / 2)   
     local result = s < halfFov
 
-    return s < halfFov
+    return s < halfFov, dist
             
 end
 

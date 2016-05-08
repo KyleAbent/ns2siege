@@ -6,15 +6,7 @@ function Plugin:Initialise()
 self.Enabled = true
 return true
 end
-/*
-Shine.VoteMenu:EditPage( "Main", function( self ) 
-self:AddSideButton( "Toggle Microphone Alltalk", function() Shared.ConsoleCommand ("sh_togglemic")end) 
-end)
-*/
-Shine.VoteMenu:EditPage( "Main", function( self ) 
-self:AddSideButton( "Remove Chatbox", function() Shared.ConsoleCommand ("removechat")end) 
-end)
-/*
+
 Shine.VoteMenu:AddPage ("SpendStructures", function( self )
        local player = Client.GetLocalPlayer()
     if player:GetTeamNumber() == 1 then 
@@ -95,14 +87,14 @@ Shine.VoteMenu:AddPage ("SpendExpensive", function( self )
     if player:GetTeamNumber() == 1 then 
   // self:AddSideButton( "ResPoint(100)", function() Shared.ConsoleCommand ("sh_buy ResPoint")  end)  
     self:AddSideButton( "Extractor(150)", function() Shared.ConsoleCommand ("sh_buy Extractor")  end)  
-   // self:AddSideButton( "TechPoint(2k)", function() Shared.ConsoleCommand ("sh_buy TechPoint")  end)    
-  //  self:AddSideButton( "CommandStation(4k)", function() Shared.ConsoleCommand ("sh_buy CommandStation")  end)
+   // self:AddSideButton( "TechPoint(500)", function() Shared.ConsoleCommand ("sh_buy TechPoint")  end)    
+   // self:AddSideButton( "CommandStation(1000)", function() Shared.ConsoleCommand ("sh_buy CommandStation")  end)
   //  self:AddSideButton( "Custom Badge(1k)", function() Shared.ConsoleCommand ("sh_buy Badge")  end)
         elseif player:GetTeamNumber() == 2 then
    //  self:AddSideButton( "ResPoint(100)", function() Shared.ConsoleCommand ("sh_buy ResPoint")  end)  
      self:AddSideButton( "Harvester(150)", function() Shared.ConsoleCommand ("sh_buy Harvester")  end) 
-   //  self:AddSideButton( "TechPoint(2k)", function() Shared.ConsoleCommand ("sh_buy TechPoint")  end)    
-     //self:AddSideButton( "Hive(4k)", function() Shared.ConsoleCommand ("sh_buy Hive")  end)
+    // self:AddSideButton( "TechPoint(500)", function() Shared.ConsoleCommand ("sh_buy TechPoint")  end)    
+     //self:AddSideButton( "Hive(1k)", function() Shared.ConsoleCommand ("sh_buy Hive")  end)
      //self:AddSideButton( "Custom Badge(1000)", function() Shared.ConsoleCommand ("sh_buy BadgeA")  end)
     end
 
@@ -159,6 +151,5 @@ end)
 Shine.VoteMenu:EditPage( "Main", function( self ) 
 self:AddSideButton( "Credits", function() self:SetPage( "SpendCredits" ) end)
 end)
-*/
 
 

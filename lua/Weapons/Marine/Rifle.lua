@@ -1,11 +1,11 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Rifle.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Rifle.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
@@ -23,7 +23,7 @@ local kViewModels = GenerateMarineViewModelPaths("rifle")
 local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_graph")
 
 local kRange = 100
-// 4 degrees in NS1
+-- 4 degrees in NS1
 local kSpread = Math.Radians(2.8)
 
 local kButtRange = 1.1
@@ -235,23 +235,13 @@ function Rifle:GetDeathIconIndex()
 end
 
 function Rifle:GetHUDSlot()
-    return 2
+    return kPrimaryWeaponSlot
 end
 
 function Rifle:GetClipSize()
-  if GetHasTech(self:GetParent(), kTechId.RifleClip) then return 75 
-  else
     return kRifleClipSize
-    end
 end
-function Rifle:GetDamageType()
-    local parent = self:GetParent()
-    if parent and parent.hasfirebullets then
-      return kDamageType.Flame
-   else
-      return kDamageType.Normal
-    end
-end
+
 function Rifle:GetSpread()
     return kSpread
 end
@@ -307,7 +297,7 @@ end
 function Rifle:SetGunLoopParam(viewModel, paramName, rateOfChange)
 
     local current = viewModel:GetPoseParam(paramName)
-    // 0.5 instead of 1 as full arm_loop is intense.
+    -- 0.5 instead of 1 as full arm_loop is intense.
     local new = Clamp(current + rateOfChange, 0, 0.5)
     viewModel:SetPoseParam(paramName, new)
     
@@ -364,7 +354,7 @@ if Client then
             
         end
             
-        // CreateMuzzleCinematic() can return nil in case there is no parent or the parent is invisible (for alien commander for example)
+        -- CreateMuzzleCinematic() can return nil in case there is no parent or the parent is invisible (for alien commander for example)
         if self.muzzleCinematic then
             self.muzzleCinematic:SetIsVisible(true)
         end
@@ -387,8 +377,8 @@ if Client then
         
     end
     
-    // needed for first person muzzle effect since it is attached to the view model entity: view model entity gets cleaned up when the player changes (for example becoming a commander and logging out again) 
-    // this results in viewmodel getting destroyed / recreated -> cinematic object gets destroyed which would result in an invalid handle.
+    -- needed for first person muzzle effect since it is attached to the view model entity: view model entity gets cleaned up when the player changes (for example becoming a commander and logging out again)
+    -- this results in viewmodel getting destroyed / recreated -> cinematic object gets destroyed which would result in an invalid handle.
     function Rifle:OnParentChanged(oldParent, newParent)
         
         ClipWeapon.OnParentChanged(self, oldParent, newParent)
@@ -399,7 +389,7 @@ if Client then
     
     function Rifle:OnClientPrimaryAttackEnd()
     
-        // Just assume the looping sound is playing.
+        -- Just assume the looping sound is playing.
         Shared.StopSound(self, kLoopingSounds[self.soundType])
         Shared.PlaySound(self, kEndSounds[math.ceil(self.soundType / 3)])
         
@@ -413,8 +403,9 @@ if Client then
         
     end
     
-    function Rifle:UpdateAttackEffects(deltaTime)
+    function Rifle:OnClientPrimaryAttacking(deltaTime)
 
+        -- Update weapon sounds if the weapon upgrade level has changed
         if self.clientSoundTypePlaying and self.clientSoundTypePlaying ~= self.soundType then
 
             Shared.StopSound(self, kLoopingSounds[self.clientSoundTypePlaying])
@@ -463,7 +454,14 @@ function Rifle:ModifyDamageTaken(damageTable, attacker, doer, damageType)
     end
     
 end
-
+function Rifle:GetDamageType()
+    local parent = self:GetParent()
+    if parent and parent.hasfirebullets then
+      return kDamageType.Flame
+   else
+      return kDamageType.Normal
+    end
+end
 function Rifle:GetCanTakeDamageOverride()
     return self:GetParent() == nil
 end

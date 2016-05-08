@@ -1,3 +1,12 @@
+// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\PrototypeLab.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+//                  Andreas Urwalek (a_urwa@sbox.tugraz.at)
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -13,13 +22,13 @@ Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/StunMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/NanoShieldMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
@@ -57,8 +66,7 @@ local networkVars =
     loggedInNorth = "boolean",
     loggedInSouth = "boolean",
     loggedInWest = "boolean",
-    deployed = "boolean",
-       stunned = "boolean",
+    deployed = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -76,6 +84,7 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -105,8 +114,8 @@ function PrototypeLab:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
-    InitMixin(self, StunMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)
@@ -132,7 +141,7 @@ function PrototypeLab:OnCreate()
     self.loginWestAmount = 0
     
     self.deployed = false
-     self.stunned = false
+    
 end
 
 function PrototypeLab:OnInitialized()
@@ -163,6 +172,19 @@ function PrototypeLab:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         
     end
+    self:Generate()
+end
+function PrototypeLab:Generate()
+if PrototypeLab.kJetpackTime ~= 0 then return end
+PrototypeLab.kJetpackTime = math.random(kJetpackMinuteUnlockTimeMin, kJetpackMinuteUnlockTimeMax)
+PrototypeLab.kExoTime = math.random(kExoSuitMinuteUnlockTimeMin, kExoSuitMinuteUnlockTimeMax)
+Print("JP: %s, Exo: %s", PrototypeLab.kJetpackTime, PrototypeLab.kExoTime)
+end
+function PrototypeLab:Reset()
+if PrototypeLab.kJetpackTime ~= 0 then return end
+PrototypeLab.kJetpackTime = math.random(kJetpackMinuteUnlockTimeMin, kJetpackMinuteUnlockTimeMax)
+PrototypeLab.kExoTime = math.random(kExoSuitMinuteUnlockTimeMin, kExoSuitMinuteUnlockTimeMax)
+Print("JP: %s, Exo: %s", PrototypeLab.kJetpackTime, PrototypeLab.kExoTime)
 end
 function PrototypeLab:GetTechButtons(techId)
     return { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
@@ -182,23 +204,17 @@ function PrototypeLab:GetCanBeUsed(player, useSuccessTable)
 end
 */
 
-if Server then
-function PrototypeLab:GetCanBeUsedConstructed(byPlayer)
-    return not byPlayer:isa("Exo") and not byPlayer:GetHasLayStructure()
-end 
-function PrototypeLab:OnUse(player, elapsedTime, useSuccessTable)
+function PrototypeLab:GetCanBeUsed(player, useSuccessTable)
 
-
-        
-           local laystructure = player:GiveItem(LayStructures.kMapName)
-           laystructure:SetTechId(kTechId.PrototypeLab)
-           laystructure:SetMapName(PrototypeLab.kMapName)
-           laystructure.originalposition = self:GetOrigin()
-           DestroyEntity(self)
-
+    if not self:GetIsBuilt()  then
+        useSuccessTable.useSuccess = false
+    end
     
 end
-end
+
+function PrototypeLab:GetCanBeUsedConstructed()
+    return true
+end 
 
 local function UpdatePrototypeLabAnim(self, extension, loggedIn, scanTime, timePassed)
 
@@ -241,6 +257,11 @@ function PrototypeLab:OnUpdate(deltaTime)
 
     if Client then
         self:UpdatePrototypeLabWarmUp()
+    elseif Server then
+        if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
+        self:UpdatePassive()
+        self.timeLastUpdatePassiveCheck = Shared.GetTime()
+        end
     end
     if GetIsUnitActive(self) and self.deployed then
     
@@ -255,125 +276,97 @@ function PrototypeLab:OnUpdate(deltaTime)
     ScriptActor.OnUpdate(self, deltaTime)
     
 end
-    function PrototypeLab:OnConstructionComplete()
-        self:AddTimedCallback(PrototypeLab.SpawnEntities, 8)      
+function PrototypeLab:UpdatePassive()
+   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
+       if GetHasTech(self, kTechId.ExosuitTech) or not GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
+       
+    local commander = GetCommanderForTeam(1)
+    if not commander then return end
+    
+
+    local techid = nil
+    
+    if not GetHasTech(self, kTechId.JetpackTech) then
+    techid = kTechId.JetpackTech
+    elseif GetHasTech(self, kTechId.JetpackTech) and not GetHasTech(self, kTechId.ExosuitTech) then
+    techid = kTechId.ExosuitTech
+    else
+       return  
     end
+    
+   local techNode = commander:GetTechTree():GetTechNode( techid ) 
+   commander.isBotRequestedAction = true
+   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
+   
+end
 if Server then
-function PrototypeLab:GetJPExoEntitiesCount()   
-      local jps = 0
-      local exos = 0
-                    local entities = GetEntitiesForTeamWithinRange("ScriptActor", 1, self:GetOrigin(), 12)
-                     for i = 1, #entities do
-                     local ent = entities[i]
-                           if ent:isa("Exosuit") then 
-                             exos = exos + 1
-                           elseif ent:isa("Jetpack") then
-                                 jps = jps + 1
-                           end
-                     end
-                     return jps, exos
-end        
-function PrototypeLab:SpawnEntities()   
+function PrototypeLab:UpdateResearch(deltaTime)
+ if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
+   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
+    local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
+    if researchNode then
+        local gameRules = GetGamerules()
+        local projectedminutemarktounlock = 60
+        local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
 
+        if researchNode:GetTechId() == kTechId.JetpackTech then
+           projectedminutemarktounlock = PrototypeLab.kJetpackTime
+        elseif researchNode:GetTechId() == kTechId.ExosuitTech then
+          projectedminutemarktounlock = PrototypeLab.kExoTime
+        end
 
-                      local gameRules = GetGamerules()
-            if gameRules then
-                           gameRules:SpawnPrototypeEnts(self)  
+       
+        local progress = Clamp(currentroundlength / projectedminutemarktounlock, 0, 1)
+        //Print("%s", progress)
+        
+        if progress ~= self.researchProgress then
+        
+            self.researchProgress = progress
+
+            researchNode:SetResearchProgress(self.researchProgress)
+            
+            local techTree = self:GetTeam():GetTechTree()
+            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
+            
+            // Update research progress
+            if self.researchProgress == 1 then
+
+                // Mark this tech node as researched
+                researchNode:SetResearched(true)
+                
+                techTree:QueueOnResearchComplete(self.researchingId, self)
+                
             end
-            
-          return true
+        
+        end
+        
+    end 
 
 end
-    function PrototypeLab:FindFreeSpace()
-    
-        for index = 1, 24 do
-           local extents = Vector(1,1,1)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 10, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation then
-           return spawnPoint
-           end
-       end
-           Print("No valid spot found for prototype spawn jp exo")
-           return nil
-    end
-function PrototypeLab:OnStun()   
-              //  local bonewall = CreateEntity(BoneWall.kMapName, self:GetOrigin(), 2)    
-               // bonewall.modelsize = 0.5
-            //    bonewall:AdjustMaxHealth(bonewall:GetMaxHealth())
-            //    bonewall.targetid = self:GetId()
-                self:SetPhysicsGroup(PhysicsGroup.AlienWalkThroughHit)
-                self.stunned = true
-                self:AddTimedCallback(function() self.stunned = false self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup) end, 6)
+self.timeLastUpdateCheck = Shared.GetTime()
 end
-end//server
-if Client then
-
-    function PrototypeLab:OnUpdateRender()
-          local showMaterial = GetAreEnemies(self, Client.GetLocalPlayer()) and self.stunned
-    
-        local model = self:GetRenderModel()
-        if model then
-
-            model:SetMaterialParameter("glowIntensity", 0)
-
-            if showMaterial then
-                
-                if not self.hallucinationMaterial then
-                    self.hallucinationMaterial = AddMaterial(model, kHallucinationMaterial)
-                end
-                
-                self:SetOpacity(0, "hallucination")
-            
-            else
-            
-                if self.hallucinationMaterial then
-                    RemoveMaterial(model, self.hallucinationMaterial)
-                    self.hallucinationMaterial = nil
-                end//
-                
-                self:SetOpacity(1, "hallucination")
-            
-            end //showma
-            
-        end//omodel
-   end //up render
-    
-end//client
-function PrototypeLab:GetIsStunAllowed()
-    return  self:GetLastStunTime() + 16 < Shared.GetTime() and not self.stunned and GetAreFrontDoorsOpen() //and not self:GetIsVortexed()
-end
+end // server
 function PrototypeLab:GetItemList(forPlayer)
 
+    
     if forPlayer:isa("Exo") then
+        return { kTechId.Exosuit }
+    end
     
-        if forPlayer:GetHasDualGuns() then
-            return {}
-        elseif forPlayer:GetHasRailgun() then
-            return { kTechId.UpgradeToDualRailgun }    
-        elseif forPlayer:GetHasMinigun() then
-            return { kTechId.UpgradeToDualMinigun }
-        end    
-
-    end    
-    
-       local otherbuttons =  { kTechId.Jetpack, kTechId.Exosuit, kTechId.DualRailgunExosuit, kTechId.JumpPack, kTechId.HeavyArmor}
+       local otherbuttons =  { kTechId.Jetpack, kTechId.Exosuit, kTechId.JumpPack, kTechId.Resupply, kTechId.HeavyArmor}
           
-          if forPlayer.hasjumppack or forPlayer:isa("JetpackMarine")  or forPlayer:isa("Exo") or forPlayer.heavyarmor then
+          if forPlayer.hasjumppack or forPlayer:isa("JetpackMarine")  or forPlayer:isa("Exo")  then
               otherbuttons[1] = kTechId.None
-              otherbuttons[4] = kTechId.None
+              otherbuttons[3] = kTechId.None
                otherbuttons[5] = kTechId.None
            end
            
+           if forPlayer.hasreupply then
+            otherbuttons[4] = kTechId.None
+           end
+             if forPlayer.heavyarmor then
+            otherbuttons[1] = kTechId.None
+           end
            
          return otherbuttons
     

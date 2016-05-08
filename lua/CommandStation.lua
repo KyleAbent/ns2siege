@@ -38,6 +38,9 @@ PrecacheAsset("models/marine/command_station/command_station_display.surface_sha
 local kLoginAttachPoint = "login"
 CommandStation.kCommandStationKillConstant = 1.05
 
+//Siege
+CommandStation.UnlockCatPatTime = 0
+CommandStation.UnlockNanoTime = 0
 
 if Server then
     Script.Load("lua/CommandStation_Server.lua")
@@ -64,7 +67,6 @@ function CommandStation:OnCreate()
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, ParasiteMixin)
 
-
 end
 
 function CommandStation:OnInitialized()
@@ -85,6 +87,7 @@ function CommandStation:OnInitialized()
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
+        
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
     
@@ -95,87 +98,50 @@ function CommandStation:OnInitialized()
     end
     
     InitMixin(self, IdleMixin)
+    self:Generate()
+end
+function CommandStation:Generate()
+if CommandStation.UnlockCatPatTime ~= 0 then return end
+CommandStation.UnlockCatPatTime = math.random(kSecondMarkToUnlockCatPackTechMin, kSecondMarkToUnlockCatPackTechMax)
+CommandStation.UnlockNanoTime = math.random(kSecondMarkToUnlockNanoTechMin, kSecondMarkToUnlockNanoTechMax)
+Print("CatPack: %s, Nano: %s", CommandStation.UnlockCatPatTime, CommandStation.UnlockNanoTime )
 end
 
 function CommandStation:GetIsWallWalkingAllowed()
     return false
 end
+function CommandStation:GetCanBeWeldedOverride()
+return self:GetIsSuddenDeath()
+end
+function CommandStation:GetAddConstructHealth()
+
+return self:GetIsSuddenDeath()
+end
 function CommandStation:GetCanBeNanoShieldedOverride()
 return not self:GetIsVortexed()
 end
-    function CommandStation:OnConstructionComplete()
-            self:AddTimedCallback(CommandStation.SpawnEntities, 8)     
-    end
 function CommandStation:GetIsSuddenDeath()
         if Server then
             local gameRules = GetGamerules()
             if gameRules then
                if gameRules:GetGameStarted() and gameRules:GetIsSuddenDeath() then 
-                   return true
+                   return false
                end
             end
         end
-            return false
+            return true
 end
-if Server then
-    function CommandStation:FindFreeSpace()
+local kHelpArrowsCinematicName = PrecacheAsset("cinematics/marine/commander_arrow.cinematic")
+PrecacheAsset("models/misc/commander_arrow.model")
+          
+if Client then
+
+    function CommandStation:GetHelpArrowsCinematicName()
+        return kHelpArrowsCinematicName
+    end
     
-        for index = 1, 24 do
-           local extents = Vector(1,1,1)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 6, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation then
-           return spawnPoint
-           end
-       end
-           Print("No valid spot found for CC spawn ips")
-           return nil
-    end
-function CommandStation:SpawnEntities()   
-
-
-                      local gameRules = GetGamerules()
-            if gameRules then
-                           gameRules:SpawnCommandStationEnts(self)  
-            end
-            
-          return true
-
-end
-   function CommandStation:GetCanBeUsedConstructed(byPlayer)
-   return not self:GetIsSiege() and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
-   end
-   
-   function CommandStation:GetIsSiege()
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
-                   return true
-               end
-            end
-            return false
-      end
-      
-function CommandStation:OnUse(player, elapsedTime, useSuccessTable)
-     if self:GetIsBuilt() and self:GetCanBeUsedConstructed(player) then
-           local laystructure = player:GiveItem(LayStructures.kMapName)
-           laystructure:SetTechId(kTechId.CommandStation)
-           laystructure:SetMapName(CommandStation.kMapName)
-           laystructure.originalposition = self:GetOrigin()
-           DestroyEntity(self)
-    end
 end
 
-end
 function CommandStation:GetRequiresPower()
     return false
 end
@@ -184,28 +150,15 @@ function CommandStation:GetNanoShieldOffset()
     return Vector(0, -0.3, 0)
 end
 
+function CommandStation:GetUsablePoints()
+
+    local loginPoint = self:GetAttachPointOrigin(kLoginAttachPoint)
+    return { loginPoint }
+    
+end
 
 function CommandStation:GetTechButtons()
-    return { kTechId.None, kTechId.Recycle } //kTechId.BluePrintTech }
-end
-function CommandStation:GetIsSiege()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function CommandStation:ModifyDamageTaken(damageTable, attacker, doer, damageType)
-
-      if self:GetIsSiege() then 
-      damageTable.damage = damageTable.damage * .7
-      end
- 
-    
+    return { kTechId.None, kTechId.None } //kTechId.BluePrintTech }
 end
 function CommandStation:GetCCAmount()
 local amount = 0
@@ -220,20 +173,15 @@ local amount = 0
     
 end
 if Server then
-function CommandStation:GETIPCount()   
-        return #GetEntitiesForTeamWithinRange("InfantryPortal", 1, self:GetOrigin(), 16) or 0
-                    
-end  
 function GetCCQualifications(techId, origin, normal, commander)
  if CommandStation:GetCCAmount() >= 3 then return false end
-          /*
+ 
              local gameRules = GetGamerules()
             if gameRules then
                if gameRules:GetGameStarted() and gameRules:GetIsSuddenDeath() then 
                    return false
                end
             end
-          */
             return true
 end
 end
@@ -260,7 +208,92 @@ function CommandStation:GetTechAllowed(techId, techNode, player)
     
     return allowed, canAfford
     
-end 
+end
+function CommandStation:OnUpdate(deltaTime)
+   if Server then 
+      if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
+    self:UpdatePassive() 
+     self.timeLastUpdatePassiveCheck = Shared.GetTime()
+      end
+    end
+end
+function CommandStation:UpdatePassive()
+   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
+    if  GetHasTech(self, kTechId.NanoShieldTech) or not  GetGamerules():GetGameStarted() or not self:GetIsBuilt() or self:GetIsResearching() then return end
+    local commander = GetCommanderForTeam(1)
+    if not commander then return end
+    
+
+    local techid = nil
+    
+    if not GetHasTech(self, kTechId.CatPackTech) then
+    techid = kTechId.CatPackTech
+    elseif GetHasTech(self, kTechId.MinesTech) and not GetHasTech(self, kTechId.NanoShieldTech) then
+    techid = kTechId.NanoShieldTech
+    else
+       return  
+    end
+    
+   local techNode = commander:GetTechTree():GetTechNode( techid ) 
+   commander.isBotRequestedAction = true
+   commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
+end
+if Server then
+function CommandStation:UpdateResearch(deltaTime)
+ if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
+   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
+    local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
+    if researchNode then
+        local gameRules = GetGamerules()
+        local projectedminutemarktounlock = 60
+        local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
+        if researchNode:GetTechId() == kTechId.CatPackTech then
+           projectedminutemarktounlock = CommandStation.UnlockCatPatTime
+        elseif researchNode:GetTechId() == kTechId.NanoShieldTech then
+          projectedminutemarktounlock = CommandStation.UnlockNanoTime
+         end
+        
+     /// kRecycleTime
+
+        //1 minute = mines
+        //so if building armory at 30 seconds
+        //then progress will be 30 seconds
+        //
+       
+       //mines 60
+       //grenades 120
+       //shotgun 180
+       //onifle 240
+       //AA 300
+       
+        local progress = Clamp(currentroundlength / projectedminutemarktounlock, 0, 1)
+        //Print("%s", progress)
+        if progress ~= self.researchProgress then
+        
+            self.researchProgress = progress
+
+            researchNode:SetResearchProgress(self.researchProgress)
+            
+            local techTree = self:GetTeam():GetTechTree()
+            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
+            
+            // Update research progress
+            if self.researchProgress == 1 then
+
+                // Mark this tech node as researched
+                researchNode:SetResearched(true)
+                
+                techTree:QueueOnResearchComplete(self.researchingId, self)
+                
+            end
+        
+        end
+        
+    end 
+self.timeLastUpdateCheck = Shared.GetTime()
+end
+end
+end//server
 function CommandStation:GetIsPlayerInside(player)
 
     // Check to see if we're in range of the visible center of the login platform
@@ -294,15 +327,15 @@ function CommandStation:OnUpdateRender()
     end
     
 end
-function CommandStation:OnDestroy()
 
-    ScriptActor.OnDestroy(self)
-    
-    
-end
 function CommandStation:GetHealthbarOffset()
     return 2
 end
 
+// return a good spot from which a player could have entered the hive
+// used for initial entry point for the commander
+function CommandStation:GetDefaultEntryOrigin()
+    return self:GetOrigin() + Vector(0,0.9,0)
+end
 
 Shared.LinkClassToMap("CommandStation", CommandStation.kMapName, networkVars)

@@ -1,3 +1,11 @@
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\TechTreeConstants.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 local gTechIdToString = {}
 
 local function createTechIdEnum(table)
@@ -63,7 +71,7 @@ kTechId = createTechIdEnum({
 
     // Marine tech 
     'CommandStation', 'MAC', 'Armory', 'InfantryPortal', 'Extractor', 'ExtractorArmor', 'Sentry', 'LevelSentry', 'LevelIP', 'PGchannelOne', 'PGchannelTwo', 'PGchannelThree', 'ARC', 
-    'PowerPoint', 'AdvancedArmoryUpgrade', 'Observatory', 'Dropship', 'DropshipBeacon', 'Detector', 'DistressBeacon', 'AdvancedBeacon', 'PhaseGate', 'RoboticsFactory', 'AdvancedBeaconTech', 'ARCRoboticsFactory', 'ArmsLab',
+    'PowerPoint', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'AdvancedBeacon', 'PhaseGate', 'RoboticsFactory', 'AdvancedBeaconTech', 'ARCRoboticsFactory', 'ArmsLab',
     'SentryBattery', 'PrototypeLab', 'AdvancedArmory',
     
     // Weapon tech
@@ -85,8 +93,8 @@ kTechId = createTechIdEnum({
     'MACEMP', 'Welding',
     
     // Weapons 
-    'Rifle', 'Pistol', 'Shotgun', 'HeavyRifle', 'HeavyMachineGun', 'Claw', 'Minigun', 'Railgun', 'GrenadeLauncher', 'Flamethrower', 'Axe', 'LayMines', 'LayStructures', 'Welder', 'ExoNanoArmor', 'ExoFlamer', 'ExoWelder',
-    'LayStructureIP', 'LayStructureARC', 'LayStructurePG', 'LayStructureRobo', 'LayStructureSentry', 'LayStructureObs', 
+    'Rifle', 'Pistol', 'Shotgun', 'HeavyRifle', 'HeavyMachineGun', 'Claw', 'Minigun', 'Railgun', 'GrenadeLauncher', 'Flamethrower', 'Axe', 'LayMines', 'Welder', 'ExoNanoArmor', 'ExoFlamer', 'ExoWelder',
+    
     // Armor
     'Jetpack', 'JetpackFuelTech', 'JetpackArmorTech', 'Exosuit', 'ExosuitLockdownTech', 'ExosuitUpgradeTech',
     
@@ -98,7 +106,7 @@ kTechId = createTechIdEnum({
     'ARCDeploy', 'ARCUndeploy',
     
     // Marine Commander abilities
-    'NanoShieldTech', 'NanoShield', 'PowerSurge', 'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'SelectObservatory',
+    'NanoShieldTech', 'NanoShield', 'PowerSurge', 'PowerSurgeTech', 'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'SelectObservatory',
     
     ////////////
     // Aliens //
@@ -126,7 +134,7 @@ kTechId = createTechIdEnum({
 
     // Alien structures 
       
-    'Hive', 'HiveHeal', 'CragHive', 'CragHiveTwo', 'ShadeHive', 'ControlledHallucination', 'ShiftHive', 'AttachedCyst', 'Harvester', 'PresBonus', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel', 'CommTunnel', 'EvolutionChamber',
+    'Hive', 'HiveHeal', 'CragHive', 'CragHiveTwo', 'ShadeHive', 'ControlledHallucination', 'ShiftHive','Harvester', 'PresBonus', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel', 'CommTunnel', 'EvolutionChamber',
     'GorgeEgg', 'LerkEgg', 'FadeEgg', 'OnosEgg',
     
     // Infestation upgrades
@@ -160,7 +168,7 @@ kTechId = createTechIdEnum({
     'Bite', 'Sneak', 'Parasite', 'Leap', 'Xenocide',
     
     // gorge abilities
-    'Spit', 'Spray', 'BellySlide', 'BabblerTech', 'BuildAbility', 'BuildHydraAbility',  'BuildClogAbility', 'BuildTunnelAbility', 'BabblerAbility', 'Babbler', 'BabblerEgg', 'GorgeTunnelTech', 'BileBomb',  'WebTech', 'DrifterGorge', 'SpiderGorge', 'WhipFlameThrowerChanceDrop',  'Web', 'HydraTech',
+    'Spit', 'Spray', 'BellySlide', 'BabblerTech', 'BuildAbility', 'BabblerAbility', 'Babbler', 'BabblerEgg', 'GorgeTunnelTech', 'BileBomb',  'WebTech', 'DrifterGorge', 'SpiderGorge', 'WhipFlameThrowerChanceDrop',  'Web', 'HydraTech',
 
     // lerk abilities
     'LerkBite', 'Cling', 'Spikes', 'Umbra', 'Spores', 'PrimalScream',

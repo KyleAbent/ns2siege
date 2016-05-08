@@ -32,6 +32,7 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommAbilities/Alien/CragUmbra.lua")
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
@@ -157,7 +158,7 @@ function Crag:OnInitialized()
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, SleeperMixin)
         InitMixin(self, RepositioningMixin)
-        
+        InitMixin(self, SupplyUserMixin)
         // TODO: USE TRIGGERS, see shade
 
         // This Mixin must be inited inside this OnInitialized() function.

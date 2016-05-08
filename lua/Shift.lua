@@ -1,3 +1,20 @@
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Shift.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Alien structure that allows commander to outmaneuver and redeploy forces. 
+--
+-- Recall - Ability that lets players jump to nearest structure (or hive) under attack (cooldown 
+-- of a few seconds)
+-- Energize - Passive ability that gives energy to nearby players
+-- Echo - Targeted ability that lets Commander move a structure or drifter elsewhere on the map
+-- (even a hive or harvester!). 
+--
+-- ========= For more information, visit us at http:--www.unknownworlds.com =====================
+
+Script.Load("lua/CommAbilities/Alien/ShiftEcho.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
@@ -28,6 +45,7 @@ Script.Load("lua/DissolveMixin.lua")
 
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
@@ -53,18 +71,27 @@ Shift.kEnergizeLargeTargetEffect = PrecacheAsset("cinematics/alien/shift/energiz
 
 Shift.kEchoMaxRange = 20
 
-Shift.MaxLevel = 99
-Shift.GainXP = 1
-
 local kNumEggSpotsPerShift = 20
 
 local kEchoCooldown = 1
 
 local networkVars =
 {
-    moving = "boolean",
-    level = "float (0 to " .. Shift.MaxLevel .. " by .1)",
-     siegewall = "boolean", 
+    hydraInRange = "boolean",
+    whipInRange = "boolean",
+    tunnelInRange = "boolean",
+    cragInRange = "boolean",
+    shadeInRange = "boolean",
+    shiftInRange = "boolean",
+    veilInRange = "boolean",
+    spurInRange = "boolean",
+    shellInRange = "boolean",
+    hiveInRange = "boolean",
+    eggInRange = "boolean",
+    harvesterInRange = "boolean",
+    echoActive = "boolean",
+    
+    moving = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -89,6 +116,106 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
+
+local function GetIsTeleport(techId)
+
+return techId == kTechId.TeleportHydra or
+       techId == kTechId.TeleportWhip or
+       techId == kTechId.TeleportTunnel or
+       techId == kTechId.TeleportCrag or
+       techId == kTechId.TeleportShade or
+       techId == kTechId.TeleportShift or
+       techId == kTechId.TeleportVeil or
+       techId == kTechId.TeleportSpur or
+       techId == kTechId.TeleportShell or
+       techId == kTechId.TeleportHive or
+       techId == kTechId.TeleportEgg or
+       techId == kTechId.TeleportHarvester
+
+end
+
+local gTeleportClassnames = nil
+local function GetTeleportClassname(techId)
+
+    if not gTeleportClassnames then
+    
+        gTeleportClassnames = {}
+        gTeleportClassnames[kTechId.TeleportHydra] = "Hydra"
+        gTeleportClassnames[kTechId.TeleportWhip] = "Whip"
+        gTeleportClassnames[kTechId.TeleportTunnel] = "TunnelEntrance"
+        gTeleportClassnames[kTechId.TeleportCrag] = "Crag"
+        gTeleportClassnames[kTechId.TeleportShade] = "Shade"
+        gTeleportClassnames[kTechId.TeleportShift] = "Shift"
+        gTeleportClassnames[kTechId.TeleportVeil] = "Veil"
+        gTeleportClassnames[kTechId.TeleportSpur] = "Spur"
+        gTeleportClassnames[kTechId.TeleportShell] = "Shell"
+        gTeleportClassnames[kTechId.TeleportHive] = "Hive"
+        gTeleportClassnames[kTechId.TeleportEgg] = "Egg"
+        gTeleportClassnames[kTechId.TeleportHarvester] = "Harvester"
+    
+    end
+    
+    return gTeleportClassnames[techId]
+
+
+end
+
+local function ResetShiftButtons(self)
+
+    self.hydraInRange = false
+    self.whipInRange = false
+    self.tunnelInRange = false
+    self.cragInRange = false
+    self.shadeInRange = false
+    self.shiftInRange = false
+    self.veilInRange = false
+    self.spurInRange = false
+    self.shellInRange = false
+    self.hiveInRange = false
+    self.eggInRange = false
+    self.harvesterInRange = false
+    
+end
+
+local function UpdateShiftButtons(self)
+
+    ResetShiftButtons(self)
+
+    local teleportAbles = GetEntitiesWithMixinForTeamWithinRange("TeleportAble", self:GetTeamNumber(), self:GetOrigin(), kEchoRange)    
+    for _, teleportable in ipairs(teleportAbles) do
+    
+        if teleportable:GetCanTeleport() then
+        
+            if teleportable:isa("Hydra") then
+                self.hydraInRange = true
+            elseif teleportable:isa("Whip") then
+                self.whipInRange = true
+            elseif teleportable:isa("TunnelEntrance") then
+                self.tunnelInRange = true
+            elseif teleportable:isa("Crag") then
+                self.cragInRange = true
+            elseif teleportable:isa("Shade") then
+                self.shadeInRange = true
+            elseif teleportable:isa("Shift") then
+                self.shiftInRange = true
+            elseif teleportable:isa("Veil") then
+                self.veilInRange = true
+            elseif teleportable:isa("Spur") then
+                self.spurInRange = true
+            elseif teleportable:isa("Shell") then
+                self.shellInRange = true
+            elseif teleportable:isa("Hive") then
+                self.hiveInRange = true
+            elseif teleportable:isa("Egg") then
+                self.eggInRange = true
+            elseif teleportable:isa("Harvester") then
+                self.harvesterInRange = true
+            end
+            
+        end
+    end
+
+end
 
 function Shift:OnCreate()
 
@@ -120,10 +247,13 @@ function Shift:OnCreate()
     InitMixin(self, PathingMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     
+    ResetShiftButtons(self)
     
     if Server then
     
         InitMixin(self, InfestationTrackerMixin)
+        self.remainingFindEggSpotAttempts = 300
+        self.eggSpots = {}
         
     elseif Client then
         InitMixin(self, CommanderGlowMixin)    
@@ -132,8 +262,9 @@ function Shift:OnCreate()
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
-     self.level = 1
-    self.siegewall = false
+    
+    self.echoActive = false
+    self.timeLastEcho = 0
     
 end
 
@@ -147,8 +278,10 @@ function Shift:OnInitialized()
     
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, RepositioningMixin)
-        
-        self:AddTimedCallback(Shift.EnergizeInRange, 1)
+        InitMixin(self, SupplyUserMixin)
+    
+        self:AddTimedCallback(Shift.EnergizeInRange, 0.5)
+        self.shiftEggs = {}
         
         -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -172,59 +305,20 @@ function Shift:EnergizeInRange()
     
         local energizeAbles = GetEntitiesWithMixinForTeamWithinRange("Energize", self:GetTeamNumber(), self:GetOrigin(), kEnergizeRange)
         
-        
-            
-   if self.siegewall then 
-    
-       local siegeroom = self:GetSiegeRoomLocation()
-       local entities = siegeroom:GetEntitiesInTrigger()
-       if #entities ~= 0 then  
-       for i = 1, #entities do
-        local healable = entities[i]
-        if healable:isa("Player") and healable:isa("Alien") then
-               self:Enzymey(healable)
-        end
-       end
-       end
-    end 
-    
-    
         for _, entity in ipairs(energizeAbles) do
         
             if entity ~= self then
                 entity:Energize(self)
-                self:Enzymey(entity)
             end
             
         end
-        
-        
-        
     
     end
     
     return self:GetIsAlive()
     
 end
-function Shift:GetSiegeRoomLocation()
 
-            for index, location in ientitylist(Shared.GetEntitiesWithClassname("Location")) do
-              if  string.find(location.name, "siege") or string.find(location.name, "Siege") and not
-                string.find(location.name, "Hall") and not string.find(location.name, "hall") then 
-                  return location
-                end 
-              end
-                
-                
-end
-function Shift:Enzymey(entity)
-                
-                if entity:isa("Alien") then
-                 local number = math.random(self.level, 100)
-                 if number >= 99 then entity:TriggerEnzyme(4) end
-                end
-                
-end
 function Shift:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
@@ -247,6 +341,36 @@ function Shift:GetTechAllowed(techId, techNode, player)
     
     allowed = allowed and not self.echoActive and not self:GetIsOnFire()
     
+    if allowed then
+ 
+        if techId == kTechId.TeleportHydra then
+            allowed = self.hydraInRange
+        elseif techId == kTechId.TeleportWhip then
+            allowed = self.whipInRange
+        elseif techId == kTechId.TeleportTunnel then
+            allowed = self.tunnelInRange
+        elseif techId == kTechId.TeleportCrag then
+            allowed = self.cragInRange
+        elseif techId == kTechId.TeleportShade then
+            allowed = self.shadeInRange
+        elseif techId == kTechId.TeleportShift then
+            allowed = self.shiftInRange
+        elseif techId == kTechId.TeleportVeil then
+            allowed = self.veilInRange
+        elseif techId == kTechId.TeleportSpur then
+            allowed = self.spurInRange
+        elseif techId == kTechId.TeleportShell then
+            allowed = self.shellInRange
+        elseif techId == kTechId.TeleportHive then
+            allowed = self.hiveInRange
+        elseif techId == kTechId.TeleportEgg then
+            allowed = self.eggInRange
+        elseif techId == kTechId.TeleportHarvester then
+            allowed = self.harvesterInRange
+        end
+    
+    end
+    
     return allowed, canAfford
     
 end
@@ -260,13 +384,31 @@ function Shift:GetTechButtons(techId)
 
     local techButtons
                 
+    if techId == kTechId.ShiftEcho then
 
-        techButtons = { kTechId.ShiftEnergize, kTechId.Move, kTechId.None, kTechId.None, 
-                        kTechId.None, kTechId.None, kTechId.None, kTechId.RootMenu }   
+        techButtons = { kTechId.TeleportEgg, kTechId.TeleportWhip, kTechId.TeleportHarvester, kTechId.TeleportShift, 
+                        kTechId.TeleportCrag, kTechId.TeleportShade, kTechId.None, kTechId.RootMenu }
+                        
 
+        if self.veilInRange then
+            techButtons[7] = kTechId.TeleportVeil
+        elseif self.shellInRange then
+            techButtons[7] = kTechId.TeleportShell
+        elseif self.spurInRange then
+            techButtons[7] = kTechId.TeleportSpur
+        end
+
+    else
+
+        techButtons = { kTechId.ShiftEcho, kTechId.Move, kTechId.ShiftEnergize, kTechId.None, 
+                        kTechId.None, kTechId.None, kTechId.None, kTechId.Digest }
+                        
         if self.moving then
             techButtons[2] = kTechId.Stop
-        end            
+        end 
+
+    end           
+                          
 
 
     return techButtons   
@@ -277,47 +419,14 @@ function Shift:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Shift:OnUpdateAnimationInput")
     modelMixin:SetAnimationInput("moving", self.moving)
+    modelMixin:SetAnimationInput("echo", self.echoActive)
     
 end
 
 function Shift:GetMaxSpeed()
     return kAlienStructureMoveSpeed
 end
-function Shift:GetAddXPAmount()
-return self:GetIsSetup() and Shift.GainXP * 4 or Shift.GainXP
-end
-function Shift:GetIsSetup()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function Shift:AddXP(amount)
 
-    local xpReward = 0
-        xpReward = math.min(amount, Shift.MaxLevel - self.level)
-        self.level = self.level + xpReward
-   
-      
-   // self:AdjustMaxHealth(kHydraHealth * (self.level/100) + kHydraHealth) 
-   // self:AdjustMaxArmor(kHydraArmor * (self.level/100) + kHydraArmor)
-    
-    return xpReward
-    
-end
-function Shift:GetLevel()
-        return Round(self.level, 2)
-end
-  function Shift:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("Level %s Shift"), self:GetLevel())
-return unitName
-end 
 function Shift:OnUpdate(deltaTime)
 
     PROFILE("Shift:OnUpdate")
@@ -326,11 +435,16 @@ function Shift:OnUpdate(deltaTime)
     UpdateAlienStructureMove(self, deltaTime)        
 
     if Server then
-    
-            if self.Levelslowly == nil or (Shared.GetTime() > self.Levelslowly + 4) then
-            self:AddXP(Shift.GainXP * 4)
-            self.Levelslowly = Shared.GetTime()
-            end
+
+
+        if not self.timeLastButtonCheck or self.timeLastButtonCheck + 2 < Shared.GetTime() then
+        
+            self.timeLastButtonCheck = Shared.GetTime()
+            UpdateShiftButtons(self)
+            
+        end
+        
+        self.echoActive = self.timeLastEcho + kEchoCooldown > Shared.GetTime()
     
     end
         
@@ -351,6 +465,96 @@ if Server then
         self:TriggerEffects("digest", {effecthostcoords = self:GetCoords()} )
         self:Kill()
     end
+        
+    end
+
+    function Shift:TriggerEcho(techId, position)
+    
+        local teleportClassname = GetTeleportClassname(techId)
+        local teleportCost = LookupTechData(techId, kTechDataCostKey, 0)
+        
+        local success = false
+        
+        local validPos = GetIsBuildLegal(techId, position, 0, kStructureSnapRadius, self:GetOwner(), self)
+        
+        local location = GetLocationForPoint(position)
+        local locationName = location and location:GetName() or ""
+        if string.find(locationName, "siege") or string.find(locationName, "Siege") then validPos = false end
+  
+        local builtStructures = {} 
+        
+        if validPos then
+        
+            local teleportAbles = GetEntitiesForTeamWithinRange(teleportClassname, self:GetTeamNumber(), self:GetOrigin(), kEchoRange)
+            
+                for index, entity in ipairs(teleportAbles) do
+                    if HasMixin(entity, "Construct") and entity:GetIsBuilt() then
+                        table.insert(builtStructures, entity)
+                    end
+                end
+                  if #builtStructures > 0 then
+                    teleportAbles = builtStructures
+                end
+                
+                Shared.SortEntitiesByDistance(self:GetOrigin(), teleportAbles)
+                
+            for _, teleportAble in ipairs(teleportAbles) do
+            
+                if teleportAble:GetCanTeleport() then
+                
+                    teleportAble:TriggerTeleport(5, self:GetId(), position, teleportCost)
+                    teleportAble:AddTimedCallback(function()  teleportAble:InfestationNeedsUpdate() end, 2)
+                    teleportAble:AddTimedCallback(function()  teleportAble:InfestationNeedsUpdate() end, 7)
+                    
+                        
+                    if HasMixin(teleportAble, "Orders") then
+                        teleportAble:ClearCurrentOrder()
+                    end
+                    
+                    self:TriggerEffects("shift_echo")
+                    success = true
+                    self.echoActive = true
+                    self.timeLastEcho = Shared.GetTime()
+                    break
+                    
+                end
+            
+            end
+        
+        end
+        
+        return success
+        
+    end
+
+    function Shift:GetNumEggs()
+        return #self.shiftEggs
+    end
+    
+    function Shift:PerformActivation(techId, position, normal, commander)
+    
+        local success = false
+        local continue = true
+        
+        if GetIsTeleport(techId) then
+        
+            success = self:TriggerEcho(techId, position)
+            if success then
+                UpdateShiftButtons(self)
+                Shared.PlayPrivateSound(commander, Shift.kShiftEchoSound2D, nil, 1.0, self:GetOrigin())                
+            end
+            
+        end
+        
+        return success, continue
+        
+    end
+    
+    function Shift:OnEntityChange(oldId, newId)
+        
+        if table.contains(self.shiftEggs, oldId) then
+            table.removevalue(self.shiftEggs, oldId)
+        end
         
     end
 
@@ -382,6 +586,21 @@ function Shift:OnConstructionComplete()
        if commander ~= nil then
        commander:AddScore(1) 
        end
+end
+function GetShiftHatchGhostGuides(commander)
+
+    local shifts = GetEntitiesForTeam("Shift", commander:GetTeamNumber())
+    local attachRange = LookupTechData(kTechId.ShiftHatch, kStructureAttachRange, 1)
+    local result = { }
+    
+    for _, shift in ipairs(shifts) do
+        if shift:GetIsBuilt() then
+            result[shift] = attachRange
+        end
+    end
+    
+    return result
+
 end
 
 function Shift:GetCanBeUsed(player, useSuccessTable)

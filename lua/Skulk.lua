@@ -125,13 +125,9 @@ function Skulk:OnCreate()
         InitMixin(self, RailgunTargetMixin)
         self.timeDashChanged = 0
     end
-   
        self.modelsize = 1 
        self.gravity = 0
        self.sneakOffset = 0
-       
-        self.leaping = false
-        self.timeLastWallJump = 0
 end
 
 function Skulk:OnInitialized()
@@ -276,8 +272,8 @@ function Skulk:OnAdjustModelCoords(modelCoords)
         coords.yAxis = coords.yAxis * scale
         coords.zAxis = coords.zAxis * scale
        
-    modelCoords.origin = modelCoords.origin - modelCoords.zAxis * self.sneakOffset
-    return coords, modelCoords
+
+    return coords
 end
 function Skulk:GetViewModelName()
     return self:GetVariantViewModel(self:GetVariant())
@@ -305,7 +301,7 @@ local function PredictGoal(self, velocity)
     PROFILE("Skulk:PredictGoal")
 
     local goal = self.wallWalkingNormalGoal
-    if velocity:GetLength() > 1 and not self:GetIsGround() then
+    if velocity:GetLength() > 1 and not self:GetIsOnSurface() then
 
         local movementDir = GetNormalizedVector(velocity)
         local trace = Shared.TraceCapsule(self:GetOrigin(), movementDir * 2.5, Skulk.kXExtents, 0, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
@@ -384,10 +380,6 @@ function Skulk:PreUpdateMove(input, runningPrediction)
 
     if self.leaping and Shared.GetTime() > self.timeOfLeap + kLeapTime then
         self.leaping = false
-        
-            if self:GetActiveWeapon():GetHUDSlot() == 1 and not self:GetActiveWeapon().primaryAttacking then
-              self:GetActiveWeapon():Attack(self)
-               end
     end
     
     self.currentWallWalkingAngles = self:GetAnglesFromWallNormal(self.wallWalkingNormalGoal or Vector.yAxis) or self.currentWallWalkingAngles
@@ -433,8 +425,7 @@ end
 function Skulk:GetHeadAngles()
 
     if self:GetIsWallWalking() then
-        // When wallwalking, the angle of the body and the angle of the head is very different
-        return self:GetViewAngles()
+        return self.currentWallWalkingAngles
     else
         return self:GetViewAngles()
     end

@@ -43,17 +43,12 @@ end
 
 // Spawn command station or hive on tech point
 function TechPoint:SpawnCommandStructure(teamNumber)
-    if teamNumber == 1 then self:SetIsVisible(false) end
+
     local alienTeam = (GetGamerules():GetTeam(teamNumber):GetTeamType() == kAlienTeamType)
     local techId = ConditionalValue(alienTeam, kTechId.Hive, kTechId.CommandStation)
     if teamNumber == 1 then self:DeleteExtraTechPoints() end
     return CreateEntityForTeam(techId, Vector(self:GetOrigin()), teamNumber)
     
-end
-function TechPoint:SpawnOtherHives() --Okay matey you've got it 3 hives comin up
-   for index, techpoint in ipairs( GetEntitiesWithinRange( "TechPoint", self:GetOrigin(), kSearchFor) ) do
-     if techpoint:GetAttached() == nil then techpoint:SpawnCommandStructure(2) end
-      end
 end
 function TechPoint:DeleteExtraTechPoints()
   if Shared.GetMapName() == "ns2_sorrow_siege" or Shared.GetMapName() == "ns2_lobstersiege" or Shared.GetMapName() == "ns2_sorrow_siege" or Shared.GetMapName() == "ns_digsiege_2007" then return end

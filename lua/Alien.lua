@@ -242,7 +242,7 @@ function Alien:OnInitialized()
             InitMixin(self, MapBlipMixin)
         end
        if self:GetIsAlive() and self:GetTeamNumber() == 2 then
-      if self:isa("Skulk") then self:AddTimedCallback(function() self:SetHasFireProofUmbra(true, 5) end, 0.06) end
+--      if self:isa("Skulk") then self:AddTimedCallback(function() self:SetHasFireProofUmbra(true, 5) end, 0.06) end
        self:AddTimedCallback(function() self.spawnprotection = false end, 5.06)
        end
     elseif Client then

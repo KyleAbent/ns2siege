@@ -1,3 +1,11 @@
+// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\InfantryPortal.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) 
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -22,10 +30,12 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
@@ -59,9 +69,14 @@ InfantryPortal.kLoginAttachPoint = "keypad"
 local kPushRange = 3
 local kPushImpulseStrength = 40
 
+local kInfantryPortalGainXP = 1
+local kInfantryPortalMaxLevel = 30
+InfantryPortal.GainXp = .25
+
 local networkVars =
 {
     queuedPlayerId = "entityid",
+    level = "float (0 to " .. kInfantryPortalMaxLevel  .. " by .1)",
     creditstructre = "boolean",
 }
 
@@ -81,6 +96,7 @@ AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -166,6 +182,7 @@ function InfantryPortal:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -181,6 +198,7 @@ function InfantryPortal:OnCreate()
     self:SetLagCompensated(true)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
+    self.level = 0
     self.creditstructre = false
 end
 
@@ -235,6 +253,7 @@ local function InfantryPortalUpdate(self)
             end
 
         end
+    
         if remainingSpawnTime == 0 then
             self:FinishSpawn()
         end
@@ -270,6 +289,7 @@ function InfantryPortal:OnInitialized()
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
+        InitMixin(self, SupplyUserMixin)
         
     elseif Client then
         InitMixin(self, UnitStatusMixin)
@@ -278,6 +298,45 @@ function InfantryPortal:OnInitialized()
     
     InitMixin(self, IdleMixin)
     
+end
+/*
+function InfantryPortal:GetLevelPercentage()
+return self.level / kInfantryPortalMaxLevel * kSentryScaleSize
+end
+
+function InfantryPortal:OnAdjustModelCoords(modelCoords)
+    local coords = modelCoords
+	local scale = self:GetLevelPercentage()
+       if scale >= 1 then
+        coords.xAxis = coords.xAxis * scale
+        coords.yAxis = coords.yAxis * scale
+        coords.zAxis = coords.zAxis * scale
+    end
+    return coords
+end
+*/
+function InfantryPortal:AddXP(amount)
+
+    local xpReward = 0
+        xpReward = math.min(amount, kInfantryPortalMaxLevel - self.level)
+        self.level = self.level + xpReward
+   
+    return xpReward
+    
+end
+function InfantryPortal:GetMaxLevel()
+return kInfantryPortalMaxLevel
+end
+function InfantryPortal:GetLevel()
+        return Round(self.level, 2)
+end
+  function InfantryPortal:GetUnitNameOverride(viewer)
+    local unitName = GetDisplayName(self)   
+    unitName = string.format(Locale.ResolveString("Level %s Infantry Portal"), self:GetLevel())
+return unitName
+end  
+function InfantryPortal:GetAddXPAmount()
+return InfantryPortal.GainXp
 end
 function InfantryPortal:OnDestroy()
 
@@ -335,6 +394,7 @@ local function QueueWaitingPlayer(self)
                 if playerToSpawn.SetSpectatorMode then
                     playerToSpawn:SetSpectatorMode(kSpectatorMode.Following)
                 end
+                
                 playerToSpawn:SetFollowTarget(self)
 
             end
@@ -348,42 +408,15 @@ end
 function InfantryPortal:GetReceivesStructuralDamage()
     return true
 end
+
 function InfantryPortal:GetSpawnTime()
-    return kMarineRespawnTime
+    return ( kMarineRespawnTime - (self.level/100) * kMarineRespawnTime)
 end
+
 function InfantryPortal:OnReplace(newStructure)
     newStructure.queuedPlayerId = self.queuedPlayerId
 end
-function InfantryPortal:CheckSpaceAboveForSpawn()
 
-    local startPoint = self:GetOrigin() 
-    local endPoint = startPoint + Vector(0.35, 0.95, 0.35)
-    
-    return GetWallBetween(startPoint, endPoint, self)
-    
-end
-
-              function InfantryPortal:FindFreeSpace()    
-        for index = 1, 100 do
-           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 24, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation then//and GetIsPointOnInfestation(spawnPoint) then
-           return spawnPoint
-           end
-       end
-           Print("No valid spot found for phase cannon!")
-           return self:GetOrigin()
-    end
 // Spawn player on top of IP. Returns true if it was able to, false if way was blocked.
 local function SpawnPlayer(self)
 
@@ -394,7 +427,7 @@ local function SpawnPlayer(self)
         
         // Spawn player on top of IP
         local spawnOrigin = self:GetAttachPointOrigin("spawn_point")
-        spawnOrigin = ConditionalValue(self:CheckSpaceAboveForSpawn(), self:FindFreeSpace(), spawnOrigin)
+        
         local success, player = team:ReplaceRespawnPlayer(queuedPlayer, spawnOrigin, queuedPlayer:GetAngles())
         if success then
 
@@ -429,43 +462,7 @@ local function SpawnPlayer(self)
     return false
 
 end
-if Server then
-   function InfantryPortal:GetIsFront()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function InfantryPortal:GetCanBeUsedConstructed(byPlayer)
-  return not self:GetIsFront() and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
-end
-function InfantryPortal:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
 
-    // Play flavor sounds when using MAC.
-    if Server then
-    
-        local time = Shared.GetTime()
-        
-       // if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + 4)) then
-        
-           local laystructure = player:GiveItem(LayStructures.kMapName)
-           laystructure:SetTechId(kTechId.InfantryPortal)
-           laystructure:SetMapName(InfantryPortal.kMapName)
-           laystructure.originalposition = self:GetOrigin()
-           DestroyEntity(self)
-           // self.timeOfLastUse = time
-            
-      //  end
-       //self:PlayerUse(player) 
-    end
-    
-end
-end
 function InfantryPortal:GetIsWallWalkingAllowed()
     return false
 end 
@@ -539,6 +536,7 @@ if Server then
         SpawnPlayer(self)
         StopSpinning(self)
         self.timeSpinUpStarted = nil
+        self:AddXP(kInfantryPortalGainXP)  
     end
     
 end
@@ -586,7 +584,6 @@ function InfantryPortal:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("InfantryPortal:OnUpdateAnimationInput")
     modelMixin:SetAnimationInput("spawning", self.queuedPlayerId ~= Entity.invalidId)
-    modelMixin:SetAnimationInput("powered", true)
     
 end
 
@@ -648,6 +645,15 @@ function GetCommandStationIsBuilt(techId, origin, normal, commander)
     return false
 
 end
+if Server then
+    function InfantryPortal:OnUpdate(deltaTime)
+         local max = kInfantryPortalHealth * (self.level/100) + kInfantryPortalHealth
+        if self:GetMaxHealth() ~= max then
+         self:AdjustMaxHealth( max ) 
+        self:AdjustMaxArmor(kInfantryPortalArmor * (self.level/100) + kInfantryPortalArmor)
+        end
+     end
+end
 if Client then
 
     function InfantryPortal:PreventSpinEffect(duration)
@@ -682,7 +688,17 @@ function InfantryPortal:GetTechButtons()
 local techButtons = nil
   techButtons =  {kTechId.SetRally, kTechId.SpawnMarine, kTechId.None, kTechId.None, 
         kTechId.None, kTechId.None, kTechId.None, kTechId.None,}
+        if self.level ~= kInfantryPortalMaxLevel then
+    techButtons[5] = kTechId.LevelIP
+    end
       return techButtons
+end
+ function InfantryPortal:PerformActivation(techId, position, normal, commander)
+     local success = false
+    if techId == kTechId.LevelIP then
+    success = self:AddXP(5)    
+    end
+      return success, true
 end
 function InfantryPortal:GetHealthbarOffset()
     return 0.5

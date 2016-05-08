@@ -1,0 +1,60 @@
+initialisze
+self.CountStart = nil
+self.CountEnd = nil
+self.GameStarting = false
+self.StartedGame = false
+
+
+if not self.CountStart then
+local Duration = self.Config.PreGameTime
+self.CountStart = Time
+self.CountEnd = Time + Duration
+self.GameStarting = true
+Gamerules:SetGameState( kGameState.PreGame )
+self:ShowGameStart( Duration )
+return
+end
+local TimeLeft = Ceil( self.CountEnd - Time )
+if TimeLeft == 5 then
+if self.Config.ShowCountdown and not self.SentCountdown then
+Shine:SendText( nil, Shine.BuildScreenMessage( 2, 0.5, 0.7,
+"Game starts in %s", TimeLeft, 255, 0, 0, 1, 3, 0 ) )
+self.SentCountdown = true
+end
+end
+
+
+      if AlienRoll == 6 then
+      self:NotifyAlien(nil, "%s Rolled a 6", true, Player:GetName())
+           if Player:isa("Gorge") then
+                 function Player:OnAdjustModelCoords(modelCoords)
+                 local coords = modelCoords
+                 coords.xAxis = coords.xAxis * math.random(1,10)
+                 coords.yAxis = coords.yAxis * math.random(1,10)
+                 coords.zAxis = coords.zAxis * math.random(1,10)
+                 return coords
+                 end
+           self:NotifyAlien(nil, "%s became a randomly sized giant", true, Player:GetName())
+           self:AddDelayToPlayer(Player) 
+           return 
+           end
+      self:NotifyAlien(nil, "%s Ineligable for roll 6. Not a gorge. Re-Rerolling", true, Player:GetName())
+      self:RollPlayer(Player)   
+      return
+      end
+
+
+      if AlienRoll == 4 then //Trigger effects as a miniroll here? 
+      self:NotifyAlien( nil, "%s Rolled a 4", true, Player:GetName())     
+      Player:TriggerEnzyme(10)
+      self:NotifyAlien( nil, "%s has been enzymed for 10 seconds (or until set on fire) (No display countdown yet)", true, Player:GetName())  
+      self:AddDelayToPlayer(Player) 
+      return 
+      end
+      if AlienRoll == 5 then
+      self:NotifyAlien( nil, "%s Rolled a 5", true, Player:GetName())    
+      Player:TeleportToHive()
+      self:NotifyAlien( nil, "%s Redeemed/Teleported back to an hive", true, Player:GetName())  
+      self:AddDelayToPlayer(Player) 
+      return 
+      end  

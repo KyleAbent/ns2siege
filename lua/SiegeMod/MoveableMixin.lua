@@ -40,6 +40,13 @@ end
 
 function MoveableMixin:OnUpdate(deltaTime) 
 if Server then           
+   if not self.driving and self.cleaning then //and self:isa("SiegeDoor") then
+         if self:isa("FrontDoor") then
+           for _, cysts in ipairs(GetEntitiesForTeamWithinRange("Cyst", 2, self:GetOrigin(), 15)) do
+           DestroyEntity(cysts)
+           end 
+         end
+     end  
         if self.driving then self:UpdatePosition(deltaTime)end
   end
 end

@@ -2667,3 +2667,36 @@ function CopyRelevancyMask(fromEnt, toEnt)
     end
 
 end
+
+queue = {}
+function queue.new()
+    return setmetatable( { first = 0; last = -1; }, { __index = queue } )
+end
+
+function queue.pushleft( list, value )
+    local first = list.first - 1
+    list.first = first
+    list[first] = value
+end
+
+function queue.pushright( list, value )
+    local last = list.last + 1
+    list.last = last
+    list[last] = value
+end
+
+function queue.popleft(list)
+    local value = nil
+    if list.first <= list.last then
+        value, list.first, list[list.first] = list[list.first], list.first + 1, nil
+    end
+    return value
+end
+    
+function queue.popright(list)
+    local value = nil
+    if list.first <= list.last then
+        value, list.last, list[list.last] = list[list.last], list.last - 1, nil
+    end
+    return value
+end

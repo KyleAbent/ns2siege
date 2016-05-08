@@ -32,12 +32,14 @@ Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/VortexAbleMixin.lua")
 Script.Load("lua/InfestationTrackerMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 
 class 'Observatory' (ScriptActor)
 
@@ -48,14 +50,15 @@ Observatory.kCommanderScanSound = PrecacheAsset("sound/NS2.fev/marine/commander/
 
 local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_marine")
 
-local kObservatoryTechButtons = { kTechId.Scan, kTechId.None, kTechId.Detector, kTechId.None,
-                                   kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+local kObservatoryTechButtons = { kTechId.Scan, kTechId.DistressBeacon, kTechId.Detector, kTechId.None,
+                                   kTechId.None, kTechId.AdvancedBeacon, kTechId.None, kTechId.None }
 
 Observatory.kDistressBeaconTime = kDistressBeaconTime
 Observatory.kDistressBeaconRange = kDistressBeaconRange
 Observatory.kDetectionRange = 22 // From NS1 
 
 ///Siege Random Automatic Passive Time Researches
+Observatory.kRandomnlyGeneratedTimeToUnlock = 0
 
 local kAnimationGraph = PrecacheAsset("models/marine/observatory/observatory.animation_graph")
 
@@ -73,11 +76,13 @@ AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CorrodeMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
+AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(NanoShieldMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(PowerConsumerMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
@@ -94,7 +99,7 @@ function Observatory:OnCreate()
         self.distressBeaconSound:SetAsset(kDistressBeaconSoundMarine)
         self.distressBeaconSound:SetRelevancyDistance(Math.infinity)
         
-        self:AddTimedCallback(Observatory.RevealCysts, 4)
+        self:AddTimedCallback(Observatory.RevealCysts, 0.4)
 
     end
     
@@ -119,6 +124,7 @@ function Observatory:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, VortexAbleMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
 
     
@@ -152,6 +158,7 @@ function Observatory:OnInitialized()
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, InfestationTrackerMixin)
+        InitMixin(self, SupplyUserMixin)
     elseif Client then
     
         InitMixin(self, UnitStatusMixin)
@@ -348,7 +355,7 @@ local function GetPlayersToBeacon(self, toOrigin)
     for index, player in ipairs(self:GetTeam():GetPlayers()) do
     
         // Don't affect Commanders or Heavies
-        if player:isa("Marine") or player:isa("Exo") and ( player.GetCanBeacon and olayer:GetCanBeacon() )then
+        if player:isa("Marine") or player:isa("Exo") then
         
             // Don't respawn players that are already nearby.
             if not GetIsPlayerNearby(self, player, toOrigin) then
@@ -416,7 +423,7 @@ function Observatory:PerformDistressBeacon()
                 if player:isa("Exo") then
                     table.insert(successfullExoPositions, respawnPoint)
                 end
-                
+                    
                 table.insert(successfullPositions, respawnPoint)
                 
             else
@@ -442,7 +449,7 @@ function Observatory:PerformDistressBeacon()
     for i = 1, #failedPlayers do
     
         local player = failedPlayers[i]  
-
+    
         if player:isa("Exo") then        
             player:SetOrigin(successfullExoPositions[math.random(1, #successfullExoPositions)])        
         else
@@ -455,55 +462,13 @@ function Observatory:PerformDistressBeacon()
             usePositionIndex = Math.Wrap(usePositionIndex + 1, 1, numPosition)
             
         end    
-              
+    
     end
 
     if anyPlayerWasBeaconed then
         self:TriggerEffects("distress_beacon_complete")
     end
     
-end
-function Observatory:OnUpdateAnimationInput(modelMixin)
-
-    modelMixin:SetAnimationInput("powered", true)
-    
-end
-if Server then
-   function Observatory:GetIsFront()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function Observatory:GetCanBeUsedConstructed(byPlayer)
-  return (not self:GetIsFront() or self:GetOwner() == byPlayer) and not byPlayer:GetHasLayStructure() and byPlayer:GetHasWelderPrimary()
-end
-function Observatory:OnUseDuringSetup(player, elapsedTime, useSuccessTable)
-
-    // Play flavor sounds when using MAC.
-    if Server then
-
-        local time = Shared.GetTime()
-        
-       // if self.timeOfLastUse == nil or (time > (self.timeOfLastUse + 4)) then
-        
-           local laystructure = player:GiveItem(LayStructures.kMapName)
-           laystructure:SetTechId(kTechId.Observatory)
-           laystructure:SetMapName(Observatory.kMapName)
-           laystructure.originalposition = self:GetOrigin()
-           DestroyEntity(self)
-           // self.timeOfLastUse = time
-            
-      //  end
-       //self:PlayerUse(player) 
-    end
-    
-end
 end
 function Observatory:PerformAdvancedBeacon()
 
@@ -567,7 +532,6 @@ function Observatory:PerformAdvancedBeacon()
               
             player:SetOrigin(successfullPositions[usePositionIndex])
             player:SetCameraDistance(0) 
-            player.timeLastBeacon  = Shared.GetTime()
             if player.TriggerBeaconEffects then
                 player:TriggerBeaconEffects()
                 player:SetCameraDistance(0)  
@@ -597,7 +561,7 @@ end
 function Observatory:RevealCysts()
 
     for _, cyst in ipairs(GetEntitiesForTeamWithinRange("Cyst", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Observatory.kDetectionRange)) do
-        if self:GetIsBuilt()  then
+        if self:GetIsBuilt() and self:GetIsPowered() then
             cyst:SetIsSighted(true)
         end
     end
@@ -606,6 +570,28 @@ function Observatory:RevealCysts()
 
 end
 
+function Observatory:OnUpdate(deltaTime)
+   if Server then 
+         if not self.timeLastUpdatePassiveCheck or self.timeLastUpdatePassiveCheck + 15 < Shared.GetTime() then 
+     self:UpdatePassive() 
+         self.timeLastUpdatePassiveCheck = Shared.GetTime()
+         end
+    end
+    ScriptActor.OnUpdate(self, deltaTime)
+
+    if self:GetIsBeaconing() and (Shared.GetTime() >= self.distressBeaconTime) then
+    
+        self:PerformDistressBeacon()
+        
+        self.distressBeaconTime = nil
+            
+    elseif self:GetIsAdvancedBeaconing() and (Shared.GetTime() >= self.advancedBeaconTime) then
+            self:PerformAdvancedBeacon()
+        
+        self.advancedBeaconTime = nil
+    end
+ 
+end
 function GetCheckObsyLimit(techId, origin, normal, commander)
     local location = GetLocationForPoint(origin)
     local locationName = location and location:GetName() or nil
@@ -648,10 +634,71 @@ function Observatory:UpdatePassive()
    commander.isBotRequestedAction = true
    commander:ProcessTechTreeActionForEntity(techNode, self:GetOrigin(), Vector(0,1,0), true, 0, self, nil)
 end
+if Server then
+function Observatory:UpdateResearch(deltaTime)
+ if not self.timeLastUpdateCheck or self.timeLastUpdateCheck + 15 < Shared.GetTime() then 
+   //Kyle Abent Siege 10.24.15 morning writing twtich.tv/kyleabent
+    local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
+    if researchNode then
+        local gameRules = GetGamerules()
+        local projectedminutemarktounlock = 60
+        local currentroundlength = ( Shared.GetTime() - gameRules:GetGameStartTime() )
+
+        if researchNode:GetTechId() == kTechId.PhaseTech then
+           projectedminutemarktounlock = Observatory.kRandomnlyGeneratedTimeToUnlock
+         end
+               
+        local progress = Clamp(currentroundlength / projectedminutemarktounlock, 0, 1)
+        //Print("%s", progress)
+        if progress ~= self.researchProgress then
+        
+            self.researchProgress = progress
+
+            researchNode:SetResearchProgress(self.researchProgress)
+            
+            local techTree = self:GetTeam():GetTechTree()
+            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
+            
+            // Update research progress
+            if self.researchProgress == 1 then
+
+                // Mark this tech node as researched
+                researchNode:SetResearched(true)
+                
+                techTree:QueueOnResearchComplete(self.researchingId, self)
+                
+            end
+        
+        end
+        
+    end 
+    self.timeLastUpdateCheck = Shared.GetTime()
+end
+end
+end//server
+function Observatory:ScanAtOrigin()
+         CreateEntity( Scan.kMapName, self:GetOrigin(), 1)
+         self.lastscantime = Shared.GetTime()
+end
+  function Observatory:GetUnitNameOverride(viewer)
+    local unitName = GetDisplayName(self)   
+    
+  //  if self:GetIsSiege() then //and not self:GetCanAutomaticTriggerInkAgain() then
+     local NowToInk = self:GetCoolDown() - (Shared.GetTime() - self.lastscantime)
+     local ScanLength =  math.ceil( Shared.GetTime() + NowToInk - Shared.GetTime() )
+     local time = ScanLength
+     unitName = string.format(Locale.ResolveString("Observatory (%s)"), Clamp(time, 0, self:GetCoolDown()))
+  //  end
+ 
+return unitName
+end 
 function Observatory:GetLocationName()
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         return locationName
+end
+function Observatory:GetCoolDown()
+return 8 --kSiegeObsAutoScanCooldown
 end
 function Observatory:GetIsInSiege()
 if string.find(self:GetLocationName(), "siege") or string.find(self:GetLocationName(), "Siege") then return true end
@@ -667,7 +714,9 @@ function Observatory:PerformActivation(techId, position, normal, commander)
             return self:TriggerDistressBeacon()
         end
         if techId == kTechId.AdvancedBeacon then
+                  if not self:GetIsPowered() then
                    self:SetPowerSurgeDuration(5)
+                   end
            return self:TriggerAdvancedBeacon()
          end
         

@@ -65,7 +65,7 @@ Player.kRangeFinderDistance = 20
 local kLowHealthWarning = 0.35
 local kLowHealthPulseSpeed = 10
 
-Player.kShowGiveDamageTime = 1
+Player.kShowGiveDamageTime = 0.25
 
 local kPhaseEffectActiveTime = 2
 
@@ -83,7 +83,7 @@ Client.PrecacheLocalSound(kDeadSound)
 gPlayingDeadMontage = nil
 
 function Player:GetShowUnitStatusForOverride(forEntity)
-    return not GetAreEnemies(self, forEntity) or (forEntity:GetOrigin() - self:GetOrigin()):GetLength() < 8
+    return not GetAreEnemies(self, forEntity) or (forEntity:GetOrigin() - self:GetOrigin()):GetLengthSquared() < (20*20)
 end
 
 function PlayerUI_GetWorldMessages()
@@ -388,7 +388,7 @@ end
       
 -- Return true if the unit will show status info to the player
 function PlayerUI_ShowsUnitStatusInfo(player, unit)
-    return UnitIsSelectedByLocalCommander(player,unit) or unit == player:GetCrossHairTarget()
+    return UnitIsSelectedByLocalCommander(player,unit) or unit == player:GetCrossHairTarget() or player:GetHasMarkedTarget(unit)
 end
 
 function PlayerUI_GetStatusInfoForUnit(player, unit)
@@ -412,6 +412,7 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
            
             local health = 0
             local armor = 0
+            local regen = 0 
 
             local visibleToPlayer = true                        
             if HasMixin(unit, "Cloakable") and GetAreEnemies(player, unit) then
@@ -420,6 +421,12 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
                     visibleToPlayer = false
                 end
                 
+            end
+            
+            if player:GetHasMarkedTarget(unit) and unit ~= player:GetCrossHairTarget() then
+                description = ""
+                action = ""
+                hint = ""
             end
             
             -- Don't show tech points or nozzles if they are attached
@@ -469,6 +476,7 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
                 Hint = hint,
                 StatusFraction = statusFraction,
                 HealthFraction = health,
+                RegenFraction = regen,
                 ArmorFraction = armor,
                 IsCrossHairTarget = crossHairTarget and visibleToPlayer,
                 TeamType = kNeutralTeamType,
@@ -508,7 +516,7 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
                     end
 
                     unitState.SpawnerName = playerName
-                   unitState.SpawnFraction = Clamp((Shared.GetTime() - unit.timeSpinStarted) / unit:GetSpawnTime(), 0, 1)
+                    unitState.SpawnFraction = Clamp((Shared.GetTime() - unit.timeSpinStarted) / kMarineRespawnTime, 0, 1)
                 end
             elseif unit:isa("Embryo") then
                 unitState.EvolvePercentage = unit.evolvePercentage / 100
@@ -1093,7 +1101,7 @@ function PlayerUI_GetTooltipDataFromTechId(techId, hotkeyIndex)
         end
         
         tooltipData.hotKey = tooltipData.hotKey or ""
-       -- tooltipData.supply = LookupTechData(techId, kTechDataSupply, 0)
+        tooltipData.supply = LookupTechData(techId, kTechDataSupply, 0)
         
         tooltipData.biomass = LookupTechData(techId, kTechDataBioMass, 0)
 
@@ -1511,7 +1519,18 @@ function PlayerUI_GetPlayerHealth()
     return 0
     
 end
+function PlayerUI_GetPlayerRegenerationHealth()
 
+    local player = Client.GetLocalPlayer()
+    if player and HasMixin(player, "Regeneration") then
+
+        return math.ceil(player:GetRegeneratingHealth())
+
+    end
+
+    return 0
+
+end
 function PlayerUI_GetPlayerMaxHealth()
 
     local player = Client.GetLocalPlayer()
@@ -1711,19 +1730,21 @@ function Player:GetDrawResourceDisplay()
 end
 
 function Player:GetShowHealthFor(player)
+    -- if they recently damaged you...
+    if Client then
+        if player:GetIsLocalPlayer() then
+            if player:GetHasMarkedTarget( self ) then
+                return true
+            end
+        end
+    end
+    
     return ( player:isa("Spectator") or ( not GetAreEnemies(self, player) and self:GetIsAlive() ) ) and self:GetTeamType() ~= kNeutralTeamType
 end
 
 function Player:GetCrossHairTarget()
 
-    local viewAngles = self:GetViewAngles()    
-    local viewCoords = viewAngles:GetCoords()    
-    local startPoint = self:GetEyePos()
-    local endPoint = startPoint + viewCoords.zAxis * Player.kRangeFinderDistance
-    
-    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.AllButPCsAndRagdolls, EntityFilterOneAndIsa(self, "Babbler"))
-    return trace.entity
-    
+    return self:GetCachedCrossHairTarget()
 end
 
 function Player:GetShowCrossHairText()
@@ -2103,7 +2124,7 @@ function Player:UpdateShadowStepFX()
 end
 
 function Player:GetDrawWorld(isLocal)
-    return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() 
+    return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() or ((self.countingDown and not Shared.GetCheatsEnabled()) and self:GetTeamNumber() ~= kNeutralTeamType)
 end
 
 -- Only called when not running prediction
@@ -2401,10 +2422,17 @@ function Player:DrawGameStatusMessage()
     local fraction = 1 - (time - math.floor(time))
     Client.DrawSetColor(255, 0, 0, fraction*200)
 
+    if(self.countingDown) then
+    
+        Client.DrawSetTextPos(.42*Client.GetScreenWidth(), .95*Client.GetScreenHeight())
+        Client.DrawString("Game is starting")
+        
+    else
     
         Client.DrawSetTextPos(.25*Client.GetScreenWidth(), .95*Client.GetScreenHeight())
         Client.DrawString("Game will start when both sides have players")
         
+    end
 
 
 end
@@ -2587,7 +2615,25 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
     
     end
 
+    if self.countingDown and not Shared.GetCheatsEnabled() then
+    
+        if HasMixin(self, "Team") and (self:GetTeamNumber() == kMarineTeamType or self:GetTeamNumber() == kAlienTeamType) then
+            cameraCoords = self:GetCameraViewCoordsCountdown(cameraCoords)
+            Client.SetYaw(self.viewYaw)
+            Client.SetPitch(self.viewPitch)
+            continue = false
+        end
+        
+        if not self.clientCountingDown then
 
+            self.clientCountingDown = true    
+            if self.OnCountDown then
+                self:OnCountDown()
+            end  
+  
+        end
+        
+    end
         
     if continue then
     
@@ -2834,7 +2880,7 @@ function Player:SetCameraShake(amount, speed, time)
     return success
     
 end
-/*
+
 local clientIsWaitingForAutoTeamBalance = false
 function PlayerUI_GetIsWaitingForTeamBalance()
     return clientIsWaitingForAutoTeamBalance
@@ -2844,7 +2890,7 @@ local function OnWaitingForAutoTeamBalance(message)
     clientIsWaitingForAutoTeamBalance = message.waiting
 end
 Client.HookNetworkMessage("WaitingForAutoTeamBalance", OnWaitingForAutoTeamBalance)
-*/
+
 function PlayerUI_GetIsRepairing()
 
     local player = Client.GetLocalPlayer()
@@ -3406,9 +3452,8 @@ function PlayerUI_GetTeamNumber()
 end
 
 function PlayerUI_GetHasGameStarted()
---4.2 come back to Kyle Abent
      local player = Client.GetLocalPlayer()
-     return player -- and player:GetGameStarted()
+     return player  and player:GetGameStarted()
      
 end
 
@@ -3772,11 +3817,13 @@ end
 -- Returns true if the indicator should be displayed and the time that has passed as a percentage.
 function PlayerUI_GetShowGiveDamageIndicator()
 
+
     local player = Client.GetLocalPlayer()
     if player and player.GetDamageIndicatorTime and player:GetIsPlaying() then
     
         local timePassed = Shared.GetTime() - player:GetDamageIndicatorTime()
-        return timePassed <= Player.kShowGiveDamageTime, math.min(timePassed / Player.kShowGiveDamageTime, 1)
+        local opacity = math.min(timePassed / Player.kShowGiveDamageTime, 1)        
+        return timePassed <= Player.kShowGiveDamageTime, opacity * opacity
         
     end
     
@@ -3948,9 +3995,9 @@ function Player:UpdateDamageIndicators()
     -- update damage given
     if self.giveDamageTimeClientCheck ~= self.giveDamageTime then
     
-        self.giveDamageTimeClientCheck = self.giveDamageTime
-        -- Must factor in ping time as this value is delayed.
-        self.giveDamageTimeClient = self.giveDamageTime + Client.GetPing()
+        self.giveDamageTimeClientCheck = self.giveDamageTime    
+        self.giveDamageTimeClient = Shared.GetTime()
+        
         self.showDamage = self:GetShowDamageIndicator()
         if self.showDamage then
             self:OnGiveDamage()

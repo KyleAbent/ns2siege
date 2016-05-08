@@ -1,3 +1,13 @@
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\Cyst.lua
+//
+//    Created by:   Mats Olsson (mats.olsson@matsotech.se)
+//
+// A cyst controls and spreads infestation
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/FireMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
@@ -37,14 +47,9 @@ Cyst.kPointValue = 5
 // how fast the impulse moves
 Cyst.kImpulseSpeed = 8
 
+Cyst.kThinkInterval = 1 
 Cyst.kImpulseColor = Color(1,1,0)
 Cyst.kImpulseLightIntensity = 8
-
-
-Cyst.MaxLevel = 99
-Cyst.GainXP = 4
-Cyst.ScaleSize = 4
-
 local kImpulseLightRadius = 1.5
 
 Cyst.kExtents = Vector(0.2, 0.1, 0.2)
@@ -58,8 +63,6 @@ Cyst.kCystMaxParentRange = kCystMaxParentRange
 Cyst.kInfestationRadius = kInfestationRadius
 Cyst.kInfestationGrowthDuration = Cyst.kInfestationRadius / kCystInfestDuration
 
-Cyst.MinimumKingShifts = 4
-
 local networkVars =
 {
 
@@ -67,15 +70,19 @@ local networkVars =
     // or delta encoded
     m_origin = "position (by 0.05 [], by 0.05 [], by 0.05 [])",
     m_angles = "angles (by 0.1 [], by 10 [], by 0.1 [])",
-    isKing = "boolean",
-    level = "float (0 to " .. Cyst.MaxLevel .. " by .1)",
-    wasking = "boolean",
-    lastumbra = "time",
-    MinKingShifts = "float (0 to " .. Cyst.MinimumKingShifts .. " by 1)",
-    UpdatedEggs = "boolean",
-    occupiedid = "entityid",
-    spawnedbabblers = "float",
-
+    
+    // Cysts are never attached to anything, so remove the fields inherited from Entity
+    m_attachPoint = "integer (-1 to 0)",
+    m_parentId = "integer (-1 to 0)",
+    
+    // Track our parentId
+    parentId = "entityid",
+    hasChild = "boolean",
+    
+    // if we are connected. Note: do NOT use on the server side when calculating reconnects/disconnects,
+    // as the random order of entity update means that you can't trust it to reflect the actual connect/disconnects
+    // used on the client side by the ui to determine connection status for potently cyst building locations
+    connected = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -96,6 +103,46 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
+
+//
+// To avoid problems with minicysts on walls connection to each other through solid rock,
+// we need to move the start/end points a little bit along the start/end normals
+//
+local function CreateBetween(trackStart, startNormal, trackEnd, endNormal, startOffset, endOffset)
+
+    trackStart = trackStart + startNormal * 0.01
+    trackEnd = trackEnd + endNormal * 0.01
+    
+    local pathDirection = trackEnd - trackStart
+    pathDirection:Normalize()
+    
+    if startOffset == nil then
+        startOffset = 0.1
+    end
+    
+    if endOffset == nil then
+        endOffset = 0.1
+    end
+    
+    // DL: Offset the points a little towards the center point so that we start with a polygon on a nav mesh
+    // that is closest to the start. This is a workaround for edge case where a start polygon is picked on
+    // a tiny island blocked off by an obstacle.
+    trackStart = trackStart + pathDirection * startOffset
+    trackEnd = trackEnd - pathDirection * endOffset
+    
+    local points = PointArray()
+    Pathing.GetPathPoints(trackEnd, trackStart, points)
+    return points
+    
+end
+
+//
+// Convinience function when creating a path between two entities, submits the y-axis of the entities coords as
+// the normal for use in CreateBetween()
+//
+function CreateBetweenEntities(srcEntity, endEntity)    
+    return CreateBetween(srcEntity:GetOrigin(), srcEntity:GetCoords().yAxis, endEntity:GetOrigin(), endEntity:GetCoords().yAxis)    
+end
 
 if Server then
     Script.Load("lua/Cyst_Server.lua")
@@ -127,30 +174,72 @@ function Cyst:OnCreate()
     
         InitMixin(self, SpawnBlockMixin)
         self:UpdateIncludeRelevancyMask()
+        self.timeLastCystConstruction = 0
         
     elseif Client then
         InitMixin(self, CommanderGlowMixin)
+        self.connectedFraction = 0
     end
 
     self:SetPhysicsCollisionRep(CollisionRep.Move)
     self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)
     
     self:SetLagCompensated(false)
-    self.isKing = false
-    self.level = 0
-    self.wasking = false
-    self.lastumbra = 0
-    self.MinKingShifts = 0
-    self.UpdatedEggs = false
-    self.occupiedid =  Entity.invalidI
-    self.spawnedbabblers = 0
 end
 
+function Cyst:OnDestroy()
+
+    if Client then
+        
+        if self.redeployCircleModel then
+        
+            Client.DestroyRenderModel(self.redeployCircleModel)
+            self.redeployCircleModel = nil
+            
+        end
+        
+    end
+    
+    ScriptActor.OnDestroy(self)
+    
+end
 
 function Cyst:GetShowSensorBlip()
     return false
 end
 
+function Cyst:GetSpawnBlockDuration()
+    return 7
+end
+
+/**
+ * A Cyst is redeployable if it is within range of the origin but
+ * we ignore the Y distance within some tolerance.
+ */
+local function GetCystIsRedeployable(cyst, origin)
+
+    local immune = cyst.immuneToRedeploymentTime and Shared.GetTime() <= cyst.immuneToRedeploymentTime
+    if cyst:GetDistance(origin) <= kCystRedeployRange and not immune then
+        return math.abs(cyst:GetOrigin().y - origin.y) < 1
+    end
+    
+    return false
+    
+end
+
+local function DestroyNearbyCysts(self)
+
+    local nearbyCysts = GetEntitiesForTeamWithinRange("Cyst", self:GetTeamNumber(), self:GetOrigin(), kCystRedeployRange)
+    for c = 1, #nearbyCysts do
+    
+        local cyst = nearbyCysts[c]
+        if cyst ~= self and GetCystIsRedeployable(cyst, self:GetOrigin()) then
+            cyst:Kill()
+        end
+        
+    end
+    
+end
 
 function Cyst:OnInitialized()
 
@@ -158,9 +247,19 @@ function Cyst:OnInitialized()
     
     ScriptActor.OnInitialized(self)
     
-
+    self.parentId = Entity.invalidId
 
     if Server then
+    
+        // start out as disconnected; wait for impulse to arrive
+        self.connected = false
+        
+        self.nextUpdate = Shared.GetTime()
+        self.impulseActive = false
+        self.bursted = false
+        self.timeBursted = 0
+        self.children = { }
+        
         InitMixin(self, SleeperMixin)
         InitMixin(self, StaticTargetMixin)
         
@@ -180,6 +279,9 @@ function Cyst:OnInitialized()
          
     end   
     
+    if Server then
+        DestroyNearbyCysts(self)
+    end
     
     InitMixin(self, IdleMixin)
     
@@ -189,427 +291,18 @@ function Cyst:GetPlayIdleSound()
     return self:GetIsBuilt() and self:GetCurrentInfestationRadiusCached() < 1
 end
 
-
+function Cyst:SetImmuneToRedeploymentTime(forTime)
+    self.immuneToRedeploymentTime = Shared.GetTime() + forTime
+end
 
 function Cyst:GetInfestationGrowthRate()
     return Cyst.kInfestationGrowthDuration
 end
-function Cyst:OnConstructionComplete()
-    self:AddTimedCallback(Cyst.EnergizeInRange, 4)
-    self:AttractWhipsCrags()
-    
-       if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-                  gameRules:AntiExploitCystFrontDoor(self)
-            end
-        end
 
-   -- self:AddTimedCallback(Cyst.AttractWhipsCrags, 8)
-end
-function Cyst:AttractWhipsCrags()
-   local mate = Shared.GetEntity(self.occupiedid)
-    if not self.isking and not mate then
-       --Print("Mating Ritual Attempting.. :O ")
-     local kingcyst = GetNearest(self:GetOrigin(), "Cyst", 2, function(ent) return ent.isking and GetLocationForPoint(ent:GetOrigin()) == GetLocationForPoint(self:GetOrigin()) end)
-           if kingcyst then
-                 self:MagnetizeStructures()
-               --  Print("Non King found King, therefore calculating checkers  board appropriately... (fuck chess ;) )")
-           end
-    end
-    return false
-end
-function Cyst:EnergizeInRange()
-    if self:GetIsBuilt() and not self:GetIsOnFire() and self.isking and self:GetLevel() == self:GetMaxLevel() then
-    
-        local energizeAbles = GetEntitiesWithMixinForTeamWithinRange("Energize", self:GetTeamNumber(), self:GetOrigin(), kEnergizeRange)
-        
-        for _, entity in ipairs(energizeAbles) do
-        
-            if entity ~= self then
-                entity:Energize(self)
-                entity:SetMucousShield()
-            end
-            
-        end
-    
-    end
-    
-    return self:GetIsAlive() and self.isking
-end
-function Cyst:GetLevel()
-        return Round(self.level, 2)
-end
-function Cyst:GetExtentsOverride()
-local kXZExtents = 0.2 * self:GetLevelPercentage()
-local kYExtents = 0.1 * self:GetLevelPercentage()
-local crouchshrink = 0
-     return Vector(kXZExtents, kYExtents, kXZExtents)
-end
-function Cyst:ReturnFreeCystSpaceOrigin()  
-     
-
-
-
-end
- function Cyst:FindFreeSpace()  
-     local spotfound = self:ReturnFreeCystSpaceOrigin()
-       if spotfound ~= nil then return spotfound end 
-       
-      return self:FindAlternateSpace()
-end
-function Cyst:FindAlternateSpace()
- 
-        for index = 1, 100 do
-           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 24, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation then
-           return spawnPoint
-           end
-        end
-        Print("No valid spot found for kingcyst find alternatespace")
-        return self:GetOrigin()
-end
-function Cyst:SmashCyst(exo, exo, origin, vectors)
-       if self:GetIsAlive() and not self.isking and not self.wasking then
-       self:Kill(exo, exo, origin, vectors)
-       self:TriggerEffects("egg_death")
-       DestroyEntity(self)
-       end
-end
-function Cyst:GetLocationName()
-        local location = GetLocationForPoint(self:GetOrigin())
-        local locationName = location and location:GetName() or ""
-        return locationName
-end
- function Cyst:FindFreeSpawn()    
-        for index = 1, 100 do
-           local extents = Vector(0.2, 0.2, 0.2)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), kCystRedeployRange, kCystRedeployRange * 4, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation then
-           return spawnPoint
-           end
-        end
-        Print("No valid spot found for cyst brother spawn!")
-        return self:GetOrigin()
-end
-function Cyst:Derp()
-                self:UpdateModelCoords()
-                self:UpdatePhysicsModel()
-               if (self._modelCoords and self.boneCoords and self.physicsModel) then
-              self.physicsModel:SetBoneCoords(self._modelCoords, self.boneCoords)
-               end  
-               self:MarkPhysicsDirty()    
-end
-function Cyst:OnKill(attacker, doer, point, direction)
-       self:TriggerEffects("egg_death")
-self:SetIsVisible(false)
-if self.isking then  CreateEntity(Rupture.kMapName, self:GetOrigin(), self:GetTeamNumber()) self.isking = false self.level = 0 self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup) self:Derp() end
-end
-function Cyst:SetKing(whom)
-   self.king = true
-end 
 function Cyst:GetHealthbarOffset()
     return 0.5
 end 
-function Cyst:ActivateMagnetize()
---Kyle Abent
-                      self:Magnetize()
-                      self:AddTimedCallback(Cyst.Magnetize, 8)
-end
-if Server then
 
-    function Cyst:GetHasUmbra(position)
-        return #GetEntitiesWithinRange("CragUmbra", self:GetOrigin(), 17) > 0
-    end
-    
-    function Cyst:OnTakeDamage(damage, attacker, doer, point, direction, damageType)
-              --suppose to be for king but kinda fits the role for all cysts
-           if self:GetIsAlive() and not self:GetHasUmbra() and self:GetIsBuilt() and self:GetHealthScalar()<= 0.5 and (self.lastumbra + math.random(4,8)) < Shared.GetTime() then
-                    CreateEntity(CragUmbra.kMapName,  self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
-                    self:TriggerEffects("crag_trigger_umbra")
-                    self.lastumbra = Shared.GetTime()
-           end
-           
-           if self.isking then
-              if self.spawnedbabblers <= 3 then
-                  for i = 1, 4 - self.spawnedbabblers do
-                  local babbler = CreateEntity(Babbler.kMapName,  self:GetOrigin() + Vector(0, 0.2, 0), self:GetTeamNumber())
-                  babbler.scale = math.random(50,100)
-                  self.spawnedbabblers = Clamp(self.spawnedbabblers + 1, 0, 4)
-                  end
-              end
-           
-           end
-        
-    end
-end
-function Cyst:Synchronize()
---Kyle Abent
-                     local whips, crags = self:DoICreateShadeWhipCrag()
-                    if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-                  gameRules:SynrhonizeCystEntities(whips, crags, self, self:FindFreeSpace())
-                end
-                end
-
-end
-function Cyst:DoICreateShadeWhipCrag()
- local whips = GetEntitiesForTeamWithinRange("Whip", 2, self:GetOrigin(), 999999)
- local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 999999)
-return whips, crags
-end
-function Cyst:GetCanAffordEgg()
-  return self:GetTeam():GetTeamResources() >= 4
-end
-
-function Cyst:GetAddXPAmount()
-local value = Cyst.GainXP / 4
-if Server then value = value * (GetRoundLengthToSiege()) + value end
- if self.isking then return value else return 0 end
-end 
-function Cyst:UpdateEggSpawn()
-    
-        for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
-            if hive:GetIsAlive() then
-                hive:GenerateEggSpawns(true, self:GetLocationName(), self)
-                break
-            end
-        end
-end
-function Cyst:Magnetize()
---Kyle Abent
- if self:GetLevel() ~= self:GetMaxLevel() then return true end--Be fully grown king first
- 
-         --   Print("Kingcyst Magnetsize Activated")
-            
-   for _, cyst in ipairs(GetEntitiesForTeamWithinRange("Cyst", 2, self:GetOrigin(), 48)) do
-               if cyst:GetIsAlive() then 
-              -- Print("Kingcyst telling cyst to attact whips crags")
-                 cyst:AddTimedCallback(Cyst.AttractWhipsCrags, math.random(1,4) )
-               end
-      end
-               --So once Cyst is fully grown, then teleport said tunnel.
-                      self:MagnetizeStructures()
-          
-          self:AddTimedCallback(Cyst.Cook, 4)
-          self:Synchronize()
-          self.MinKingShifts = Clamp(self.MinKingShifts + 1, 0, Cyst.MinimumKingShifts)
-          
-               if not self.UpdatedEggs then 
-                 self.UpdatedEggs = true self:UpdateEggSpawn()  
-                 SendTeamMessage(self:GetTeam(), kTeamMessageTypes.KingCystLocation, self:GetLocationId())
-              end
-              
-          return self.isking
-end
-
-function Cyst:GetCanDethrone()
-      return self.MinKingShifts == Cyst.MinimumKingShifts
-end
-function Cyst:Dethrone()
-                      self.isking = false
-                      self.wasking = true
-                      self.UpdatedEggs = false
-end
-function Cyst:MagnetizeStructures()
-
-      if self.isking then
-         return self:KingRules()
-      else
-        return self:NonKingRules()
-     end          
-
-end
-function Cyst:KingRules()
-          for index, Tunnel in ipairs(GetEntitiesForTeam("TunnelEntrance", 2)) do
-               if Tunnel:GetIsBuilt() and GetLocationForPoint(Tunnel:GetOrigin()) ~= GetLocationForPoint(self:GetOrigin()) 
-               and Tunnel:GetEligableForBeacon(self) and Tunnel:GetIsExit() then
-                   Tunnel:TriggerBeacon(self:FindAlternateSpace()) 
-                end
-          end
-          /*
-          for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
-               if crag:GetIsBuilt() and self:GetDistance(crag) >= 24 then 
-               crag:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
-                end
-          end
-          for index, whip in ipairs(GetEntitiesForTeam("Whip", 2)) do
-               if whip:GetIsBuilt() and self:GetDistance(whip) >= 24 then 
-               whip:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
-                end
-          end
-          */
-end  
-function Cyst:SetOccupied(who, istrue)
---It's True, It's True!
-
-if istrue then
-   self.occupiedid = who:GetId()
-else
-self.occupiedid = Entity.invalidI
-end
-
-
-
-end
-function Cyst:PreOnKill(attacker, doer, point, direction)
-                  
-                  local entity = Shared.GetEntity(self.occupiedid)
-                  if entity and entity.SetIsOccupying then
-                  entity:SetIsOccupying(self, false)
-                  end
-
-end
-function Cyst:NonKingRules()
---Kyle Abent
-  -- Print("Non king rules")
-    local mate = Shared.GetEntity(self.occupiedid)
-   if not mate then
-     local entities = {}
-       
-          for index, crag in ipairs(GetEntitiesForTeam("Crag", 2)) do
-                  if  crag:GetCanOccupy(self) and crag:GetEligableForBeacon(self) then 
-                local success = false 
-                success = table.insert(entities,crag)
-                   if  success then break end
-                end
-          end
-    
-          for index, whip in ipairs(GetEntitiesForTeam("Whip", 2)) do
-                  if  whip:GetCanOccupy(self) and whip:GetEligableForBeacon(self) then 
-                 local success = false 
-                success = table.insert(entities,whip)
-                   if success then break end
-                end
-          end
-      
-       
-    if #entities == 0 then return end  
-     
-      local entity = table.random(entities)
-      
-       if entity then
-           if entity:GetCanOccupy(self) and entity:GetEligableForBeacon(self) then 
-             local success = false 
-             success = entity:TriggerBeacon(self:GetOrigin()) 
-             if success then self:SetOccupied(entity, true)  entity:SetIsOccupying(self, true) end --Print("Cyst `ing entity!!!")  end
-            end
-        end
-        
- end
-   
-   
-   return self:GetIsAlive()
-   
-end  
-  function Cyst:Cook()
-         for index, Egg in ipairs(GetEntitiesForTeam("Egg", 2)) do
-               if self:GetDistance(Egg) >= 22 and (self.isking and self:GetLevel() == self:GetMaxLevel()) and self:GetCanAffordEgg() and Egg:GetCanBeacon() then 
-               Egg:TriggerEggBeacon(self:FindEggSpawn())
-              self:GetTeam():SetTeamResources(self:GetTeam():GetTeamResources()  - 4)
-                end
-          end
-  
-     return false
-  end
-       function Cyst:FindEggSpawn()    
-        for index = 1, 100 do
-           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 7, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation then
-           return spawnPoint
-           end
-       end
-           Print("No valid spot found for egg beacon!")
-           return self:GetOrigin()
-    end
-  /*
-    function Cyst:CookThisOneSlow(egg)
-           if egg then egg:SetOrigin(self:FindFreeSpace(false)) end
-    end
-    
-   */
-  function Cyst:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-        if self.isking  then
-            unitName = string.format(Locale.ResolveString("King Cyst"))
-        else
-        unitName = string.format(Locale.ResolveString("Cyst"))
-       end
-     return unitName
-end 
-function Cyst:GetLevelPercentage()
-return self.level / Cyst.MaxLevel * Cyst.ScaleSize
-end
-function Cyst:GetMaxLevel()
-return Cyst.MaxLevel
-end
-function Cyst:OnAdjustModelCoords(modelCoords)
-    local coords = modelCoords
-	local scale = self:GetLevelPercentage()
-       if scale >= 1 then
-        coords.xAxis = coords.xAxis * scale
-        coords.yAxis = coords.yAxis * scale
-        coords.zAxis = coords.zAxis * scale
-    end
-    return coords
-end
-function Cyst:AddXP(amount)
-
-    local xpReward = 0
-        xpReward = math.min(amount, Cyst.MaxLevel - self.level)
-        self.level = self.level + xpReward
-        local bonus = (420 * (self.level/100) + 420)
-        bonus = Clamp(bonus, 420, 1000)
-        bonus = bonus * 4 
-        self:AdjustMaxHealth( bonus )
-      //  self:AdjustMaxArmor(Clamp(420 * (self.level/100) + 420), 420, 500)
-        
-   
-    return xpReward
-    
-end
-function Cyst:LoseXP(amount)
-
-        self.level = Clamp(self.level - amount, 0, 50)
-        
-        local bonus = (420 * (self.level/100) + 420)
-        bonus = Clamp(bonus, 420, 1000)
-        self:AdjustMaxHealth( bonus )
-    
-end
 /**
  * Infestation never sights nearby enemy players.
  */
@@ -639,13 +332,31 @@ function Cyst:GetInfestationMaxRadius()
     return kInfestationRadius
 end
 
+function Cyst:GetCystParentRange()
+    return Cyst.kCystMaxParentRange
+end  
 
 function Cyst:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = false    
 end
 
+/**
+ * Note: On the server side, used GetIsActuallyConnected()!
+ */
+function Cyst:GetIsConnected() 
+    return self.connected
+end
 
+function Cyst:GetIsConnectedAndAlive()
+    return self.connected and self:GetIsAlive()
+end
 
+function Cyst:GetDescription()
+
+    local prePendText = ConditionalValue(self:GetIsConnected(), "", "Unconnected ")
+    return prePendText .. ScriptActor.GetDescription(self)
+    
+end
 
 function Cyst:OnOverrideSpawnInfestation(infestation)
 
@@ -670,8 +381,53 @@ local function ServerUpdate(self, deltaTime)
         self.bursted = self.timeBursted + Cyst.kBurstDuration > Shared.GetTime()    
     end
     
+    local now = Shared.GetTime()
+    
+    if now > self.nextUpdate then
+    
+        local connectedNow = self:GetIsActuallyConnected()
+        
+        // the very first time we are placed, we try to connect 
+        if not self.madeInitialConnectAttempt then
+        
+            if not connectedNow then 
+                connectedNow = self:TryToFindABetterParent()
+            end
+            
+            self.madeInitialConnectAttempt = true
+            
+        end
+        
+        // try a single reconnect when we become disconnected
+        if self.connected and not connectedNow then
+            connectedNow = self:TryToFindABetterParent()
+        end
+        
+        // if we become connected, see if we have any unconnected cysts around that could use us as their parents
+        if not self.connected and connectedNow then
+            self:ReconnectOthers()
+        end
+        
+        if connectedNow ~= self.connected then
+            self.connected = connectedNow
+            self:MarkBlipDirty()
+        end
+        
+        // avoid clumping; don't use now when calculating next think time (large kThinkTime)
+        self.nextUpdate = self.nextUpdate + Cyst.kThinkTime
+        
+        // Take damage if not connected 
+        if not self.connected then
+            self:TriggerDamage()
+        end
+        
+    end
+    
 end
 
+function Cyst:GetHasChild()
+    return self.hasChild
+end
 
 if Server then
   
@@ -684,19 +440,7 @@ if Server then
         if self:GetIsAlive() then
             
             ServerUpdate(self, deltaTime)
-            
-            local time = Shared.GetTime()
-            if self.timeoflastkingdate == nil or (time > self.timeoflastkingdate + 1) then
-               if self.isking  then
-                self:AddXP(Cyst.GainXP)
-                self:Derp() 
-                elseif self.wasking then
-                self:LoseXP(Cyst.GainXP)
-                self:Derp()
-                end
-                self.timeoflastkingdate = time
-            end
-            
+            self.hasChild = #self.children > 0
                
         else
         
@@ -719,17 +463,244 @@ elseif Client then
     function Cyst:OnTimedUpdate(deltaTime)
       
       PROFILE("Cyst:OnTimedUpdate")
+      if self:GetIsAlive() then
+          local animateDirection = self.connected and 1 or -1
+          self.connectedFraction = Clamp(self.connectedFraction + animateDirection * deltaTime, 0, self:GetBuiltFraction())      
+          if self.connectedFraction > 0 and self.connectedFraction < 1 then
+              return kUpdateIntervalAnimation
+          end
+      end
       return kUpdateIntervalLow
       
     end
 
 end
 
-function Cyst:GetIsHealableOverride()
-  return self:GetIsAlive() 
+function Cyst:GetCystParent()
+
+    local parent = nil
+    
+    if self.parentId and self.parentId ~= Entity.invalidId then
+        parent = Shared.GetEntity(self.parentId)
+    end
+    
+    return parent
+    
 end
 
+function MarkPotentialDeployedCysts(ents, origin)
 
+    for i = 1, #ents do
+    
+        local ent = ents[i]
+        if ent:isa("Cyst") and GetCystIsRedeployable(ent, origin) then
+            ent.markAsPotentialRedeploy = true
+        end
+        
+    end
+    
+end
+
+/**
+ * Returns a parent and the track from that parent, or nil if none found.
+ */
+function GetCystParentFromPoint(origin, normal, connectionMethodName, optionalIgnoreEnt)
+
+    PROFILE("Cyst:GetCystParentFromPoint")
+    
+    local ents = GetSortedListOfPotentialParents(origin)
+    
+    if Client then
+        MarkPotentialDeployedCysts(ents, origin)
+    end
+    
+    for i = 1, #ents do
+    
+        local ent = ents[i]
+        
+        // must be either a built hive or an cyst with a connected infestation
+        if optionalIgnoreEnt ~= ent and
+           ((ent:isa("Hive") and ent:GetIsBuilt()) or (ent:isa("Cyst") and ent[connectionMethodName](ent))) then
+            
+            local range = (origin - ent:GetOrigin()):GetLength()
+            if range <= ent:GetCystParentRange() then
+            
+                // check if we have a track from the entity to origin
+                local endOffset = 0.1
+                if ent:isa("Hive") then
+                    endOffset = 3
+                end
+                
+                local path = CreateBetween(origin, normal, ent:GetOrigin(), ent:GetCoords().yAxis, 0.1, endOffset)
+                if path then
+                
+                    // Check that the total path length is within the range.
+                    local pathLength = GetPointDistance(path)
+                    if pathLength <= ent:GetCystParentRange() then
+                        return ent, path
+                    end
+                    
+                end
+                
+            end
+            
+        end
+        
+    end
+    
+    return nil, nil
+    
+end
+
+/**
+ * Return true if a connected cyst parent is availble at the given origin normal, and no destroyed cysts present
+ */
+function GetIsDeadCystNearby(origin) 
+
+    local deadCyst = false
+    for _, cyst in ipairs(GetEntitiesWithinRange("Cyst", origin, kInfestationRadius)) do
+        
+        if not cyst:GetIsAlive() then
+            deadCyst = true
+            break
+        end
+        
+    end
+    
+    return deadCyst
+
+end
+
+/**
+ * Returns a ghost-guide table for gui-use. 
+ */
+function GetCystGhostGuides(commander)
+
+    local parent, path = commander:GetCystParentFromCursor()
+    local result = { }
+    
+    if parent then
+        result[parent] = parent:GetCystParentRange()
+    end
+    
+    return result
+    
+end
+
+function GetSortedListOfPotentialParents(origin)
+    
+    function sortByDistance(ent1, ent2)
+        return (ent1:GetOrigin() - origin):GetLength() < (ent2:GetOrigin() - origin):GetLength()
+    end
+    
+    // first, check for hives
+    local hives = GetEntitiesWithinRange("Hive", origin, kHiveCystParentRange)
+    table.sort(hives, sortByDistance)
+    
+    // add in the cysts. We get all cysts here, but mini-cysts have a shorter parenting range (bug, should be filtered out)
+    local cysts = GetEntitiesWithinRange("Cyst", origin, kCystMaxParentRange)
+    table.sort(cysts, sortByDistance)
+    
+    local parents = {}
+    table.copy(hives, parents)
+    table.copy(cysts, parents, true)
+    
+    return parents
+    
+end
+
+// Temporarily don't use "target" attach point
+function Cyst:GetEngagementPointOverride()
+    return self:GetOrigin() + Vector(0, 0.2, 0)
+end
+
+function Cyst:GetIsHealableOverride()
+  return self:GetIsAlive() and self:GetIsConnected()
+end
+
+local function UpdateRedeployCircle(self, display)
+
+    if not self.redeployCircleModel then
+    
+        self.redeployCircleModel = Client.CreateRenderModel(RenderScene.Zone_Default)
+        self.redeployCircleModel:SetModel(Commander.kAlienCircleModelName)
+        local coords = Coords.GetLookIn(self:GetOrigin() + Vector(0, kZFightingConstant, 0), Vector.xAxis)
+        coords:Scale(kCystRedeployRange * 2)
+        self.redeployCircleModel:SetCoords(coords)
+        
+    end
+    
+    self.redeployCircleModel:SetIsVisible(display)
+    
+end
+
+function Cyst:OnUpdateRender()
+
+    PROFILE("Cyst:OnUpdateRender")
+    
+    local model = self:GetRenderModel()
+    if model then
+    
+
+        model:SetMaterialParameter("connected", self.connectedFraction)
+        
+        model:SetMaterialParameter("killWarning", self.markAsPotentialRedeploy and 1 or 0)
+        
+        UpdateRedeployCircle(self, self.markAsPotentialRedeploy or false)
+        
+        self.markAsPotentialRedeploy = false
+        
+    end
+    
+end
+
+function Cyst:OverrideHintString(hintString)
+
+    if not self:GetIsConnected() then
+        return "CYST_UNCONNECTED_HINT"
+    end
+    
+    return hintString
+    
+end
+
+local kCystTraceStartPoint =
+{
+    Vector(0.2, 0.3, 0.2),
+    Vector(-0.2, 0.3, 0.2),
+    Vector(0.2, 0.3, -0.2),
+    Vector(-0.2, 0.3, -0.2),
+
+}
+
+local kDownVector = Vector(0, -1, 0)
+
+function AlignCyst(coords, normal)
+
+    if Server and normal then
+    
+        // get average normal:
+        for _, startPoint in ipairs(kCystTraceStartPoint) do
+        
+            local startTrace = coords:TransformPoint(startPoint)
+            local trace = Shared.TraceRay(startTrace, startTrace + kDownVector, CollisionRep.Select, PhysicsMask.CommanderBuild, EntityFilterAll())
+            if trace.fraction ~= 1 then
+                normal = normal + trace.normal
+            end
+        
+        end
+        
+        normal:Normalize()
+
+        coords.yAxis = normal
+        coords.xAxis = coords.yAxis:CrossProduct(coords.zAxis)
+        coords.zAxis = coords.xAxis:CrossProduct(coords.yAxis)
+
+    end
+    
+    return coords
+
+end
 
 function Cyst:SetIncludeRelevancyMask(includeMask)
 
@@ -738,14 +709,143 @@ function Cyst:SetIncludeRelevancyMask(includeMask)
 
 end
 
+local kBestLength = 20
+local kPointOffset = Vector(0, 0.1, 0)
+local kParentSearchRange = 400
 
-Shared.LinkClassToMap("Cyst", Cyst.kMapName, networkVars)
+function FindPathToClosestParent(origin)
 
-class 'AttachedCyst' (Cyst)
-AttachedCyst.kMapName = "attached_cyst"
+    PROFILE("Cyst:FindPathToClosestParent")
 
-function AttachedCyst:GetInfestationRadius()
-    return 0
+    local parents = GetEntitiesWithinRange("Cyst", origin, kParentSearchRange)
+    table.copy(GetEntitiesWithinRange("Hive", origin, kParentSearchRange), parents, true)
+    
+    Shared.SortEntitiesByDistance(origin, parents)
+    
+    local currentPathLength = 100000
+    local closestConnectedPathLength = 100000
+    
+    local currentPath = PointArray()
+
+    local closestParent = nil
+    local closestConnectedParent = nil
+    
+    for i = 1, #parents do
+    
+        local parent = parents[i]
+        
+        if parent:GetIsAlive() and ((parent:isa("Cyst") and parent:GetIsConnected()) or (parent:isa("Hive") and parent:GetIsBuilt())) then
+        
+            local path = PointArray()
+            Pathing.GetPathPoints(parent:GetOrigin() + kPointOffset, origin + kPointOffset, path)
+            local pathLength = GetPointDistance(path)
+
+            // it can happen on some maps, just break here when path length or number of points higher than 500
+            if pathLength > 500 or #path > 500 then
+                //DebugPrint("path length %s, points %s", ToString(pathLength), ToString(#path))
+                break
+            end
+            
+            if currentPathLength > pathLength then
+            
+                currentPath = path
+                currentPathLength = pathLength
+                closestParent = parent
+                
+            elseif currentPathLength + 6 < pathLength then                
+                break
+            end            
+        
+        end
+    
+    end
+    
+    return currentPath, closestParent
+
 end
 
-Shared.LinkClassToMap("AttachedCyst", AttachedCyst.kMapName, { })
+function GetCystParentAvailable(techId, origin, normal, commander)
+
+    PROFILE("Cyst:GetCystParentAvailable")
+
+    local points, parent = GetCystPoints(origin)
+    return parent ~= nil
+    
+end
+
+function GetCystPoints(origin)
+
+    PROFILE("Cyst:GetCystPoints")
+
+    local path, parent = FindPathToClosestParent(origin)
+
+    local splitPoints = {}
+    local normals = {}
+    
+    if parent then
+
+        table.insert(splitPoints, parent:GetOrigin())
+        
+        local fromPoint = Vector(parent:GetOrigin())
+        local currentDistance = 0
+        local maxDistance = kCystMaxParentRange - 1.5
+        local minDistance = kCystRedeployRange - 1
+
+        for i = 1, #path do
+        
+            if #splitPoints > 20 then
+                DebugPrint("split points exceeded 20")
+                return {}, nil
+            end
+        
+            local point = path[i]
+            currentDistance = currentDistance + (point - fromPoint):GetLength()       
+            
+            if i == #path then
+            
+                if currentDistance > minDistance then
+                
+                    local groundTrace = Shared.TraceRay(point + Vector(0, 0.25, 0), point + Vector(0, -5, 0), CollisionRep.Default, PhysicsMask.CystBuild, EntityFilterAllButIsa("TechPoint"))
+                    if groundTrace.fraction == 1 then                        
+                        return {}, nil                        
+                    end
+                    
+                    //if #GetEntitiesWithinRange("Cyst", groundTrace.endPoint, 2) == 0 then
+                    
+                        table.insert(splitPoints, groundTrace.endPoint)
+                        table.insert(normals, groundTrace.normal)
+                    
+                    //end
+                    
+                end
+            
+            elseif currentDistance > maxDistance then
+            
+                local groundTrace = Shared.TraceRay(path[i] + Vector(0, 0.25, 0), path[i] + Vector(0, -5, 0), CollisionRep.Default, PhysicsMask.CystBuild, EntityFilterAllButIsa("TechPoint"))
+                if groundTrace.fraction == 1 then                        
+                    return {}, nil                        
+                end
+                
+                //if #GetEntitiesWithinRange("Cyst", groundTrace.endPoint, 2) == 0 then
+            
+                    table.insert(splitPoints, groundTrace.endPoint)
+                    table.insert(normals, groundTrace.normal)
+                
+                //end
+                
+                currentDistance = (path[i] - point):GetLength()
+                
+            end
+            
+            fromPoint = point
+        
+        end
+    
+    end
+    
+    return splitPoints, parent, normals
+    
+
+end
+
+Shared.LinkClassToMap("Cyst", Cyst.kMapName, networkVars)

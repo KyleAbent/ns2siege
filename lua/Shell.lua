@@ -183,64 +183,122 @@ function Shell:OnConstructionComplete()
        commander:AddScore(5) 
        end
         self:AddTimedCallback(TimeUp, kLifeSpan + 0.5)  
-        self:SpawnandStealEggs()
-        self:AddTimedCallback(function()  self:SpawnandStealEggs() end, 5)
-        self:AddTimedCallback(function()  self:SpawnandStealEggs() end, 10)
-        self:AddTimedCallback(function()  self:SpawnandStealEggs() end, 15)
-        self:AddTimedCallback(function()  self:SpawnandStealEggs() end, 20)
-        self:AddTimedCallback(function()  self:SpawnandStealEggs() end, 25)
-        self:AddTimedCallback(function()  self:SpawnandStealEggs() end, 30)
+        self:GenerateRandomNumberofEggsNearbyDerpHead()
+        self:AddTimedCallback(function()  self:GenerateRandomNumberofEggsNearbyDerpHead() end, 5)
+        self:AddTimedCallback(function()  self:GenerateRandomNumberofEggsNearbyDerpHead() end, 10)
+        self:AddTimedCallback(function()  self:GenerateRandomNumberofEggsNearbyDerpHead() end, 15)
+        self:AddTimedCallback(function()  self:GenerateRandomNumberofEggsNearbyDerpHead() end, 20)
+        self:AddTimedCallback(function()  self:GenerateRandomNumberofEggsNearbyDerpHead() end, 25)
+        self:AddTimedCallback(function()  self:GenerateRandomNumberofEggsNearbyDerpHead() end, 30)
   end
-  function Shell:SpawnandStealEggs()
-          for _, hive in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
-              hive:PerformActivation(kTechId.ShiftHatch, nil, normal, commander)
-              break
-        end
-        local numberofeggsfaraway = {}
-                  for _, egg in ientitylist(Shared.GetEntitiesWithClassname("Egg")) do
-                   if self:GetDistance(egg) >= 7 then 
-                    table.insert(numberofeggsfaraway,egg)
-                   end
-              end
-        if #numberofeggsfaraway == 0 then return end
-        for i = 1, Clamp(#numberofeggsfaraway * 0.25, 1, 4) do
-        local egg = numberofeggsfaraway[i]
-        egg:SetOrigin(self:FindFreeSpace())
-        end
-
-  end
-      function Shell:FindFreeSpace()    
-        for index = 1, 100 do
-           local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
-           local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-           local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 7, EntityFilterAll())
-        
-           if spawnPoint ~= nil then
-             spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-           end
-        
-           local location = spawnPoint and GetLocationForPoint(spawnPoint)
-           local locationName = location and location:GetName() or ""
-           local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
-        
-           if spawnPoint ~= nil and sameLocation then --and GetIsPointOnInfestation(spawnPoint) then
-           return spawnPoint
-           end
-       end
-           Print("No valid spot found for egg beacon!")
-           return self:GetOrigin()
-    end
   function Shell:GetLocationName()
         local location = GetLocationForPoint(self:GetOrigin())
         local locationName = location and location:GetName() or ""
         return locationName
 end
-function Shell:GetLocationName()
-        local location = GetLocationForPoint(self:GetOrigin())
+function Shell:GenerateRandomNumberofEggsNearbyDerpHead()
+    self.shellSpawnPoints = { }
+    local minNeighbourDistance = .5
+    local maxEggSpawns = math.random(3,6)
+    local maxAttempts = maxEggSpawns * 10
+    for index = 1, maxAttempts do
+    
+        // Note: We use kTechId.Skulk here instead of kTechId.Egg because they do not share the same extents.
+        // The Skulk is a bit bigger so there are cases where it would find a location big enough for an Egg
+        // but too small for a Skulk and the Skulk would be stuck when spawned.
+        local extents = LookupTechData(kTechId.Skulk, kTechDataMaxExtents, nil)
+        local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 7, EntityFilterAll())
+        
+        if spawnPoint ~= nil then
+            spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+        end
+        
+        local location = spawnPoint and GetLocationForPoint(spawnPoint)
         local locationName = location and location:GetName() or ""
-        return locationName
-end
+        
+        local sameLocation = spawnPoint ~= nil and locationName == self:GetLocationName()
+        
+        if spawnPoint ~= nil and sameLocation then
+        
+            local tooCloseToNeighbor = false
+            for _, point in ipairs(self.shellSpawnPoints) do
+            
+                if (point - spawnPoint):GetLengthSquared() < (minNeighbourDistance * minNeighbourDistance) then
+                
+                    tooCloseToNeighbor = true
+                    break
+                    
+                end
+                
+            end
+            
+            if not tooCloseToNeighbor then
+              table.insert(self.shellSpawnPoints, spawnPoint)
+                if #self.shellSpawnPoints >= maxEggSpawns then
+                    break
+                end
 
+                
+            end
+            
+        end
+      self:ActuallySpawnEggs()   
+    end
+end
+function Shell:ActuallySpawnEggs()
+    if self.shellSpawnPoints == nil or #self.shellSpawnPoints == 0 then
+    
+        //Print("Can't spawn egg. No spawn points!")
+        return nil
+        
+    end
+
+       local eggCount = 0
+
+    for i = 1, #self.shellSpawnPoints do
+
+        local position = eggCount == 0 and table.random(self.shellSpawnPoints) or self.shellSpawnPoints[i]  
+
+        // Need to check if this spawn is valid for an Egg and for a Skulk because
+        // the Skulk spawns from the Egg.
+        local validForEgg = GetIsPlacementForTechId(position, true, kTechId.Egg)
+        local validForSkulk = GetIsPlacementForTechId(position, true, kTechId.Skulk)
+
+        // Prevent an Egg from spawning on top of a Resource Point.
+        local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0
+        
+        if validForEgg and validForSkulk and notNearResourcePoint then
+        
+            local egg = CreateEntity(Egg.kMapName, position, 2)
+            egg:AddTimedCallback(function()  DestroyEntity(egg) end, 120)
+            egg:SetHive(self)
+            
+
+            if egg ~= nil then
+            
+                // Randomize starting angles
+                local angles = self:GetAngles()
+                angles.yaw = math.random() * math.pi * 2
+                egg:SetAngles(angles)
+                
+                // To make sure physics model is updated without waiting a tick
+                egg:UpdatePhysicsModel()
+                
+                self.timeOfLastEgg = Shared.GetTime()
+                
+                return egg
+                
+            end
+            
+        end
+
+    
+    end
+    
+    return nil
+    
+end
 end //ofserver
 
 

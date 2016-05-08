@@ -91,6 +91,17 @@ local function GetBuildAttachRequirementsMet(techId, position, teamNumber, snapR
         legalBuild = LookupTechData(techId, kTechDataAttachOptional, false)
         
         attachEntity = GetNearestFreeAttachEntity(techId, position, snapRadius)
+        if attachEntity then
+        
+            if not attachRequiresPower or (attachEntity:GetIsBuilt() and attachEntity:GetIsPowered()) then
+            
+                legalBuild = true
+                
+                VectorCopy(attachEntity:GetOrigin(), legalPosition)
+                
+            end
+            
+        end
     
     end
     

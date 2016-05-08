@@ -2,7 +2,7 @@ kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored',  'Cannot
                            'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost',
                            'HiveConstructed', 'HiveUnderAttack', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack',
-                            'SideDoor', 'FrontDoor', 'SiegeDoor', 
+                            'SideDoor', 'FrontDoor', 'SiegeDoor', 'TeamsBalanced', 'TeamsUnbalanced', 
                            'SuddenDeath', 'ZedTimeBegin', 'ZedTimeEnd', 'Weapons1Researching', 'Weapons2Researching', 
                            'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', 'MainRoom', 
                            'SiegeTime', 'KingCystLocation', 'PhaseCannonLocation' })
@@ -65,7 +65,9 @@ kTeamMessages[kTeamMessageTypes.ZedTimeBegin] = { text = { [kMarineTeamType] = "
 
 kTeamMessages[kTeamMessageTypes.ZedTimeEnd] = { text = { [kMarineTeamType] = "Slow Motion Deactivated", [kAlienTeamType] = "Slow Motion Deactivated" } }
 
+kTeamMessages[kTeamMessageTypes.TeamsUnbalanced] = { text = { [kMarineTeamType] = "TEAMS_UNBALANCED", [kAlienTeamType] = "TEAMS_UNBALANCED" } }
 
+kTeamMessages[kTeamMessageTypes.TeamsBalanced] = { text = { [kMarineTeamType] = "TEAMS_BALANCED", [kAlienTeamType] = "TEAMS_BALANCED" } }
 
 kTeamMessages[kTeamMessageTypes.Weapons1Researching] = { text = { [kMarineTeamType] = "Weapons 1 Researching", [kAlienTeamType] = "nil" } }
 kTeamMessages[kTeamMessageTypes.Weapons2Researching] = { text = { [kMarineTeamType] = "Weapons 2 Researching", [kAlienTeamType] = "nil" } }

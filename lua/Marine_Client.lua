@@ -163,10 +163,7 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
             if not self:GetIsAlive() or not GetIsCloseToMenuStructure(self) then
                 self:CloseMenu()
             end
-        elseif self.creditMenu then
-              if not self:GetIsAlive()  then
-                self:CloseMenu()
-              end
+            
         end    
         
         if Player.screenEffects.disorient then
@@ -174,7 +171,7 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
         end
         
 
-        local blurEnabled = self.buyMenu ~= nil or self.creditMenu ~= nil
+        local blurEnabled = self.buyMenu ~= nil
         self:SetBlurEnabled(blurEnabled)
         
         // update spit hit effect
@@ -294,12 +291,7 @@ function Marine:OnUpdateRender()
     */
 
 end
-function Marine:UpdateTimer()
 
-GetGUIManager():DestroyGUIScriptSingle("GUIInsight_TopBar")
-GetGUIManager():CreateGUIScriptSingle("GUIInsight_TopBar")
-
-end
 function Marine:AddNotification(locationId, techId)
 
     local locationName = ""
@@ -361,37 +353,14 @@ function MarineUI_GetCurrentHostStructure()
     return nil    
 
 end
-function Marine:Buy()
 
-    // Don't allow display in the ready room, or as phantom
-    if self:GetIsLocalPlayer() then
-    
-        // The Embryo cannot use the buy menu in any case.
-        if self:GetTeamNumber() ~= 0  then
-        
-            if not self.creditMenu and not self.buyMenu then
-            
-                self.creditMenu = GetGUIManager():CreateGUIScript("GUIMarineCreditMenu")
-                MouseTracker_SetIsVisible(true, "ui/Cursor_MenuDefault.dds", true)
-                
-            else
-                self:CloseMenu()
-            end
-            
-        else
-            self:PlayEvolveErrorSound()
-        end
-        
-    end
-    
-end
 // Bring up buy menu
 function Marine:BuyMenu(structure)
     
     // Don't allow display in the ready room
     if self:GetTeamNumber() ~= 0 and Client.GetLocalPlayer() == self then
     
-        if not self.buyMenu and not self.creditMenu then
+        if not self.buyMenu then
         
             self.buyMenu = GetGUIManager():CreateGUIScript("GUIMarineBuyMenu")
             
@@ -486,13 +455,13 @@ function Marine:UpdateGhostModel()
     
     local weapon = self:GetActiveWeapon()
 
-    if weapon then
-        if weapon:isa("LayMines") or weapon:isa("LayStructures") then
-        self.currentTechId = weapon:GetDropStructureId()
+    if weapon and weapon:isa("LayMines") then
+    
+        self.currentTechId = kTechId.Mine
         self.ghostStructureCoords = weapon:GetGhostModelCoords()
         self.ghostStructureValid = weapon:GetIsPlacementValid()
         self.showGhostModel = weapon:GetShowGhostModel()
-        end
+    
     end
 
 end
