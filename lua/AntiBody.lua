@@ -39,6 +39,7 @@ Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/RolloutMixin.lua")
 Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
+Script.Load("lua/SupplyUserMixin.lua")
 
 class 'AntiBody' (ScriptActor)
 
@@ -130,7 +131,7 @@ AddMixinNetworkVars(WebableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
-
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 local function GetIsWeldedByOtherAntiBody(self, target)
 
@@ -195,6 +196,7 @@ function AntiBody:OnCreate()
     InitMixin(self, RolloutMixin)
     InitMixin(self, ResearchMixin)
     InitMixin(self, RecycleMixin)
+    InitMixin(self, SupplyUserMixin)
 
         
     if Server then
@@ -1151,7 +1153,7 @@ end
 function AntiBody:GetTechButtons(techId)
 
     local techButtons ={ kTechId.Move, kTechId.Stop, kTechId.Attack, kTechId.Welding,
-             kTechId.None, kTechId.None, kTechId.None, kTechId.Recycle }
+             kTechId.kTechId.AntiBodyEMP, kTechId.None, kTechId.None, kTechId.Recycle }
     return techButtons
 end
  function AntiBody:PerformActivation(techId, position, normal, commander)

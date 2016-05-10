@@ -29,6 +29,7 @@ ConstructMixin.networkVars =
     // Show different material when under construction
     underConstruction       = "boolean",
     mainbattle = "boolean",
+    insured = "boolean",
     
 }
 
@@ -76,6 +77,7 @@ function ConstructMixin:__initmixin()
     
     self.startsBuilt  = false
     self.mainbattle = false
+    self.insured = false
     
 end
 
@@ -192,7 +194,9 @@ function ConstructMixin:OnAdjustModelCoords(coords)
     return coords
     
 end
-
+    function ConstructMixin:GetIsInsured()
+           return self.insured 
+    end
 if Server then
 /*
     function ConstructMixin:TypesOfSelfInRoomNonCredit()
@@ -218,6 +222,21 @@ if Server then
        end
     end
     */
+    function ConstructMixin:PreOnKill(attacker, doer, point, direction)
+      if self:GetTeamNumber() == 1  then
+                  local gameRules = GetGamerules()
+              if gameRules then
+                if self.insured then
+                 gameRules:DelayedAllowance(self:GetOrigin(), 1, self:GetTechId(), self:GetMapName())
+                 end
+               end
+       end
+    end
+
+    function ConstructMixin:InsureThisBitch()
+            self.insured = true
+    end
+    
     function ConstructMixin:OnKill()
 
         if not self:GetIsBuilt() then

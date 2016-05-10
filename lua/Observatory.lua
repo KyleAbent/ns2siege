@@ -50,8 +50,7 @@ Observatory.kCommanderScanSound = PrecacheAsset("sound/NS2.fev/marine/commander/
 
 local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_marine")
 
-local kObservatoryTechButtons = { kTechId.Scan, kTechId.DistressBeacon, kTechId.Detector, kTechId.None,
-                                   kTechId.None, kTechId.AdvancedBeacon, kTechId.None, kTechId.None }
+
 
 Observatory.kDistressBeaconTime = kDistressBeaconTime
 Observatory.kDistressBeaconRange = kDistressBeaconRange
@@ -88,6 +87,7 @@ AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 function Observatory:OnCreate()
 
@@ -191,12 +191,17 @@ end
 
 function Observatory:GetTechButtons(techId)
 
-    if techId == kTechId.RootMenu then
-        return kObservatoryTechButtons
+    local techButtons = nil
+
+    techButtons = { kTechId.Scan, kTechId.DistressBeacon, kTechId.Detector, kTechId.None, 
+                    kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    
+    
+    if not self:GetIsInsured() then
+    techButtons[5] = kTechId.ObsInsure
     end
     
-    return nil
-    
+    return techButtons  
 end
 
 function Observatory:GetDetectionRange()
@@ -771,7 +776,9 @@ if Server then
 end
 
 if Server then
-
+function Observatory:OnResearchComplete(researchId)
+   self:InsureThisBitch()
+   end
     function Observatory:OnConstructionComplete()
 
         if self.phaseTechResearched then

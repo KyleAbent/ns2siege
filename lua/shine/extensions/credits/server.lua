@@ -20,6 +20,9 @@ Shine.Hook.SetupClassHook( "NS2Gamerules", "ResetGame", "OnReset", "PassivePost"
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyMist", "BecauseFuckSpammingCommanders", "Replace" )
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyMed", "BuyMed", "Replace" )
 Shine.Hook.SetupClassHook( "Player", "HookWithShineToBuyAmmo", "BuyAmmo", "Replace" )
+Shine.Hook.SetupClassHook( "Alien", "TunnelFailed", "FailMessage", "Replace" )
+Shine.Hook.SetupClassHook( "Alien", "TunnelGood", "GoodMessage", "Replace" )
+
 
 
 
@@ -43,6 +46,20 @@ self.Refunded = false
 self.PlayerSpentAmount = {}
 
 return true
+end
+
+function Plugin:TunnelFailed(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+self:NotifySiege( Client, "Tunnel entrance failed to spawn. Try creating another. An entrance will spawn in the hive room location on infestation if theres room.", true)
+end
+
+function Plugin:GoodMessage(player)
+ local client = player:GetClient()
+local controlling = client:GetControllingPlayer()
+local Client = controlling:GetClient()
+self:NotifySiege( Client, "Tunnel Entrnace placed at Hive.", true)
 end
 
 function Plugin:GenereateTotalCreditAmount()
@@ -634,7 +651,7 @@ self.CreditUsers[ Client ] = self:GetPlayerCreditsInfo(Client) - CreditCost
 //self:NotifyCredits( nil, "%s purchased a %s with %s credit(s)", true, Player:GetName(), String, CreditCost)
 local mac = CreateEntity(MAC.kMapName, Player:GetOrigin(), Player:GetTeamNumber()) 
 mac:SetOwner(Player)
-mac:SetIsCreditStructure()
+--mac:SetIsCreditStructure()
 if Player:isa("Exo") then
 mac:ProcessFollowAndWeldOrder(Shared.GetTime(), Player, Player:GetOrigin())    
 end

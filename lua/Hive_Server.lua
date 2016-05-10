@@ -676,7 +676,12 @@ function Hive:OnOverrideSpawnInfestation(infestation)
     infestation:SetMaxRadius(kHiveInfestationRadius)
     
 end
-
+function Hive:GetDefenseEntsInRange()
+ local shifts = GetEntitiesForTeamWithinRange("Shift", 2, self:GetOrigin(), 24)
+ local crags = GetEntitiesForTeamWithinRange("Crag", 2, self:GetOrigin(), 24)
+ local shades = GetEntitiesForTeamWithinRange("Shade", 2, self:GetOrigin(), 24)
+return shifts, crags, shades
+end
 function Hive:GetDamagedAlertId()
 
     // Trigger "hive dying" on less than 40% health, otherwise trigger "hive under attack" alert every so often
@@ -803,9 +808,9 @@ function Hive:OnConstructionComplete()
          team:UpdateBioMassLevel()
          end
          
-    if not GetGamerules():GetFrontDoorsOpen() then
-     self:AutoUpgrade()
-    end
+   -- if not GetGamerules():GetFrontDoorsOpen() then
+   --  self:AutoUpgrade()
+   -- end
     
     // Play special tech point animation at same time so it appears that we bash through it.
     local attachedTechPoint = self:GetAttached()

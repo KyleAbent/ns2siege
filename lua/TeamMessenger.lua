@@ -5,7 +5,7 @@ kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored',  'Cannot
                             'SideDoor', 'FrontDoor', 'SiegeDoor', 'TeamsBalanced', 'TeamsUnbalanced', 
                            'SuddenDeath', 'ZedTimeBegin', 'ZedTimeEnd', 'Weapons1Researching', 'Weapons2Researching', 
                            'Weapons3Researching', 'Armor1Researching',   'Armor2Researching', 'Armor3Researching', 'MainRoom', 
-                           'SiegeTime', 'KingCystLocation', 'PhaseCannonLocation' })
+                           'SiegeTime', 'KingCystLocation', 'PhaseCannonLocation', 'Beacon', })
 
 local kTeamMessages = { }
 
@@ -20,7 +20,9 @@ local researchStringGen = function(researchId, messageString) return string.form
 kTeamMessages[kTeamMessageTypes.KingCystLocation] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "King Cyst Grown in %s") end } }
 
 kTeamMessages[kTeamMessageTypes.PhaseCannonLocation] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "Phase Cannons activated in %s") end } }
-                                                       
+
+kTeamMessages[kTeamMessageTypes.Beacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "BEACON_TO") end } }
+                                              
 kTeamMessages[kTeamMessageTypes.MainRoom] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "%s is Main Room") end,
                                                        [kAlienTeamType] = function(data) return locationStringGen(data, "%s is Main Room") end } }
                                                        

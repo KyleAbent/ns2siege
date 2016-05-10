@@ -126,6 +126,7 @@ AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 function Sentry:OnCreate()
 
@@ -879,8 +880,17 @@ function Sentry:GetTechButtons(techId)
     techButtons[1] = kTechId.LevelSentry
     end
     
+    if not self:GetIsInsured() then
+    techButtons[2] = kTechId.SentryInsure
+    end
+    
     return techButtons
     
+end
+if Server then
+function Sentry:OnResearchComplete(researchId)
+   self:InsureThisBitch()
+   end
 end
 function Sentry:OverrideHintString( hintString, forEntity )
     

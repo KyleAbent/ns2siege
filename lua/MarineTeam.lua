@@ -473,6 +473,16 @@ function MarineTeam:InitTechTree()
     self.techTree:AddResearchNode(kTechId.AdvancedBeaconTech,                    kTechId.None,        kTechId.None)
     self.techTree:AddActivation(kTechId.AdvancedBeacon,           kTechId.None)  
     
+    
+        self.techTree:AddUpgradeNode(kTechId.SentryInsure,                    kTechId.None,        kTechId.None)
+        self.techTree:AddUpgradeNode(kTechId.ObsInsure,                    kTechId.None,        kTechId.None)
+        self.techTree:AddUpgradeNode(kTechId.PGInsure,                    kTechId.None,        kTechId.None)
+        self.techTree:AddUpgradeNode(kTechId.ProtoInsure,                    kTechId.None,        kTechId.None)
+        self.techTree:AddUpgradeNode(kTechId.IPInsure,                    kTechId.None,        kTechId.None)
+        self.techTree:AddUpgradeNode(kTechId.ArmsLabInsure,                    kTechId.None,        kTechId.None)
+        self.techTree:AddUpgradeNode(kTechId.RoboInsure,                    kTechId.None,        kTechId.None)
+        
+        
     // Door actions
     self.techTree:AddBuildNode(kTechId.Door, kTechId.None, kTechId.None)
     self.techTree:AddActivation(kTechId.DoorOpen)

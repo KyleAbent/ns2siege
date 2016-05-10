@@ -61,7 +61,6 @@ local networkVars = {
     destLocationId = "entityid",
     //otherSideInfested = "boolean"
     movedbycommander = "boolean",
-    isexit = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -85,6 +84,48 @@ AddMixinNetworkVars(TeleportMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(AlienStructureMoveMixin, networkVars)
 
+local function UpdateInfestationStatus(self)
+
+    local wasOnInfestation = self.onNormalInfestation
+    self.onNormalInfestation = false
+    
+    local origin = self:GetOrigin()
+    // use hives and cysts as "normal" infestation
+    local infestationEnts = GetEntitiesForTeamWithinRange("Hive", self:GetTeamNumber(), origin, 25)
+    table.copy(GetEntitiesForTeamWithinRange("Cyst", self:GetTeamNumber(), origin, 25), infestationEnts, true)
+    
+    // update own infestation status
+    for i = 1, #infestationEnts do
+    
+        if infestationEnts[i]:GetIsPointOnInfestation(origin) then
+            self.onNormalInfestation = true
+            break
+        end
+    
+    end
+    
+    local otherSideInfested = false
+    local tunnel = self:GetTunnelEntity()
+    
+    if tunnel then
+    
+        local exitA = tunnel:GetExitA()
+        local exitB = tunnel:GetExitB()
+        local otherSide = (exitA and exitA ~= self) and exitA or exitB
+        otherSideInfested = (otherSide and otherSide.onNormalInfestation) and true or false
+        
+    end
+        
+    if otherSideInfested ~= self.otherSideInfested then
+    
+        self.otherSideInfested = otherSideInfested
+        self:SetDesiredInfestationRadius(self:GetInfestationMaxRadius())
+    
+    end
+
+    return true
+
+end
 
 function TunnelEntrance:OnCreate()
 
@@ -134,7 +175,6 @@ function TunnelEntrance:OnCreate()
     self.destLocationId = Entity.invalidId
     self.movedbycommander = false
     //self.otherSideInfested = false
-    self.isexit = false
 end
 
 function TunnelEntrance:OnInitialized()
@@ -153,6 +193,8 @@ function TunnelEntrance:OnInitialized()
             InitMixin(self, MapBlipMixin)
         end
         
+        self.onNormalInfestation = false
+        //self:AddTimedCallback(UpdateInfestationStatus, 1)
         
     elseif Client then
     
@@ -238,7 +280,7 @@ function TunnelEntrance:GetCanAutoBuild()
 end
 
 function TunnelEntrance:GetReceivesStructuralDamage()
-    return false
+    return true
 end
 
 function TunnelEntrance:GetIsWallWalkingAllowed()
@@ -276,6 +318,7 @@ function TunnelEntrance:OnOverrideOrder(order)
              self:SetInfestationRadius(0)
     elseif order:GetType() == kTechId.Stop then
              order:SetType(kTechId.Stop)
+             //UpdateInfestationStatus(self)
            //  InitMixin(self, InfestationMixin)
              self:SetInfestationRadius(0)
            //  self.movedbycommander = false
@@ -311,7 +354,7 @@ if Server then
            local locationName = location and location:GetName() or ""
            local sameLocation = spawnPoint ~= nil and locationName == hive:GetLocationName()
         
-           if spawnPoint ~= nil and sameLocation then --and GetIsPointOnInfestation(spawnPoint) then
+           if spawnPoint ~= nil and sameLocation and GetIsPointOnInfestation(spawnPoint) then
            return spawnPoint
            end
        end
@@ -342,7 +385,6 @@ end
                     tunnelent:SetOwner(self:GetOwner())
                     tunnelent:SetConstructionComplete()
                     self:GetOwner():TunnelGood(self:GetOwner())
-                    self.isexit = true
                  return tunnelent
                end
            self:GetOwner():TunnelFailed(self:GetOwner())
@@ -351,9 +393,7 @@ end
     
     end
     
-    function TunnelEntrance:GetIsExit()
-    return self.isexit
-    end
+    
     function TunnelEntrance:OnTeleportEnd()
     
         local tunnel = Shared.GetEntity(self.tunnelId)
@@ -397,14 +437,14 @@ end
         self.connected = tunnel ~= nil and not tunnel:GetIsDeadEnd()
         self.beingUsed = self.timeLastInteraction + 0.1 > Shared.GetTime()  
         self.destLocationId = ComputeDestinationLocationId(self)
-     /*   
+        
         if not self.timeLastMoveUpdateCheck or self.timeLastMoveUpdateCheck + 15 < Shared.GetTime() then 
             if self:CheckSpaceAboveForJump() then 
             self:MoveToUnstuck()
             end
             self.timeLastMoveUpdateCheck = Shared.GetTime()
         end
-       */ 
+        
         
         local destructionAllowedTable = { allowed = true }
         if self.GetDestructionAllowed then
@@ -518,7 +558,28 @@ if Server then
         self:TriggerEffects("tunnel_exit_3D")
     end
 
-end 
+end   
+function TunnelEntrance:CheckSpaceAboveForJump()
+
+    local startPoint = self:GetOrigin() 
+    local endPoint = startPoint + Vector(1.2, 1.2, 1.2)
+    
+    return GetWallBetween(startPoint, endPoint, self)
+    
+end
+function TunnelEntrance:MoveToUnstuck()
+        local extents = LookupTechData(kTechId.GorgeTunnel, kTechDataMaxExtents, nil)
+        local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
+        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 7, EntityFilterAll())
+        
+        if spawnPoint ~= nil then
+            spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
+        end
+        
+        if spawnPoint then
+        self:SetOrigin(spawnPoint)
+        end
+end
 if Server then
               function TunnelEntrance:FindFreeSpawn() 
          if not self:CheckSpaceAboveForJump() then Print("Valid spot - not finding free spawn")  return self:GetOrigin() + Vector(0, 0.2, 0) end
@@ -553,19 +614,6 @@ function TunnelEntrance:CheckSpaceAboveForJump()
         end
     return GetWallBetween(startPoint, endPoint, self)
     
-end
-function TunnelEntrance:MoveToUnstuck()
-        local extents = LookupTechData(kTechId.GorgeTunnel, kTechDataMaxExtents, nil)
-        local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), .5, 7, EntityFilterAll())
-        
-        if spawnPoint ~= nil then
-            spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-        end
-        
-        if spawnPoint then
-        self:SetOrigin(spawnPoint)
-        end
 end
 function TunnelEntrance:OnUpdateAnimationInput(modelMixin)
 

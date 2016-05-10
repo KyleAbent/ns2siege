@@ -593,6 +593,7 @@ function Marine:DropAllWeapons()
     end
     
 end
+/*
 function Marine:PreOnKill(attacker, doer, point, direction)
 if self.modelsize ~= 1 then self.modelsize = 1 end
 
@@ -604,6 +605,7 @@ if self.modelsize ~= 1 then self.modelsize = 1 end
            end
     end
 end
+*/
 function Marine:OnKill(attacker, doer, point, direction)
     
     local lastWeaponList = self:GetHUDOrderedWeaponList()

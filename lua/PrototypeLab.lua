@@ -187,10 +187,23 @@ PrototypeLab.kExoTime = math.random(kExoSuitMinuteUnlockTimeMin, kExoSuitMinuteU
 Print("JP: %s, Exo: %s", PrototypeLab.kJetpackTime, PrototypeLab.kExoTime)
 end
 function PrototypeLab:GetTechButtons(techId)
-    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
-             kTechId.None, kTechId.None, kTechId.None, kTechId.None } // kTechId.DualRailgunTech
-end
+    local techButtons = nil
 
+    techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
+                    kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    
+    
+    if not self:GetIsInsured() then
+    techButtons[1] = kTechId.ProtoInsure
+    end
+    return techButtons 
+    
+end
+if Server then
+function PhaseGate:OnResearchComplete(researchId)
+   self:InsureThisBitch()
+   end
+end
 function PrototypeLab:GetRequiresPower()
     return true
 end

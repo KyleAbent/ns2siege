@@ -577,6 +577,7 @@ if Server then
             end
             return false
 end
+  /*
     function PowerPoint:CystBrothersActivate()
        local location = GetLocationForPoint(self:GetOrigin())
         if location then
@@ -585,6 +586,7 @@ end
        return self:GetIsDisabled() or not self:GetIsBuilt() and not self:GetIsInSiegeRoom()
     
     end
+    */
     function PowerPoint:OnConstructionComplete()
         self:StopDamagedSound()
         
@@ -805,12 +807,13 @@ end
         self.timeOfDestruction = Shared.GetTime()
       // self:UpdateMiniMap()
         self:AddTimedCallback(PowerPoint.UpdateCountKill, math.random(4,8)) 
-        self:AddTimedCallback(PowerPoint.CystBrothersActivate, 6)
-    end
+        --self:AddTimedCallback(PowerPoint.CystBrothersActivate, 6)
+    end 
+       /*
             function PowerPoint:ActivateCystTimer()
                self:AddTimedCallback(PowerPoint.CystBrothersActivate, 6)
                end
-
+         */
         function PowerPoint:UpdateMiniMap()
     
 

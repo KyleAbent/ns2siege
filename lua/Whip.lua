@@ -75,6 +75,7 @@ AddMixinNetworkVars(IdleMixin, networkVars)
 AddMixinNetworkVars(DoorMixin, networkVars)
 AddMixinNetworkVars(DamageMixin, networkVars)
 AddMixinNetworkVars(AlienStructureMoveMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 //AddMixinNetworkVars(ResearchMixin, networkVars)
 
 

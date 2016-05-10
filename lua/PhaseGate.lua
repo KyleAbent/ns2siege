@@ -146,6 +146,7 @@ AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 function PhaseGate:OnCreate()
 
@@ -239,9 +240,24 @@ function PhaseGate:OnStun()
 end
 function PhaseGate:GetTechButtons(techId)
 
-    return { kTechId.PGchannelOne, kTechId.PGchannelTwo, kTechId.PGchannelThree, kTechId.None, 
-             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+
+    local techButtons = nil
+
+    techButtons = { kTechId.PGchannelOne, kTechId.PGchannelTwo, kTechId.Detector, kTechId.None, 
+                    kTechId.None, kTechId.None, kTechId.None, kTechId.None }
     
+    
+    if not self:GetIsInsured() then
+    techButtons[5] = kTechId.PGInsure
+    end
+    
+    return techButtons  
+    
+end
+if Server then
+function PhaseGate:OnResearchComplete(researchId)
+   self:InsureThisBitch()
+   end
 end
  function PhaseGate:PerformActivation(techId, position, normal, commander)
  

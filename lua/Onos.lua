@@ -705,7 +705,7 @@ function Onos:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoin
 local damage = 1
 
     if doer:isa("Rifle") and GetHasTech(attacker, kTechId.HeavyRifleTech) then
-    damage = damage * math.random(kOnifleDamageBonusMin, kOnifleDamageBonusMax)
+    damage = damage * math.random(1.15, 1.20)
   //  elseif doer:isa("MiniGun") then
   //  damage = damage * 1.07
     end

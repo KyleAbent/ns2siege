@@ -217,6 +217,20 @@ kTechIdToMaterialOffset[kTechId.EvolveEcho] = 59
 
 kTechIdToMaterialOffset[kTechId.PowerSurge] = 119
 
+kTechIdToMaterialOffset[kTechId.SentryInsure] = 119
+kTechIdToMaterialOffset[kTechId.ObsInsure] = 119
+kTechIdToMaterialOffset[kTechId.PGInsure] = 119
+kTechIdToMaterialOffset[kTechId.ProtoInsure] = 119
+kTechIdToMaterialOffset[kTechId.IPInsure] = 119
+kTechIdToMaterialOffset[kTechId.ArmsLabInsure] = 119
+kTechIdToMaterialOffset[kTechId.SentryInsure] = 119
+kTechIdToMaterialOffset[kTechId.ArmoryInsure] = 119
+kTechIdToMaterialOffset[kTechId.RoboInsure] = 119
+
+
+
+
+
 kTechIdToMaterialOffset[kTechId.EvolveBombard] = 60    
 kTechIdToMaterialOffset[kTechId.UpgradeCarapaceShell] = 61
 kTechIdToMaterialOffset[kTechId.CarapaceShell] = 61

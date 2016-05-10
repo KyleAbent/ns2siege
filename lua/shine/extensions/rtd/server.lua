@@ -261,7 +261,7 @@ if MarineorJetpackMarineorExoRoll == 2 then
       //end// end of player exo
 end //end of rol 2  
       if MarineorJetpackMarineorExoRoll == 3 then
-      local EffectsRoll = math.random(1,16)
+      local EffectsRoll = math.random(1,14)
             //self:NotifyMarine( nil, "%s Rolled a 4", true, Player:GetName())
             if EffectsRoll == 1 and Player:isa("Exo") or not Player:GetIsOnGround() then self:RollPlayer(Player) return end //self:NotifyMarine( nil, "%s Not qualified for roll 4. Re-rolling", true, Player:GetName()) self:RollPlayer(Player) return end
             if EffectsRoll == 1 and not Player:isa("Exo") and Player:GetIsOnGround() and not Player:GetIsStunned() then
@@ -662,7 +662,7 @@ end//Alien roll 1
       end//End of alien roll 3
       */
      if AlienRoll == 2 then 
-      local EffectsRoll = math.random(1,19)
+      local EffectsRoll = math.random(1,17)
       if EffectsRoll == 1 then 
       self:AddDelayToPlayer(Player)   
       local  kEnzymeTimer = math.random(15,60)                                

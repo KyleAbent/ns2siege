@@ -476,22 +476,24 @@ function Marine:GetSlowOnLand()
     return true
 end
 function Marine:GetArmorAmount(armorLevels)
-
+    local heavyarmor = self.heavyarmor
+    local bonus = 30
     if not armorLevels then
     
         armorLevels = 0
     
         if GetHasTech(self, kTechId.Armor3, true) then
             armorLevels = 3
+            bonus = 90
         elseif GetHasTech(self, kTechId.Armor2, true) then
-            armorLevels = 2
+            bonus = 60
         elseif GetHasTech(self, kTechId.Armor1, true) then
-            armorLevels = 1
+            bonus = 30
         end
     
     end
     
-    return Marine.kBaseArmor + armorLevels * Marine.kArmorPerUpgradeLevel
+    return (Marine.kBaseArmor + armorLevels * Marine.kArmorPerUpgradeLevel) + ConditionalValue(heavyarmor, bonus, 0)
     
 end
 function Marine:GetHasHMG()

@@ -68,8 +68,9 @@ function TeleportMixin:GetTeleportSinkIn()
     
 end   
 function TeleportMixin:GetEligableForBeacon(who)
-local boolean = self:GetIsBuilt() and self:GetDistance(who) >= 2  and not self:GetHasOrder() 
-return Shared.GetTime() > self.lastbeacontime  + kSBCooldown and boolean and not (self:isa("Crag") and self.siegewall )
+--local boolean = self:GetIsBuilt() and self:GetDistance(who) >= 2  -- and not self:GetHasOrder() 
+ --Print("boolean is %s", boolean)
+return Shared.GetTime() > self.lastbeacontime  + kSBCooldown --and boolean and not (self:isa("Crag") and self.siegewall )
 end
 function TeleportMixin:GetIsTeleporting()
     return self.isTeleporting

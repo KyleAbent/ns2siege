@@ -1874,17 +1874,17 @@ function NS2Gamerules:CollectResources()
         
         self.team1:AddTeamResources(kTeamResourcePerTick  * extractors)
         self.team2:AddTeamResources(kTeamResourcePerTick  * harvesters)
-        --self:AutoBuildResTowers()
+        self:AutoBuildResTowers()
            return true
 end
-/*
+
 function NS2Gamerules:AutoBuildResTowers()
-//if self.doorsopened == true then return end
+if self.doorsopened == true then return end
   for _, respoint in ientitylist(Shared.GetEntitiesWithClassname("ResourcePoint")) do
          respoint:AutoDrop()
-    end//
+    end
 end
-*/
+
     function NS2Gamerules:LoadValues(value, built, killed, who)
        local amount = math.abs(value)
        
@@ -2076,12 +2076,12 @@ end
      for i = 1, allowance do      
      local cost = LookupTechData(techid, kTechDataCostKey)
      
-      if self.team1:GetTeamResources() >= cost then
+     -- if self.team1:GetTeamResources() >= cost then
               local dropship = CreateEntity(Dropship.kMapName, self:FindFreeDropShipSpace(origin), 1)  
               dropship:SetTechId(techid)
               dropship:SetMapName(mapname)
-              self.team1:SetTeamResources(self.team1:GetTeamResources()  - cost)
-       end
+             -- self.team1:SetTeamResources(self.team1:GetTeamResources()  - cost)
+      -- end
      end
     end
     function NS2Gamerules:FindCustomFreeSpace(who, min, max)
@@ -2246,7 +2246,7 @@ function NS2Gamerules:AutoDrop(respoint)
                success = respoint:SpawnResourceTowerForTeamModified(2, kTechId.Harvester)
                      if success ~= false then 
                      local amount = not self.doorsopened and 4 or 8
-                     self.team2:SetTeamResources(self.team2:GetTeamResources()  - amount)
+                     --self.team2:SetTeamResources(self.team2:GetTeamResources()  - amount)
                      self.lastaliencreatedentity = Shared.GetTime() 
                      end
                end
@@ -2365,6 +2365,7 @@ function NS2Gamerules:OpenSideDoors()
                 sidedoor.cleaning = false
                 end
 end
+/*
 function NS2Gamerules:SwitchShadesToSiegeMode()
 
           for index, Shade in ipairs(GetEntitiesForTeam("Shade", 2)) do
@@ -2385,6 +2386,7 @@ function NS2Gamerules:SwitchCragsToSiegeMode()
           end
                return self.issuddendeath == false
 end
+*/
 function NS2Gamerules:GetSiegePowerPoint()
 local powernode = nil
              for index, powerpoint in ipairs(GetEntitiesForTeam("PowerPoint", 1)) do
@@ -2544,8 +2546,17 @@ function NS2Gamerules:OpenSiegeDoors()
                  SendTeamMessage(self.team1, kTeamMessageTypes.SiegeDoor)
                  SendTeamMessage(self.team2, kTeamMessageTypes.SiegeDoor)
                
+                /*
+               self:AddTimedCallback(NS2Gamerules.SwitchShadesToSiegeMode, kShadeInkCooldown)
+               self:AddTimedCallback(NS2Gamerules.SwitchCragsToSiegeMode, kHealWaveCooldown)
+               self:AddTimedCallback(NS2Gamerules.SwitchObservatoryToSiegeMode, kSiegeObsAutoScanCooldown)
+                 */
+                 
+                 
            --    self:AddTimedCallback(NS2Gamerules.DropshipArcs, 16)
-               self:AddTimedCallback(NS2Gamerules.MaintainHiveDefense, 8)
+             --  self:AddTimedCallback(NS2Gamerules.MaintainHiveDefense, 8)
+             
+             
 
                 
                for index, siegedoor in ientitylist(Shared.GetEntitiesWithClassname("SiegeDoor")) do
@@ -2878,6 +2889,7 @@ function NS2Gamerules:GetCanSpawnMarineEntity(trescount, timeywimey, isincombat)
               return canafford
          end
 end
+/*
 function NS2Gamerules:SpawnCystsAtLocation(location, powerpoint)
    if self:GetCanSpawnAlienEntity(kCystSpawnCost, math.random(4,8)) then
             local extents = (location:GetOrigin().x + location:GetOrigin().y + location:GetOrigin().z) - (location.scale.x + location.scale.y + location.scale.z)
@@ -2909,6 +2921,7 @@ function NS2Gamerules:SpawnCystsAtLocation(location, powerpoint)
    end
 
 end
+*/
 function NS2Gamerules:SendZedTimeActivationMessage()
                  self.iszedtime = true
                  self:AddTimedCallback(NS2Gamerules.ToggleMarineZedTime, 1)

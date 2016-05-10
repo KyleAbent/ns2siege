@@ -1,7 +1,21 @@
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Crag.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Alien structure that gives the commander defense and protection abilities.
+--
+-- Passive ability - heals nearby players and structures
+-- Triggered ability - emit defensive umbra (8 seconds)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+--Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -26,6 +40,7 @@ Script.Load("lua/TargetCacheMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/MaturityMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
@@ -33,6 +48,7 @@ Script.Load("lua/CommAbilities/Alien/CragUmbra.lua")
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/RepositioningMixin.lua")
 Script.Load("lua/SupplyUserMixin.lua")
+Script.Load("lua/BiomassMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
@@ -44,7 +60,7 @@ Crag.kModelName = PrecacheAsset("models/alien/crag/crag.model")
 
 Crag.kAnimationGraph = PrecacheAsset("models/alien/crag/crag.animation_graph")
 
-// Same as NS1
+-- Same as NS1
 Crag.kHealRadius = 14
 Crag.kHealAmount = 10
 Crag.kHealWaveAmount = 50
@@ -60,18 +76,13 @@ Crag.kMinHeal = 10
 Crag.kMaxHeal = 60
 Crag.kHealWaveMultiplier = 1.3
 
-
-//Crag.ScaleSize = 2
-
 local networkVars =
 {
-    // For client animations
+    -- For client animations
     healingActive = "boolean",
     healWaveActive = "boolean",
-    moving = "boolean",
-    lasthealwavetrigger = "time",
-     cystid = "entityid",
-     siegewall = "boolean", 
+    
+    moving = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -93,10 +104,12 @@ AddMixinNetworkVars(TeleportMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(FireMixin, networkVars)
+AddMixinNetworkVars(MaturityMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 function Crag:OnCreate()
 
@@ -110,6 +123,7 @@ function Crag:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    --InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
@@ -123,14 +137,17 @@ function Crag:OnCreate()
     InitMixin(self, TeleportMixin)    
     InitMixin(self, UmbraMixin)
     InitMixin(self, DissolveMixin)
+    InitMixin(self, MaturityMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, PathingMixin)
+    InitMixin(self, BiomassMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     
     self.healingActive = false
     self.healWaveActive = false
     
     self:SetUpdates(true)
+    
     InitMixin(self, FireMixin)
     
     if Server then
@@ -142,9 +159,7 @@ function Crag:OnCreate()
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
-    self.lasthealwavetrigger = 0
-    self.cystid =  Entity.invalidI
-    self.siegewall = false
+    
 end
 
 function Crag:OnInitialized()
@@ -159,9 +174,10 @@ function Crag:OnInitialized()
         InitMixin(self, SleeperMixin)
         InitMixin(self, RepositioningMixin)
         InitMixin(self, SupplyUserMixin)
-        // TODO: USE TRIGGERS, see shade
+        
+        -- TODO: USE TRIGGERS, see shade
 
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
@@ -181,83 +197,54 @@ function Crag:PreventTurning()
     return true
 end
 
+function Crag:GetBioMassLevel()
+    return kCragBiomass
+end
+
 function Crag:GetCanReposition()
     return true
 end
 
 function Crag:OverrideRepositioningSpeed()
     return kAlienStructureMoveSpeed * 2.5
-end  
-function Crag:GetIsFlameAble()
-    return true
 end
+
+function Crag:GetMaturityRate()
+    return kCragMaturationTime
+end
+
+function Crag:GetMatureMaxHealth()
+    return kMatureCragHealth
+end
+
+function Crag:GetMatureMaxArmor()
+    return kMatureCragArmor
+end    
+
 function Crag:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
+
 function Crag:GetCanSleep()
     return not self.healingActive
 end
-function Crag:GetIsOccupying()
-    local mate = Shared.GetEntity(self.cystid)
-    return not mate
-end
-function Crag:GetCanOccupy(cyst)
-    return true --not self:GetIsOccupying() or GetLocationForPoint(self:GetOrigin()) ~= GetLocationForPoint(cyst:GetOrigin())
-end
-function Crag:SetIsOccupying(who, LosAngelesCityHall)
 
-   local cyst = Shared.GetEntity(self.cystid)
-   
-      if cyst then
-      
-         if LosAngelesCityHall == false then
-            cyst:SetOccupied(self, false)
-            self.cystid =  Entity.invalidI
-          elseif LosAngelesCityHall == true then
-             cyst:SetOccupied(self, false)
-             self.cystid = who:GetId()
-          end
-          
-    elseif not cyst then
-      if not who:isa("Cyst") then return end
-         if LosAngelesCityHall == true then
-          self.cystid = who:GetId()
-           end
-   end
-   
-end
 local function GetHealTargets(self)
 
     local targets = {}
     
-    // priority on players
+    -- priority on players
     for _, player in ipairs(GetEntitiesForTeamWithinRange("Player", self:GetTeamNumber(), self:GetOrigin(), Crag.kHealRadius)) do
     
-        if player:GetIsAlive() and not player:isa("Commander") then
+        if player:GetIsAlive() then
             table.insert(targets, player)
         end
         
     end
-    
-   if self.siegewall then 
-    
-       local siegeroom = self:GetSiegeRoomLocation()
-       local entities = siegeroom:GetEntitiesInTrigger()
-       if #entities ~= 0 then  
-       for i = 1, #entities do
-        local healable = entities[i]
-        if healable:isa("Player") and healable:isa("Alien") then
-            table.insertunique(targets, healable)
-        end
-       end
-       end
-    end 
-
-        
 
     for _, healable in ipairs(GetEntitiesWithMixinForTeamWithinRange("Live", self:GetTeamNumber(), self:GetOrigin(), Crag.kHealRadius)) do
         
-        if healable:GetIsAlive() and not healable:isa("Player") and not healable:isa("Commander") then
+        if healable:GetIsAlive() then
             table.insertunique(targets, healable)
         end
         
@@ -266,17 +253,7 @@ local function GetHealTargets(self)
     return targets
 
 end
-function Crag:GetSiegeRoomLocation()
 
-            for index, location in ientitylist(Shared.GetEntitiesWithClassname("Location")) do
-              if  string.find(location.name, "siege") or string.find(location.name, "Siege") and not
-                string.find(location.name, "Hall") and not string.find(location.name, "hall") then 
-                  return location
-                end 
-              end
-                
-                
-end
 function Crag:PerformHealing()
 
     PROFILE("Crag:PerformHealing")
@@ -300,6 +277,11 @@ function Crag:PerformHealing()
     end
     
 end
+function Crag:IsInRangeOfHive()
+      local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)
+   if #hives >=1 then return true end
+   return false
+end
 function Crag:GetCragsInRange()
       local crag = GetEntitiesWithinRange("Crag", self:GetOrigin(), Crag.kHealRadius)
            return Clamp(#crag, 0, self:GetCragStackLevel())
@@ -309,187 +291,56 @@ function Crag:GetCragStackLevel()
            local bioMass = (teamInfo and teamInfo.GetBioMassLevel) and teamInfo:GetBioMassLevel() or 0
            return math.round(bioMass / 4, 1, 3)
 end
+  function Crag:GetUnitNameOverride(viewer)
+    local unitName = GetDisplayName(self)   
+   -- local NowToHeal = kHealWaveCooldown - (Shared.GetTime() - self.lasthealwavetrigger)
+    -- local InkLength =  math.ceil( Shared.GetTime() + NowToHeal - Shared.GetTime() )
+    -- local time = InkLength
+    unitName = string.format(Locale.ResolveString("Crag (%s Stacking)"), self:GetCragsInRange() )
+return unitName
+end
     function Crag:OnConstructionComplete()    
       local commander = self:GetTeam():GetCommander()
        if commander ~= nil then
        commander:AddScore(1) 
        end
     end
-function Crag:GetArcsInRange()
-      local arc= GetEntitiesWithinRange("ARC", self:GetOrigin(), Crag.kHealRadius)
-           return Clamp(#arc, 0, 4)
-end
-
-function Crag:PreOnKill(attacker, doer, point, direction)
-           self:SetIsVisible(false)
-                  local cyst = Shared.GetEntity(self.cystid)
-                  if cyst and cyst.SetOccupied then
-                  cyst:SetOccupied(self, false)
-                  self:SetIsOccupying(cyst, false)
-                  end
-                 
-    
-end
-function Crag:OnOrderGiven(order)
-                  local cyst = Shared.GetEntity(self.cystid)
-                  if cyst then
-                     cyst:SetOccupied(self, false)
-                  self.cystid =  Entity.invalidI
-                  end
-end
-  function Crag:GetUnitNameOverride(viewer)
-    local unitName = GetDisplayName(self)   
-    local NowToHeal = kHealWaveCooldown - (Shared.GetTime() - self.lasthealwavetrigger)
-     local InkLength =  math.ceil( Shared.GetTime() + NowToHeal - Shared.GetTime() )
-     local time = InkLength
-    unitName = string.format(Locale.ResolveString("Crag (%s Stacking)"), self:GetCragsInRange() )
-return unitName
-end
-function Crag:GetIsSetup()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and not gameRules:GetFrontDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function Crag:IsInRangeOfHive()
-      local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)
-   if #hives >=1 then return true end
-   return false
-end
 function Crag:TryHeal(target)
 
     local unclampedHeal = target:GetMaxHealth() * Crag.kHealPercentage
-    local heal = Clamp(unclampedHeal, Crag.kMinHeal, Crag.kMaxHeal) 
-       
+    local heal = Clamp(unclampedHeal, Crag.kMinHeal, Crag.kMaxHeal)
+    
     if self.healWaveActive then
         heal = heal * Crag.kHealWaveMultiplier
     end
     
-    heal = heal * self:GetCragsInRange()/3 + heal
-    
-   // if self:GetIsSiege() and self:IsInRangeOfHive() and target:isa("Hive") or target:isa("Crag") then
-   //    heal = heal * kMapStatsCragStacks
-   // end
-     
-     if target:isa("Cyst") and target.isking then
-       heal = heal * 4
-     end
-      
-    
     if target:GetHealthScalar() ~= 1 and (not target.timeLastCragHeal or target.timeLastCragHeal + Crag.kHealInterval <= Shared.GetTime()) then
-       local amountHealed = target:AddHealth(heal)
-       target.timeLastCragHeal = Shared.GetTime()
-       return amountHealed
+    
+        local amountHealed = target:AddHealth(heal)
+        target.timeLastCragHeal = Shared.GetTime()
+        return amountHealed
+        
     else
         return 0
     end
-   
-end
-/*
-function Crag:ModifyDamageTaken(damageTable, attacker, doer, damageType, hitPoint)
-    if self:GetIsSiege() and attacker:isa("ARC") and attacker:GetIsInSiege() then 
     
-          if self:GetIsBuilt() then
-          damageTable.damage = 100
-          else
-          damageTable.damage = 50 //* self.buildFraction
-          end
-          
-    end
 end
-*/
-function Crag:GetIsSiege()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetSiegeDoorsOpen() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function Crag:GetIsSuddenDeath()
-        if Server then
-            local gameRules = GetGamerules()
-            if gameRules then
-               if gameRules:GetGameStarted() and gameRules:GetIsSuddenDeath() then 
-                   return true
-               end
-            end
-        end
-            return false
-end
-function Crag:IsInRangeOfHive()
-      local hives = GetEntitiesWithinRange("Hive", self:GetOrigin(), Shade.kCloakRadius)
-   if #hives >=1 then return true end
-   return false
-end
+
 function Crag:UpdateHealing()
 
     local time = Shared.GetTime()
     
-    if not self:GetIsOnFire() and ( self.timeOfLastHeal == nil or (time > self.timeOfLastHeal + Crag.kHealInterval) ) then     
+    if not self:GetIsOnFire() and ( self.timeOfLastHeal == nil or (time > self.timeOfLastHeal + Crag.kHealInterval) ) then    
         self:PerformHealing()        
     end
     
 end
-/*
-if Server then
-function Crag:OnOrderComplete(currentOrder)
-    if currentOrder:GetType() == kTechId.Move then 
-    // Print("Moving Complete") 
 
-   Print("Checking")
-    local startPoint = self:GetOrigin() 
-    local endPoint = startPoint + Vector(1.5, 1, 1.5)
-    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Move, PhysicsMask.Bullets,  EntityFilterOne(self))
-    
-    
-    if trace.entity ~= nil and trace.entity:isa("Crag") and trace.entity ~= self then 
-
-        local extents = LookupTechData(kTechId.Crag, kTechDataMaxExtents, nil)
-        local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)  
-        local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, self:GetModelOrigin(), 1.5, 2.5, EntityFilterAll())
-        
-        if spawnPoint ~= nil then
-            spawnPoint = GetGroundAtPosition(spawnPoint, nil, PhysicsMask.AllButPCs, extents)
-        end
- 
-        if spawnPoint then
-        Print("Order Given to unstuck")
-        self:AddTimedCallback(Crag.ActualOrder, 1)
-
-        end
-    
-    end
-
-
-
-
-    end
-end
-end
-function Crag:ActualOrder()
-   self:GiveOrder(kTechId.Move, nil, spawnPoint)
-   return false
-end
-*/
 function Crag:GetMaxSpeed()
     return kAlienStructureMoveSpeed
 end
-function Crag:MoveBitch(origin, cyst)
-         if (self:GetOrigin() - origin):GetLength() >= 24 then
-             self:GiveOrder(kTechId.Move, cyst:GetId(), origin, nil, true, true) 
-         end
-end
 
-// Look for nearby friendlies to heal
+-- Look for nearby friendlies to heal
 function Crag:OnUpdate(deltaTime)
 
     PROFILE("Crag:OnUpdate")
@@ -498,11 +349,8 @@ function Crag:OnUpdate(deltaTime)
     
     UpdateAlienStructureMove(self, deltaTime)
     
-    
     if Server then
-  
-        
-        
+
         if not self.timeLastCragUpdate then
             self.timeLastCragUpdate = Shared.GetTime()
         end
@@ -554,9 +402,6 @@ function Crag:GetTechButtons(techId)
     local techButtons = { kTechId.HealWave, kTechId.Move, kTechId.CragHeal, kTechId.None,
                           kTechId.CragUmbra, kTechId.None, kTechId.None, kTechId.Digest}
     
-     if self:GetIsSiege() and self:IsInRangeOfHive() then
-    techButtons[1] = kTechId.None
-    end
     
     if self.moving then
         techButtons[2] = kTechId.Stop
@@ -565,14 +410,7 @@ function Crag:GetTechButtons(techId)
     return techButtons
     
 end
-function Crag:OnResearchComplete(researchId)
 
-    if researchId == kTechId.Digest then
-        self:TriggerEffects("digest", {effecthostcoords = self:GetCoords()} )
-        self:Kill()
-    end
-        
-end
 function Crag:PerformAction(techNode)
 
     if techNode:GetTechId() == kTechId.Stop then
@@ -607,7 +445,7 @@ end
 function Crag:GetTechAllowed(techId, techNode, player)
 
     local allowed, canAfford = ScriptActor.GetTechAllowed(self, techId, techNode, player)
-    allowed = allowed and not self:GetIsOnFire() and not ( ( self:GetIsSiege() and not self:GetIsSuddenDeath() ) and self:IsInRangeOfHive() )
+    allowed = allowed and not self:GetIsOnFire()
     
     return allowed, canAfford
 
@@ -640,22 +478,10 @@ function Crag:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("moving", self.moving)
     
 end
-/*
-function Crag:GetCanBeUsedConstructed(byPlayer)
-return byPlayer:isa("Gorge")
-end
-function Crag:OnUse(player, elapsedTime, useSuccessTable)
 
-        player:SetHUDSlotActive(2)
-        local dropStructureAbility = player:GetWeapon(DropStructureAbility.kMapName)
-        if dropStructureAbility then
-            dropStructureAbility:SetActiveStructure(7)
-        end
-
-              
-        if Server then DestroyEntity(self) end
-    
+function Crag:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = false    
 end
-*/
+
 
 Shared.LinkClassToMap("Crag", Crag.kMapName, networkVars)

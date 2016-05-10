@@ -287,7 +287,15 @@ function Armory:OnResearch(researchId)
     end
     
 end
+function Armory:OnResearchComplete(researchId)
+   
+   if researchId == kTechId.ArmoryInsure then
+      self:InsureThisBitch()
+         
+   end
 
+ 
+end
 function Armory:OnResearchCancel(researchId)
 
     if researchId == kTechId.ArmoryArmor then

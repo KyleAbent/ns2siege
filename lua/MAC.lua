@@ -56,6 +56,8 @@ MAC.kUsedSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/mac/use")
 local kJetsCinematic = PrecacheAsset("cinematics/marine/mac/jet.cinematic")
 local kJetsSound = PrecacheAsset("sound/NS2.fev/marine/structures/mac/thrusters")
 
+local kHallucinationMaterial = PrecacheAsset( "cinematics/vfx_materials/marine_highlight.material")
+
 local kRightJetNode = "fxnode_jet1"
 local kLeftJetNode = "fxnode_jet2"
 MAC.kLightNode = "fxnode_light"
@@ -477,7 +479,7 @@ function MAC:GetLevel()
 end
   function MAC:GetUnitNameOverride(viewer)
     local unitName = GetDisplayName(self)   
-    unitName = string.format(Locale.ResolveString("MAC (%s) "), self:GetLevel() )
+    unitName = string.format(Locale.ResolveString("Credit MAC (%s) "), self:GetLevel() )
 return unitName
 end 
 function MAC:GetDamageResistance()
@@ -1291,6 +1293,39 @@ end
 function MAC:GetMeleeAttackOrigin()
     return self:GetAttachPointOrigin("fxnode_welder")
 end
+if Client then
+
+    function MAC:OnUpdateRender()
+          local showMaterial = not GetAreEnemies(self, Client.GetLocalPlayer()) 
+    
+        local model = self:GetRenderModel()
+        if model then
+
+            model:SetMaterialParameter("glowIntensity", 0)
+
+            if showMaterial then
+                
+                if not self.hallucinationMaterial then
+                    self.hallucinationMaterial = AddMaterial(model, kHallucinationMaterial)
+                end
+                
+                self:SetOpacity(0, "hallucination")
+            
+            else
+            
+                if self.hallucinationMaterial then
+                    RemoveMaterial(model, self.hallucinationMaterial)
+                    self.hallucinationMaterial = nil
+                end//
+                
+                self:SetOpacity(1, "hallucination")
+            
+            end //showma
+            
+        end//omodel
+   end //up render
+    
+end//client
 function MAC:OnDestroy()
 
     Entity.OnDestroy(self)

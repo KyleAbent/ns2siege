@@ -649,9 +649,9 @@ function GetDamageByType(target, attacker, doer, damage, damageType, hitPoint)
           end
 
           
-          if target:isa("PowerPoint") then
-          damage = damage * 4 
-          end
+       --   if target:isa("PowerPoint") then
+       --   damage = damage * 4 
+       --   end
           
           
           if attacker:isa("Player") and not target:isa("FuncDoor") then

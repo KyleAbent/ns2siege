@@ -197,7 +197,7 @@ function Egg:GetTechButtons(techId)
 
     if self:GetTechId() == kTechId.Egg then   
         techButtons = { kTechId.SpawnAlien, kTechId.None, kTechId.None, kTechId.None, 
-                        kTechId.None, kTechId.None, kTechId.None, kTechId.None }      
+                        kTechId.GorgeEgg, kTechId.LerkEgg, kTechId.FadeEgg, kTechId.OnosEgg }      
     end
     
     return techButtons

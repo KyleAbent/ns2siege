@@ -645,7 +645,16 @@ function AlienTeam:Update(timePassed)
     UpdateCystConstruction(self, timePassed)
     
 end
+function AlienTeam:GetHive()
+    for _, hive in ipairs(GetEntitiesForTeam("Hive", 2)) do
+        if hive:GetIsBuilt() then
+        
+           return hive
+        end
 
+    end
+    return nil
+end
 function AlienTeam:OnTechTreeUpdated()
 
     if self.updateAlienArmor then

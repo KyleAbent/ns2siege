@@ -116,6 +116,7 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 local function GetIsTeleport(techId)
 

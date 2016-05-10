@@ -256,7 +256,63 @@ function BuildTechData()
         { [kTechDataId] = kTechId.DoorUnlock,            [kTechDataDisplayName] = "UNLOCK_DOOR", [kTechDataHotkey] = Move.U, [kTechDataTooltipInfo] = "UNLOCK_DOOR_TOOLTIP"},
         
         // Marine Commander abilities   
-        { [kTechDataId] = kTechId.NanoShieldTech,  [kTechDataDisplayName] = "NANO_SHIELD_TECH", [kTechDataTooltipInfo] = "NANO_SHIELD_DEFENSE_TOOLTIP", [kTechDataCostKey] = kNanoShieldResearchCost, [kTechDataResearchTimeKey] = kNanoSnieldResearchTime },
+        { [kTechDataId] = kTechId.NanoShieldTech,  
+      [kTechDataDisplayName] = "NANO_SHIELD_TECH",
+        [kTechDataTooltipInfo] = "NANO_SHIELD_DEFENSE_TOOLTIP", 
+       [kTechDataCostKey] = kNanoShieldResearchCost,
+     [kTechDataResearchTimeKey] = kNanoSnieldResearchTime },
+  
+               { [kTechDataId] = kTechId.RoboInsure,  
+      [kTechDataDisplayName] = "Insure Robo",
+        [kTechDataTooltipInfo] = "When Killed, If Built, will (with a delay) respawn in the same position not built. ", 
+       [kTechDataCostKey] = 5,
+     [kTechDataResearchTimeKey] = 8 },
+     
+             { [kTechDataId] = kTechId.ArmoryInsure,  
+      [kTechDataDisplayName] = "Insure Armory",
+        [kTechDataTooltipInfo] = "When Killed, If Built, will (with a delay) respawn in the same position not built. ", 
+       [kTechDataCostKey] = 5,
+     [kTechDataResearchTimeKey] = 8 },
+   
+             { [kTechDataId] = kTechId.SentryInsure,  
+      [kTechDataDisplayName] = "Insure Sentry",
+        [kTechDataTooltipInfo] = "When Killed, If Built, will (with a delay) respawn in the same position not built. ", 
+       [kTechDataCostKey] = 2,
+     [kTechDataResearchTimeKey] = 8 },
+     
+                  { [kTechDataId] = kTechId.ObsInsure,  
+      [kTechDataDisplayName] = "Insure Observatory",
+        [kTechDataTooltipInfo] = "When Killed, If Built, will (with a delay) respawn in the same position not built. ", 
+       [kTechDataCostKey] = 2,
+     [kTechDataResearchTimeKey] = 5 },
+     
+                       { [kTechDataId] = kTechId.PGInsure,  
+      [kTechDataDisplayName] = "Insure Phasegate",
+        [kTechDataTooltipInfo] = "When Killed, If Built, will (with a delay) respawn in the same position not built. ", 
+       [kTechDataCostKey] = 7,
+     [kTechDataResearchTimeKey] = 5 },
+     
+     
+                            { [kTechDataId] = kTechId.ProtoInsure,  
+      [kTechDataDisplayName] = "Insure Prototypelab",
+        [kTechDataTooltipInfo] = "When Killed, If Built, will (with a delay) respawn in the same position not built. ", 
+       [kTechDataCostKey] = 20,
+     [kTechDataResearchTimeKey] = 5 },
+     
+     
+                                 { [kTechDataId] = kTechId.IPInsure,  
+      [kTechDataDisplayName] = "Insure InfantryPortal",
+        [kTechDataTooltipInfo] = "When Killed, If Built, will (with a delay) respawn in the same position not built. ", 
+       [kTechDataCostKey] = 10,
+     [kTechDataResearchTimeKey] = 5 },
+     
+                                           { [kTechDataId] = kTechId.ArmsLabInsure,  
+      [kTechDataDisplayName] = "Insure ArmsLabs",
+        [kTechDataTooltipInfo] = "When Killed, If Built, will (with a delay) respawn in the same position not built. y", 
+       [kTechDataCostKey] = 5,
+     [kTechDataResearchTimeKey] = 7},
+     
+     
  
         { [kTechDataId] = kTechId.PowerSurge,    [kTechDataCooldown] = kPowerSurgeCooldown,      [kTechDataAllowStacking] = true, [kTechDataIgnorePathingMesh] = true,  [kTechDataDisplayName] = "POWER_SURGE", [kTechDataCostKey] = kPowerSurgeCost, [kTechDataTooltipInfo] = "POWER_SURGE_TOOLTIP"},        
         { [kTechDataId] = kTechId.NanoShield,    [kTechDataCooldown] = kNanoShieldCooldown,      [kTechDataAllowStacking] = true, [kTechDataIgnorePathingMesh] = true, [kTechDataMapName] = NanoShield.kMapName,   [kTechDataDisplayName] = "NANO_SHIELD_DEFENSE", [kTechDataCostKey] = kNanoShieldCost, [kTechDataTooltipInfo] = "NANO_SHIELD_DEFENSE_TOOLTIP"},        
@@ -551,7 +607,13 @@ function BuildTechData()
   [kTechDataTooltipInfo] = "ROBOTICS_FACTORY_TOOLTIP",
     [kTechDataObstacleRadius] = 2},        
     
-        { [kTechDataId] = kTechId.UpgradeRoboticsFactory, [kTechDataDisplayName] = "UPGRADE_ROBOTICS_FACTORY", [kTechIDShowEnables] = false, [kTechDataCostKey] = kUpgradeRoboticsFactoryCost,   [kTechDataResearchTimeKey] = kUpgradeRoboticsFactoryTime, [kTechDataTooltipInfo] = "UPGRADE_ROBOTICS_FACTORY_TOOLTIP"},        
+        { [kTechDataId] = kTechId.UpgradeRoboticsFactory,
+      [kTechDataDisplayName] = "UPGRADE_ROBOTICS_FACTORY", 
+         [kTechIDShowEnables] = false, 
+        [kTechDataCostKey] = kUpgradeRoboticsFactoryCost,  
+        [kTechDataResearchTimeKey] = kUpgradeRoboticsFactoryTime, 
+        [kTechDataTooltipInfo] = "UPGRADE_ROBOTICS_FACTORY_TOOLTIP"},   
+          
         { [kTechDataId] = kTechId.ARCRoboticsFactory, [kTechDataCostKey] = kRoboticsFactoryCost + kUpgradeRoboticsFactoryCost, [kTechDataHint] = "ARC_ROBOTICS_FACTORY_HINT", [kTechDataRequiresPower] = true,  [kTechIDShowEnables] = false,  [kTechDataDisplayName] = "ARC_ROBOTICS_FACTORY",  [kTechDataMapName] = ARCRoboticsFactory.kMapName, [kTechDataModel] = RoboticsFactory.kModelName,   [kTechDataEngagementDistance] = kRoboticsFactorEngagementDistance,        [kTechDataSpecifyOrientation] = true, [kTechDataBuildTime] = kRoboticsFactoryBuildTime, [kTechDataMaxHealth] = kARCRoboticsFactoryHealth,    [kTechDataMaxArmor] = kARCRoboticsFactoryArmor, [kTechDataPointValue] = kARCRoboticsFactoryPointValue, [kTechDataHotkey] = Move.R, [kTechDataNotOnInfestation] = kPreventMarineStructuresOnInfestation, [kTechDataTooltipInfo] = "ARC_ROBOTICS_FACTORY_TOOLTIP"},        
 
         { [kTechDataId] = kTechId.ARC, 

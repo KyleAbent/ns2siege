@@ -135,7 +135,7 @@ local function HealEntity(self, player, targetEntity)
         health = health * 0.5
     end
     
-    health = ConditionalValue(targetEntity:isa("Cyst") and targetEntity.isking, health * 4, health)
+   -- health = ConditionalValue(targetEntity:isa("Cyst") and targetEntity.isking, health * 4, health)
     
     if GetHasFocusUpgrade(self:GetParent()) then
      health = health + ( (health/2) * (self:GetParent():GetFocousLevel()) )
@@ -306,7 +306,7 @@ local function PerformHealSpray(self, player)
             if entity:GetTeamNumber() == player:GetTeamNumber() then
                 HealEntity(self, player, entity)
                   --so gorge healspray levels up structures based on their.... settings.
-                    if entity:isa("Hydra") or entity:isa("Whip")  or entity:isa("Shift") or entity:isa("Shade") or entity:isa("Cyst") and entity:GetIsBuilt() then 
+                    if entity:isa("Hydra") or entity:isa("Whip")  or entity:isa("Shade") and entity:GetIsBuilt() then 
                           local target = entity
                           local prevlevel = target.level
                           local focusmult = 1

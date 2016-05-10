@@ -108,6 +108,7 @@ if Server then
     function Location:GetHadPowerDuringSetup()
                   return self.poweredatfrontopen 
     end
+    /*
     function Location:ReallySpawnCysts(powerpoint)
     --Kyle Abent :S
     -- 2.7 -- To replace comm cysts with automatic system based on where state of turf within dynamic playthrough lays(in theory)
@@ -118,6 +119,7 @@ if Server then
             end
             
     end
+    */
     
         function Location:MakeSureRoomIsntEmpty()
                      local entities = self:GetEntitiesInTrigger()

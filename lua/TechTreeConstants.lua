@@ -66,6 +66,8 @@ kTechId = createTechIdEnum({
     // Marine orders 
     'Defend',
     
+    'SentryInsure', 'ObsInsure', 'PGInsure', 'ProtoInsure', 'IPInsure', 'ArmsLabInsure', 'SentryInsure', 'ArmoryInsure', 'RoboInsure',
+    
     // Special tech
     'TwoCommandStations', 'ThreeCommandStations',
 

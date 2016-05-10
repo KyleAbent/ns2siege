@@ -71,6 +71,7 @@ AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 
+
 function ArmsLab:OnCreate()
 
     ScriptActor.OnCreate(self)
@@ -135,14 +136,7 @@ function ArmsLab:OnInitialized()
     self:SetModel(ArmsLab.kModelName, kAnimationGraph)
 
 end
-function ArmsLab:OnResearchComplete(researchId)
- if researchId ~= kTechId.kRifleClipSecondUnlockMax then
-     local armorLevel = GetArmorLevel(self)
-    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
-        player:SetArmorAmount()
-    end
- end
-end
+
    
 function ArmsLab:GetArmsLabQualifications()
 local amount = 0
@@ -277,8 +271,18 @@ function ArmsLab:OnResearchComplete(researchId)
 
             end
    
-   
+   elseif researchId == kTechId.ArmsLabInsure then
+      self:InsureThisBitch()
+         
    end
+   /*   
+    if researchId ~= kTechId.kRifleClipSecondUnlockMax then
+     local armorLevel = GetArmorLevel(self)
+    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
+        player:SetArmorAmount()
+    end
+ end
+    */
 end
 end // server
 function ArmsLab:GetHasSentryBatteryInRadius()
@@ -327,8 +331,16 @@ function ArmsLab:GetItemList(forPlayer)
 end
 function ArmsLab:GetTechButtons(techId)
 
-    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
-             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    local techButtons = nil
+
+    techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
+                    kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    
+    
+    if not self:GetIsInsured() then
+    techButtons[1] = kTechId.ArmsLabInsure
+    end
+    return techButtons 
     
 end
 

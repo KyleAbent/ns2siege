@@ -118,6 +118,7 @@ AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 function Armory:OnCreate()
 
@@ -347,7 +348,12 @@ function Armory:GetTechButtons(techId)
     techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
                     kTechId.None, kTechId.None, kTechId.None, kTechId.None }
     
-    return techButtons
+    
+    if not self:GetIsInsured() then
+    techButtons[1] = kTechId.ArmoryInsure
+    end
+    return techButtons 
+
     
 end
 

@@ -185,16 +185,17 @@ end
     function Veil:OnConstructionComplete()
      local isinsiege = string.find(self:GetLocationName(), "Siege") or string.find(self:GetLocationName(), "siege")
       if not isinsiege then
-        self:AddTimedCallback(TimeUp, kLifeSpan + 0.5)  
         self:TeleportFractionHere()
          self:AddTimedCallback(function()  self:TeleportFractionHere() end, 4)
         self:AddTimedCallback(function()  self:TeleportFractionHere() end, 8)
         self:AddTimedCallback(function()  self:TeleportFractionHere() end, 12)
         self:AddTimedCallback(function()  self:TeleportFractionHere() end, 16)
       else
+          self:AddTimedCallback(function()  self:TeleportFractionHere() end, 4)
           self:AddTimedCallback(function()  self:TeleportFractionHere() end, 8)
           self:AddTimedCallback(function()  self:TeleportFractionHere() end, 16)
       end
+                   self:AddTimedCallback(TimeUp, kLifeSpan + 0.5)  
     end
     function Veil:TeleportFractionHere()
       local eligable = {}
@@ -205,13 +206,13 @@ end
                      ( structure.GetIsMoving and structure:GetIsMoving() ) then
                        if structure:GetLocationName() == self:GetLocationName() and self:GetDistance(structure) >= 12 or
                         structure:GetLocationName() ~= self:GetLocationName() and self:GetDistance(structure) <= 25 then 
-                          if structure:GetEligableForBeacon() then
+                          if structure:GetEligableForBeacon(self) then
                          structure:ClearOrders()
                          structure:GiveOrder(kTechId.Move, self:GetId(), self:GetOrigin(), nil, true, true) 
                          structure.lastbeacontime = Shared.GetTime()
                          end//
                        end//
-                       if self:GetDistance(structure) >= 26 and structure:GetIsBuilt() and structure:GetEligableForBeacon()  then
+                       if self:GetDistance(structure) >= 26 and structure:GetEligableForBeacon()  then
                          table.insert(eligable,structure)
                        end //
                   end //

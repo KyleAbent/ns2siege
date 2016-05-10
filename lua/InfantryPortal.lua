@@ -69,7 +69,7 @@ InfantryPortal.kLoginAttachPoint = "keypad"
 local kPushRange = 3
 local kPushImpulseStrength = 40
 
-local kInfantryPortalGainXP = 1
+local kInfantryPortalGainXP = 0.06
 local kInfantryPortalMaxLevel = 30
 InfantryPortal.GainXp = .25
 
@@ -102,6 +102,7 @@ AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 local function CreateSpinEffect(self)
 
@@ -491,6 +492,14 @@ end
 
 if Server then
 
+function InfantryPortal:GetGainXPAmount()
+local amount =  1.32 --Armory.kGainXp
+local multiplier = 1
+multiplier = ConditionalValue(GetIsSiegeEnabled(),amount * 2, 1)
+--multiplier = multiplier * self:GetArmoriesInRange()
+  return amount
+end
+
     function InfantryPortal:OnEntityChange(entityId, newEntityId)
     
         if self.queuedPlayerId == entityId then
@@ -691,7 +700,17 @@ local techButtons = nil
         if self.level ~= kInfantryPortalMaxLevel then
     techButtons[5] = kTechId.LevelIP
     end
+    
+        if not self:GetIsInsured() then
+    techButtons[3] = kTechId.IPInsure
+    end
+    
       return techButtons
+end
+if Server then
+function InfantryPortal:OnResearchComplete(researchId)
+   self:InsureThisBitch()
+   end
 end
  function InfantryPortal:PerformActivation(techId, position, normal, commander)
      local success = false

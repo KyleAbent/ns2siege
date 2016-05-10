@@ -90,6 +90,7 @@ AddMixinNetworkVars(VortexAbleMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
+AddMixinNetworkVars(SupplyUserMixin, networkVars)
 
 function RoboticsFactory:OnCreate()
 
@@ -251,7 +252,11 @@ function RoboticsFactory:GetTechButtons(techId)
 
     local techButtons = {  kTechId.None, kTechId.MAC, kTechId.None, kTechId.None, 
                kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-               
+   
+    if not self:GetIsInsured() then
+    techButtons[3] = kTechId.RoboInsure
+    end
+            
     if self:GetTechId() ~= kTechId.ARCRoboticsFactory then
         techButtons[5] = kTechId.UpgradeRoboticsFactory
     else
@@ -389,7 +394,9 @@ function RoboticsFactory:OnResearchComplete(researchId)
 
     if researchId == kTechId.UpgradeRoboticsFactory then
         self:UpgradeToTechId(kTechId.ARCRoboticsFactory)
-    end
+    else
+   self:InsureThisBitch()
+   end
         
 end
 
